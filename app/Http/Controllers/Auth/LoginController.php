@@ -43,9 +43,7 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(
-            $utilisateur->isSuperAdmin() ? route('admin.dashboard') : route('site.dashboard')
-        );
+        return redirect()->intended(route('admin.home'));
     }
 
     public function destroy(Request $request): RedirectResponse

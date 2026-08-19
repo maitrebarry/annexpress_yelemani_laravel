@@ -1,0 +1,26 @@
+.table-custom-header thead {
+    background-color: #007bff; /* Bleu */
+    color: #fff;
+}
+
+.table-hover-effect {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table-hover-effect th,
+.table-hover-effect td {
+    border: 1px solid #dee2e6; /* Bordures claires */
+    padding: 8px;
+    text-align: left;
+}
+
+.table-hover-effect tbody tr {
+    background-color: #f8f9fa; /* Gris clair */
+    transition: background-color 0.3s ease-in-out;
+}
+
+/* Effet au survol */
+.table-hover-effect tbody tr:hover {
+    background-color: #d6d8db; /* Gris plus foncé au survol */
+}

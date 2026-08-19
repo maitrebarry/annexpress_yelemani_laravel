@@ -17,9 +17,9 @@ return new class extends Migration
             $table->decimal('montant', 12, 2)->default(0.00);
             $table->string('libelle', 255)->nullable();
             $table->dateTime('date_heure')->useCurrent();
-            $table->index(['id_caisse_user'], 'idx_caisse_user');
+            $table->index(['id_caisse_user'], 'idx_journal_caisse_user');
             $table->index(['date_heure'], 'idx_date_heure');
-            $table->index(['id_utilisateur'], 'idx_utilisateur');
+            $table->index(['id_utilisateur'], 'idx_journal_utilisateur');
         });
     }
 

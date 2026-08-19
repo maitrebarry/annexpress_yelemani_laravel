@@ -50,6 +50,24 @@ class Utilisateur extends Authenticatable
         return $this->droit === 'super_admin';
     }
 
+    public function estLectureSeule(): bool
+    {
+        return $this->droit === 'PDG';
+    }
+
+    public function userHasPermission(string $nomPermission): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
+        return \Illuminate\Support\Facades\DB::table('permision')
+            ->join('user_permission', 'permision.id_permision', '=', 'user_permission.permission_id')
+            ->where('user_permission.user_id', $this->idUser)
+            ->where('permision.nom_permission', $nomPermission)
+            ->exists();
+    }
+
     public function compagnie()
     {
         return $this->belongsTo(Compagnie::class, 'id_compagnie', 'id_compagnie');

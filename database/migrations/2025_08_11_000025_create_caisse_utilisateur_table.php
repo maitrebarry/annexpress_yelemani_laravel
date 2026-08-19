@@ -27,9 +27,9 @@ return new class extends Migration
             $table->decimal('ecart', 12, 2)->nullable();
             $table->enum('statut', ['ouverte','fermee','versee'])->default('ouverte');
             $table->string('reference', 40);
-            $table->index(['id_agence'], 'idx_agence');
+            $table->index(['id_agence'], 'idx_caisse_utilisateur_agence');
             $table->index(['date_service'], 'idx_date_service');
-            $table->index(['id_utilisateur'], 'idx_utilisateur');
+            $table->index(['id_utilisateur'], 'idx_caisse_utilisateur_utilisateur');
             $table->unique(['reference'], 'reference_unique');
             $table->unique(['id_utilisateur', 'date_service', 'statut'], 'user_date_active');
         });

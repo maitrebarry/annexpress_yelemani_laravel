@@ -27,7 +27,7 @@ return new class extends Migration
             $table->integer('resolue_par')->nullable();
             $table->index(['id_agence', 'statut'], 'idx_agence_statut');
             $table->index(['id_compagnie', 'statut'], 'idx_compagnie_statut');
-            $table->index(['id_suivis'], 'id_suivis');
+            $table->index(['id_suivis'], 'idx_notifications_gare_suivis');
             $table->index(['resolue_par'], 'resolue_par');
             $table->foreign('id_suivis', 'notifications_gare_ibfk_1')->references('idSuivis')->on('suivis')->onDelete('set null');
             $table->foreign('id_agence', 'notifications_gare_ibfk_2')->references('idAgence')->on('agence')->onDelete('set null');

@@ -1,0 +1,1187 @@
+/* ================================================================
+   TransGest Theme — Fichier de styles centralisé
+   Couleur primaire  : Orange  #f59e0b → #ea580c
+   Couleur secondaire: Bleu foncé  #0f3b5e / #0f172a
+   ================================================================ */
+
+/* ── Variables globales ─────────────────────────────────────── */
+:root {
+    --tg-orange:       #ea580c;
+    --tg-orange-light: #f59e0b;
+    --tg-navy:         #0f3b5e;
+    --tg-dark:         #0f172a;
+    --tg-dark-2:       #1e293b;
+    --tg-gray-100:     #f8fafc;
+    --tg-gray-200:     #e2e8f0;
+    --tg-gray-300:     #cbd5e1;
+    --tg-gray-600:     #475569;
+    --tg-gray-700:     #334155;
+    --tg-success:      #10b981;
+    --tg-danger:       #ef4444;
+    --tg-warning:      #f59e0b;
+    --tg-info:         #06b6d4;
+    --tg-accent:       #3b82f6;
+    --tg-shadow-sm:    0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --tg-shadow:       0 1px 3px 0 rgb(0 0 0 / 0.1);
+    --tg-shadow-md:    0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --tg-shadow-lg:    0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --tg-radius:       0.75rem;
+    --tg-radius-lg:    1rem;
+
+    /* Aliases courts utilisés dans les vues inline */
+    --primary:         #0f3b5e;
+    --secondary:       #f59e0b;
+    --secondary-dark:  #d97706;
+    --success:         #10b981;
+    --danger:          #ef4444;
+    --warning:         #f59e0b;
+    --info:            #06b6d4;
+    --accent:          #3b82f6;
+    --gray-100:        #f8fafc;
+    --gray-200:        #e2e8f0;
+    --gray-300:        #cbd5e1;
+    --gray-600:        #475569;
+    --gray-700:        #334155;
+    --gray-800:        #1e293b;
+    --shadow-sm:       0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow:          0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-md:       0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg:       0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius:          0.75rem;
+    --radius-lg:       1rem;
+}
+
+/* ── Corps ──────────────────────────────────────────────────── */
+body {
+    background: #f1f5f9;
+    font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
+}
+
+/* ================================================================
+   OVERRIDES BOOTSTRAP — couleur primaire = orange TransGest
+   ================================================================ */
+
+.text-primary {
+    color: var(--tg-orange) !important;
+}
+
+/* Boutons principaux (gradient orange) */
+.btn-primary,
+.btn-transgest,
+.btn-success {
+    background: linear-gradient(135deg, var(--tg-orange-light), var(--tg-orange)) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 8px 20px -5px rgba(234, 88, 12, 0.4) !important;
+}
+.btn-primary:hover,
+.btn-transgest:hover,
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px -5px rgba(234, 88, 12, 0.5) !important;
+    color: white !important;
+}
+
+/* Boutons outline orange */
+.btn-outline-primary {
+    color: var(--tg-orange) !important;
+    border-color: var(--tg-orange) !important;
+    border-radius: 12px;
+    font-weight: 600;
+}
+.btn-outline-primary:hover {
+    background: var(--tg-orange) !important;
+    color: white !important;
+}
+
+/* Boutons secondaires (bleu très foncé) */
+.btn-secondary,
+.btn-light,
+.btn-info,
+.btn-outline-secondary {
+    background: var(--tg-dark) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 8px 20px -5px rgba(15, 23, 42, 0.3) !important;
+}
+.btn-secondary:hover,
+.btn-light:hover,
+.btn-info:hover,
+.btn-outline-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px -5px rgba(15, 23, 42, 0.4) !important;
+    background: var(--tg-dark-2) !important;
+    color: white !important;
+}
+
+/* Bouton retour flèche (breadcrumb) */
+.split-bg-primary {
+    background: var(--tg-dark) !important;
+    border: none !important;
+    border-radius: 12px;
+}
+.split-bg-primary:hover {
+    background: var(--tg-dark-2) !important;
+}
+
+/* ================================================================
+   MODALS
+   ================================================================ */
+.modal-header,
+.modal-header.bg-primary {
+    background: var(--tg-navy) !important;
+    border-bottom: none !important;
+}
+.modal-header .modal-title,
+.modal-header h5 {
+    color: #ffffff !important;
+}
+.modal-header .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* ================================================================
+   BREADCRUMB
+   ================================================================ */
+.page-breadcrumb .breadcrumb-title {
+    color: var(--tg-navy) !important;
+    font-weight: 800 !important;
+    font-size: 1.4rem;
+    border-right: 2px solid rgba(15, 59, 94, 0.2) !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.page-breadcrumb .breadcrumb-item a {
+    color: var(--tg-orange) !important;
+    font-weight: 600;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+}
+.page-breadcrumb .breadcrumb-item a:hover {
+    background: var(--tg-orange) !important;
+    color: white !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(234, 88, 12, 0.2);
+}
+.page-breadcrumb .breadcrumb-item.active {
+    color: var(--tg-navy) !important;
+    font-weight: 700;
+    background: rgba(15, 59, 94, 0.08);
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* ================================================================
+   PAGINATION
+   ================================================================ */
+.page-item.active .page-link {
+    background-color: var(--tg-orange) !important;
+    border-color: var(--tg-orange) !important;
+}
+
+/* ================================================================
+   NAV PILLS
+   ================================================================ */
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+    background: linear-gradient(135deg, var(--tg-orange-light), var(--tg-orange)) !important;
+    color: white !important;
+    box-shadow: 0 8px 20px -5px rgba(234, 88, 12, 0.4);
+}
+.nav-pills .nav-link {
+    color: var(--tg-gray-600);
+    font-weight: 500;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+.nav-pills .nav-link:hover {
+    background: rgba(245, 158, 11, 0.08);
+    color: var(--tg-orange);
+}
+
+/* ================================================================
+   CARTE DE CONFIGURATION (header bleu foncé, angles arrondis)
+   ================================================================ */
+.config-card {
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    background: #ffffff;
+    overflow: hidden;
+}
+.config-card .card-header {
+    background: var(--tg-navy) !important;
+    border-bottom: none !important;
+    border-radius: 20px 20px 0 0 !important;
+    padding: 1.5rem;
+}
+.config-card .card-title,
+.config-card .card-header h5 {
+    color: #ffffff !important;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    font-size: 1.15rem;
+}
+.config-card .card-header i {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px;
+    border-radius: 10px;
+    margin-right: 12px !important;
+}
+
+/* Carte générique avec header marine (utilisée partout) */
+.card-header.bg-primary {
+    background: var(--tg-navy) !important;
+}
+
+/* ================================================================
+   ONGLETS VERTICAUX (menu de configuration latéral)
+   ================================================================ */
+.vertical-tabs-custom .nav-link {
+    border-radius: 12px;
+    margin-bottom: 8px;
+    color: var(--tg-gray-600);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 12px 15px;
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+}
+.vertical-tabs-custom .nav-link:hover {
+    background: rgba(245, 158, 11, 0.08);
+    color: var(--tg-orange);
+    transform: translateX(4px);
+}
+.vertical-tabs-custom .nav-link.active {
+    background: linear-gradient(135deg, var(--tg-orange-light), var(--tg-orange)) !important;
+    color: white !important;
+    border: none !important;
+    box-shadow: 0 8px 20px -5px rgba(234, 88, 12, 0.4);
+}
+.vertical-tabs-custom .nav-link i {
+    font-size: 1.2rem;
+    margin-right: 10px;
+    background: transparent !important;
+    padding: 0 !important;
+    color: inherit !important;
+}
+
+/* ================================================================
+   TABLES
+   ================================================================ */
+.table-custom-header thead th,
+.table-primary th {
+    background: rgba(245, 158, 11, 0.05) !important;
+    color: var(--tg-dark) !important;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(245, 158, 11, 0.1) !important;
+    padding: 1rem;
+}
+.table-hover-effect tbody tr {
+    transition: all 0.2s;
+}
+.table-hover-effect tbody tr:hover {
+    background: rgba(245, 158, 11, 0.04) !important;
+    transform: scale(1.002);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+.table-light {
+    --bs-table-bg: rgba(245, 158, 11, 0.02) !important;
+}
+
+/* ================================================================
+   SIDEBAR
+   ================================================================ */
+.sidebar-wrapper {
+    background: var(--tg-navy) !important;
+    border-right: none !important;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+}
+.sidebar-wrapper .sidebar-header {
+    background: #ffffff !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    justify-content: center;
+}
+.sidebar-wrapper .logo-text {
+    color: #ffffff !important;
+    font-weight: 800;
+    font-size: 1.6rem;
+    margin-left: 0;
+}
+.sidebar-wrapper .logo-text span {
+    color: var(--tg-orange) !important;
+}
+.metismenu a {
+    color: #e2e8f0 !important;
+    border-radius: 8px !important;
+    margin: 4px 12px !important;
+    transition: all 0.3s ease;
+}
+.metismenu a:hover,
+.metismenu .mm-active > a {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+}
+.metismenu .menu-label {
+    color: #94a3b8 !important;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding-left: 20px !important;
+}
+.sidebar-wrapper .toggle-icon {
+    color: var(--tg-navy) !important;
+}
+.metismenu .parent-icon,
+.metismenu i {
+    color: var(--tg-orange) !important;
+}
+.metismenu ul {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+.metismenu ul a {
+    color: #94a3b8 !important;
+    padding-left: 45px !important;
+    background: transparent !important;
+}
+.metismenu ul a:hover,
+.metismenu ul .mm-active > a {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+.metismenu li.mm-active,
+.metismenu li {
+    background: transparent !important;
+}
+
+/* ================================================================
+   NAVBAR (top header)
+   ================================================================ */
+.top-header {
+    background: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    padding: 0.5rem 1rem;
+}
+.top-header .nav-link,
+.top-header .mobile-toggle-icon i {
+    color: var(--tg-dark) !important;
+}
+.top-header .notifications {
+    position: relative;
+    background: rgba(15, 23, 42, 0.05);
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+.top-header .notifications:hover {
+    background: rgba(15, 23, 42, 0.1);
+    transform: scale(1.05);
+}
+.top-header .notifications i {
+    color: var(--tg-navy) !important;
+    font-size: 1.3rem;
+}
+.top-header .notify-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    background: linear-gradient(135deg, var(--tg-orange-light), var(--tg-orange));
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 3px 6px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.top-header .user-setting {
+    padding: 5px 15px 5px 5px;
+    border-radius: 30px;
+    background: rgba(15, 23, 42, 0.03);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(15, 23, 42, 0.05);
+}
+.top-header .user-setting:hover {
+    background: rgba(15, 23, 42, 0.08);
+    border-color: rgba(15, 23, 42, 0.1);
+}
+.top-header .user-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--tg-orange);
+    padding: 2px;
+    background: #ffffff;
+    object-fit: contain;
+}
+.top-header .user-name {
+    color: var(--tg-navy) !important;
+    font-weight: 700;
+    margin-left: 10px;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+}
+.top-header .dropdown-menu {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+    border: none !important;
+    border-radius: 16px !important;
+    padding: 12px;
+    margin-top: 10px;
+    min-width: 250px;
+}
+.top-header .dropdown-item {
+    border-radius: 10px;
+    padding: 10px 15px;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    color: var(--tg-gray-600);
+    display: flex;
+    align-items: center;
+}
+.top-header .dropdown-item:hover {
+    background: rgba(245, 158, 11, 0.08);
+    color: var(--tg-orange);
+    transform: translateX(4px);
+}
+.top-header .dropdown-item .setting-icon i,
+.top-header .dropdown-item i.bi {
+    color: var(--tg-orange);
+    font-size: 1.3rem;
+    margin-right: 10px;
+}
+.header-notifications-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+.notification-box {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: rgba(245, 158, 11, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tg-orange);
+    font-size: 1.4rem;
+}
+.dropdown-msg-user    { font-weight: 700; color: var(--tg-dark); }
+.dropdown-user-name   { font-weight: 800; font-size: 1.1rem; color: var(--tg-dark); }
+.dropdown-user-designation { color: var(--tg-orange) !important; font-weight: 600; }
+
+/* ================================================================
+   DASHBOARD — CARTES KPI
+   ================================================================ */
+.dashboard-card {
+    background: white;
+    border-radius: var(--tg-radius-lg);
+    border: 1px solid var(--tg-gray-200);
+    box-shadow: var(--tg-shadow-sm);
+    transition: all 0.2s ease;
+}
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--tg-shadow-lg);
+}
+.kpi-card {
+    background: white;
+    border-radius: var(--tg-radius-lg);
+    border-left: 4px solid;
+    padding: 1.25rem;
+    transition: all 0.2s;
+}
+.kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--tg-shadow-md);
+}
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.kpi-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tg-gray-600);
+}
+
+/* En-tête de bienvenue (accueil) */
+.welcome-header {
+    background: linear-gradient(135deg, var(--tg-navy) 0%, var(--tg-dark) 100%);
+    border-radius: var(--tg-radius-lg);
+    padding: 1.5rem;
+    color: white;
+}
+.welcome-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+/* Boutons d'actions rapides */
+.quick-action-btn {
+    background: var(--tg-gray-100);
+    border: 1px solid var(--tg-gray-200);
+    border-radius: 2rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--tg-gray-700);
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.quick-action-btn:hover {
+    background: white;
+    border-color: var(--tg-orange);
+    color: var(--tg-orange);
+    transform: translateY(-1px);
+}
+
+/* Barres de progression */
+.progress-custom {
+    height: 0.5rem;
+    background-color: var(--tg-gray-200);
+    border-radius: 1rem;
+    overflow: hidden;
+}
+.progress-bar-custom {
+    background: linear-gradient(90deg, var(--tg-orange-light), var(--tg-orange));
+    border-radius: 1rem;
+    height: 100%;
+    width: 0%;
+}
+
+/* Activités récentes */
+.activity-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--tg-gray-200);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-badge {
+    width: 32px;
+    height: 32px;
+    background: var(--tg-gray-100);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tg-orange);
+}
+
+/* Placeholder graphique */
+.chart-placeholder {
+    background: var(--tg-gray-100);
+    border-radius: var(--tg-radius);
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tg-gray-600);
+    font-size: 0.875rem;
+}
+
+/* ================================================================
+   GESTION DES CAISSES
+   ================================================================ */
+.kpi-mini {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem 1.2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border-left: 4px solid;
+    transition: 0.2s;
+}
+.kpi-mini:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+.caisse-card {
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: 0.2s;
+}
+.caisse-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+.caisse-header {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid #eef2f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.badge-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.8rem;
+    border-radius: 2rem;
+}
+.badge-open   { background: #dcfce7; color: #166534; }
+.badge-closed { background: #fee2e2; color: #991b1b; }
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.7rem 1.2rem;
+    border-bottom: 1px solid #f0f2f5;
+}
+.stat-label { font-size: 0.7rem; text-transform: uppercase; color: var(--tg-gray-600); }
+.stat-value { font-weight: 700; font-size: 1rem; }
+.total-value { font-size: 1.2rem; color: var(--tg-orange); }
+.footer-card {
+    padding: 0.8rem 1.2rem;
+    background: #fafcff;
+    display: flex;
+    justify-content: flex-end;
+}
+.btn-cloture {
+    background: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 2rem;
+    padding: 0.3rem 1rem;
+    font-size: 0.7rem;
+    transition: 0.2s;
+    cursor: pointer;
+}
+.btn-cloture:hover {
+    background: var(--tg-danger);
+    border-color: var(--tg-danger);
+    color: white;
+}
+
+/* ================================================================
+   STEPPER (bs-stepper) — cercles d'étape et accent aux couleurs TransGest
+   (bs-stepper.css force du bleu #007bff sur l'étape active, et bg-primary
+   est bleu par défaut : on remplace les deux par le dégradé orange)
+   ================================================================ */
+.bs-stepper-circle.bg-primary,
+.active .bs-stepper-circle {
+    background: linear-gradient(135deg, var(--tg-orange-light), var(--tg-orange)) !important;
+    color: #ffffff !important;
+}
+#stepper1.bs-stepper > .card.border-primary {
+    border-top-color: var(--tg-orange) !important;
+}
+
+/* ================================================================
+   DASHBOARD ACCUEIL — REFONTE MODERNE (page d'accueil uniquement)
+   ================================================================ */
+
+/* ── Hero de bienvenue ──────────────────────────────────────── */
+.tg-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--tg-navy) 0%, var(--tg-dark) 65%, #061019 100%);
+    border-radius: 1.5rem;
+    padding: 2rem 2.25rem;
+    color: #fff;
+    box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.45);
+}
+.tg-hero::before,
+.tg-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(10px);
+    opacity: 0.55;
+    pointer-events: none;
+}
+.tg-hero::before {
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.55), transparent 70%);
+    top: -110px;
+    right: -60px;
+}
+.tg-hero::after {
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.35), transparent 70%);
+    bottom: -160px;
+    left: -80px;
+}
+.tg-hero__content {
+    position: relative;
+    z-index: 1;
+}
+.tg-hero__icon {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    color: var(--tg-orange-light);
+}
+.tg-hero__title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin-bottom: 0.2rem;
+    letter-spacing: -0.02em;
+}
+.tg-hero__subtitle {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.85rem;
+    margin: 0;
+}
+.tg-hero__date-chip {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    backdrop-filter: blur(6px);
+}
+.tg-hero__date-chip .tg-date-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.55);
+}
+.tg-hero__date-chip .tg-date-value {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* ── Panneau générique (remplace/étend dashboard-card) ──────── */
+.tg-panel {
+    background: #ffffff;
+    border-radius: 1.25rem;
+    border: 1px solid var(--tg-gray-200);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+    padding: 1.5rem;
+    transition: box-shadow 0.25s ease;
+}
+.tg-panel:hover {
+    box-shadow: 0 12px 30px -10px rgba(15, 23, 42, 0.12);
+}
+.tg-panel__title {
+    font-weight: 800;
+    font-size: 1rem;
+    margin-bottom: 0;
+    color: var(--tg-dark);
+}
+.tg-panel__subtitle {
+    color: var(--tg-gray-600);
+    font-size: 0.8rem;
+    margin: 0;
+}
+.tg-panel__icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.6rem;
+    font-size: 1.1rem;
+}
+
+/* ── Filtre gare (pilule) ────────────────────────────────────── */
+.tg-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    background: #fff;
+    border: 1px solid var(--tg-gray-200);
+    border-radius: 1rem;
+    padding: 0.6rem 1rem;
+}
+.tg-filter-bar select.form-select {
+    border-radius: 0.75rem;
+    border-color: var(--tg-gray-200);
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+.tg-reset-pill {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--tg-orange);
+    text-decoration: none;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 0.35rem 0.8rem;
+    border-radius: 1rem;
+}
+.tg-reset-pill:hover { background: rgba(245, 158, 11, 0.18); color: var(--tg-orange); }
+
+/* ── Actions rapides ─────────────────────────────────────────── */
+.tg-quick-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--tg-gray-100);
+    border: 1px solid var(--tg-gray-200);
+    border-radius: 1rem;
+    padding: 0.55rem 1.1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--tg-gray-700);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.tg-quick-action:hover {
+    background: linear-gradient(135deg, var(--tg-orange-light), var(--tg-orange));
+    border-color: transparent;
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -8px rgba(234, 88, 12, 0.5);
+}
+
+/* ── Cartes KPI modernes ─────────────────────────────────────── */
+.tg-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.25rem;
+}
+.tg-stat-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--tg-gray-200);
+    border-radius: 1.25rem;
+    padding: 1.35rem;
+    overflow: hidden;
+    animation: tgFadeUp 0.4s ease both;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+a.tg-stat-card {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+.tg-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 30px -14px rgba(15, 23, 42, 0.2);
+}
+.tg-stat-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--tg-stat-color, var(--tg-orange)), transparent);
+}
+.tg-stat-card__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.tg-stat-card__icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    background: rgba(234, 88, 12, 0.12);
+    background: color-mix(in srgb, var(--tg-stat-color, var(--tg-orange)) 14%, white);
+    color: var(--tg-stat-color, var(--tg-orange));
+}
+.tg-stat-card__value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--tg-dark);
+}
+.tg-stat-card__label {
+    font-size: 0.78rem;
+    color: var(--tg-gray-600);
+    font-weight: 600;
+}
+.tg-stat-card__meta {
+    margin-top: 0.75rem;
+    font-size: 0.72rem;
+    color: var(--tg-gray-600);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.tg-stat-grid .tg-stat-card:nth-child(2) { animation-delay: 0.05s; }
+.tg-stat-grid .tg-stat-card:nth-child(3) { animation-delay: 0.1s; }
+.tg-stat-grid .tg-stat-card:nth-child(4) { animation-delay: 0.15s; }
+.tg-stat-grid .tg-stat-card:nth-child(5) { animation-delay: 0.2s; }
+
+@keyframes tgFadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Section label ───────────────────────────────────────────── */
+.tg-section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--tg-gray-600);
+    margin: 0 0 0.75rem 0.1rem;
+}
+
+/* ── Donut chart CSS pur (répartition colis) ────────────────── */
+.tg-donut-wrap {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.tg-donut {
+    width: 140px;
+    height: 140px;
+    min-width: 140px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+.tg-donut__hole {
+    width: 78px;
+    height: 78px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 0 1px var(--tg-gray-200);
+}
+.tg-donut__hole strong { font-size: 1.15rem; color: var(--tg-dark); line-height: 1; }
+.tg-donut__hole span { font-size: 0.6rem; color: var(--tg-gray-600); text-transform: uppercase; }
+.tg-donut-legend {
+    flex: 1;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+.tg-donut-legend__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    gap: 0.5rem;
+}
+.tg-donut-legend__label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--tg-gray-700);
+    font-weight: 600;
+}
+.tg-donut-legend__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: none;
+}
+.tg-donut-legend__value {
+    font-weight: 700;
+    color: var(--tg-dark);
+}
+
+/* ── Leaderboard (top des gares) ─────────────────────────────── */
+.tg-leaderboard-item {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.7rem 0.4rem;
+    border-radius: 0.9rem;
+    transition: background 0.2s;
+}
+.tg-leaderboard-item:hover { background: var(--tg-gray-100); }
+.tg-rank {
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.8rem;
+    background: var(--tg-gray-100);
+    color: var(--tg-gray-700);
+}
+.tg-rank--1 { background: linear-gradient(135deg, #fde68a, #f59e0b); color: #7c4a03; }
+.tg-rank--2 { background: linear-gradient(135deg, #e2e8f0, #94a3b8); color: #334155; }
+.tg-rank--3 { background: linear-gradient(135deg, #fbcfe8, #ea580c); color: #7c2d12; }
+.tg-leaderboard-body { flex: 1; min-width: 0; }
+
+/* ── Timeline (activités récentes) ──────────────────────────── */
+.tg-timeline {
+    position: relative;
+    padding-left: 1.75rem;
+}
+.tg-timeline::before {
+    content: "";
+    position: absolute;
+    left: 0.55rem;
+    top: 0.35rem;
+    bottom: 0.35rem;
+    width: 2px;
+    background: var(--tg-gray-200);
+}
+.tg-timeline-item {
+    position: relative;
+    padding-bottom: 1.15rem;
+}
+.tg-timeline-item:last-child { padding-bottom: 0; }
+.tg-timeline-dot {
+    position: absolute;
+    left: -1.75rem;
+    top: 0.15rem;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: #fff;
+    box-shadow: 0 0 0 4px #fff;
+}
+.tg-timeline-card {
+    background: var(--tg-gray-100);
+    border-radius: 0.9rem;
+    padding: 0.7rem 0.9rem;
+}
+
+/* ── État vide ───────────────────────────────────────────────── */
+.tg-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--tg-gray-600);
+}
+.tg-empty i { font-size: 2rem; color: var(--tg-gray-300); display: block; margin-bottom: 0.5rem; }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 768px) {
+    .kpi-value     { font-size: 1.5rem; }
+    .welcome-header { padding: 1rem; }
+    .page-breadcrumb .breadcrumb-title { font-size: 1.1rem; }
+    .tg-hero { padding: 1.5rem; }
+    .tg-stat-card__value { font-size: 1.6rem; }
+
+    /* Barre d'actions (breadcrumb + boutons "Ajouter"/"Retour") : sur téléphone elle
+       passait en display:none (d-none d-sm-flex), rendant le bouton "Ajouter"
+       inaccessible. Elle est maintenant toujours affichée (d-flex flex-wrap) ;
+       ici on l'empile proprement et on cache le fil d'Ariane décoratif pour
+       laisser toute la largeur aux boutons d'action. */
+    .page-breadcrumb {
+        row-gap: 0.5rem;
+    }
+    .page-breadcrumb nav[aria-label="breadcrumb"] {
+        display: none;
+    }
+    .page-breadcrumb > .ms-auto {
+        margin-left: 0 !important;
+        width: 100%;
+    }
+    .page-breadcrumb > .ms-auto .d-flex {
+        flex-wrap: wrap;
+    }
+    .page-breadcrumb > .ms-auto .btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    /* Tableaux larges (liste billets, colis, ententes...) : sur téléphone, chaque ligne
+       devient une carte empilée verticalement plutôt qu'un tableau qui défile
+       horizontalement, illisible au comptoir. S'applique à toute table portant la classe
+       "mobile-card-table" et dont les <td> portent un attribut data-label. */
+    .table-responsive:has(table.mobile-card-table) {
+        overflow-x: visible;
+    }
+
+    table.mobile-card-table thead {
+        display: none;
+    }
+
+    table.mobile-card-table,
+    table.mobile-card-table tbody,
+    table.mobile-card-table tr,
+    table.mobile-card-table td {
+        display: block;
+        width: 100% !important;
+    }
+
+    table.mobile-card-table tr {
+        margin-bottom: 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 4px 0;
+    }
+
+    table.mobile-card-table td {
+        /* DataTables (dataTables.bootstrap5.min.css) force box-sizing: content-box
+           sur table.dataTable td, avec la même spécificité et chargé après ce
+           fichier : il gagnait la cascade et faisait déborder les <td> (padding-left
+           45% s'ajoutait à la largeur au lieu d'en faire partie), poussant la valeur
+           réelle hors de l'écran mobile — seul le libellé (::before) restait visible. */
+        box-sizing: border-box !important;
+        text-align: right;
+        position: relative;
+        padding: 8px 10px 8px 45%;
+        border: none;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    table.mobile-card-table td:last-child {
+        border-bottom: none;
+    }
+
+    table.mobile-card-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 40%;
+        text-align: left;
+        font-weight: 600;
+        color: #555;
+    }
+}

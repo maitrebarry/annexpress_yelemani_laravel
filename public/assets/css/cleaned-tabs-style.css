@@ -1,0 +1,63 @@
+/* Onglets verticaux stylés */
+.vertical-tabs-3.nav-tabs {
+  display: flex;
+  flex-direction: column;
+  border: none;
+  padding: 0;
+  background-color: transparent; /* ✅ Fond transparent pour laisser le fond du body s'afficher */
+}
+
+/* Espacement entre les éléments */
+.vertical-tabs-3 .nav-item {
+  margin-bottom: 0.75rem;
+}
+
+/* Style général des liens d'onglets */
+.vertical-tabs-3 .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 50px;
+  background-color: transparent;
+  color: rgba(var(--bs-body-color-rgb), 0.8);
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Survol */
+.vertical-tabs-3 .nav-link:hover {
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+  border-color: var(--bs-primary);
+  color: var(--bs-primary);
+}
+
+/* Onglet actif */
+.vertical-tabs-3 .nav-link.active {
+  background-color: var(--bs-primary);
+  border-color: var(--bs-primary);
+  color: #fff;
+}
+
+/* Icône dans les onglets */
+.vertical-tabs-3 .nav-link i {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.9rem;
+  border-radius: 50%;
+  background-color: rgba(var(--bs-primary-rgb), 0.1);
+  color: var(--bs-primary);
+  border: 2px solid var(--bs-border-color);
+  transition: all 0.3s ease;
+}
+
+/* Icône sur onglet actif */
+.vertical-tabs-3 .nav-link.active i {
+  background-color: #fff;
+  color: var(--bs-primary);
+  border: 2px solid var(--bs-primary);
+}

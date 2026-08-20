@@ -147,6 +147,17 @@
                     <form id="formGares" method="post" action="{{ url('/admin/Liste_gares/add_gares') }}" novalidate>
                         @csrf
                         <input type="hidden" name="enregistre" value="1">
+                        @if ($authUser->isSuperAdmin())
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Compagnie <span class="text-danger">*</span></label>
+                                <select class="form-select" name="id_compagnie" required>
+                                    <option value="" disabled selected>Choisissez une compagnie</option>
+                                    @foreach ($listeCompagnie as $c)
+                                        <option value="{{ $c->id_compagnie }}">{{ $c->nom_compagnie }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                         <div id="garesRows">
                             @foreach ($lignesAffichees as $ligne)
                                 @php $champsErreur = $ligne['champs_en_erreur'] ?? []; @endphp

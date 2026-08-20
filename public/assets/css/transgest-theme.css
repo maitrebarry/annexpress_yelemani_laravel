@@ -1185,3 +1185,59 @@ a.tg-stat-card {
         color: #555;
     }
 }
+
+/* ================================================================
+   TOASTS DE NOTIFICATION (SweetAlert2, admin.partials.set_flash)
+   Doivent toujours s'afficher au-dessus de la navbar/sidebar fixes,
+   et être bien visibles (fond plein, ombre marquée).
+   ================================================================ */
+.swal2-container.swal2-top-end {
+    z-index: 99999 !important;
+    top: 1rem !important;
+    right: 0.75rem !important;
+}
+.swal2-container .swal2-popup.swal2-toast {
+    box-shadow: 0 15px 35px -8px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(15, 23, 42, 0.05) !important;
+    border-radius: 14px !important;
+    padding: 0.85rem 1.1rem !important;
+    background: #ffffff !important;
+}
+.swal2-container .swal2-popup.swal2-toast .swal2-title,
+.swal2-container .swal2-popup.swal2-toast .swal2-html-container {
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: var(--tg-dark) !important;
+}
+.swal2-container .swal2-popup.swal2-toast .swal2-icon {
+    width: 2rem !important;
+    height: 2rem !important;
+    margin-inline-end: 0.75rem !important;
+}
+.swal2-container .swal2-timer-progress-bar {
+    background: var(--tg-orange) !important;
+    height: 4px !important;
+}
+
+/* ================================================================
+   ASSIGNATION DE PERMISSIONS (admin/permission/assigner.blade.php)
+   ================================================================ */
+.permission-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: var(--tg-shadow-sm);
+    overflow: hidden;
+}
+.permission-module-header {
+    background: var(--tg-navy) !important;
+    font-weight: 700;
+    padding: 0.85rem 1.1rem;
+}
+.permission-module-header .module-select-all {
+    cursor: pointer;
+    font-weight: 500;
+}
+.permission-checkbox:checked + label,
+.form-check-input.permission-checkbox:checked ~ .form-check-label {
+    color: var(--tg-orange);
+    font-weight: 600;
+}

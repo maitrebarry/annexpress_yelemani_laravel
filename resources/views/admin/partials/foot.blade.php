@@ -54,6 +54,27 @@
         });
       });
     });
+
+    // Le survol d'une ligne de tableau (.table-hover-effect) lui applique un transform, ce
+    // qui crée un nouveau contexte d'empilement CSS : dès qu'une ligne suivante était
+    // survolée pendant qu'un menu "..." de la ligne précédente était ouvert, cette ligne
+    // suivante s'affichait PAR-DESSUS le menu ouvert (le rendant illisible/impossible à
+    // cliquer, ex: "Supprimer" sur la liste des compagnies avec 2+ lignes). On relève la
+    // ligne qui contient le menu ouvert au-dessus de toutes les autres le temps qu'il est visible.
+    document.addEventListener('show.bs.dropdown', function (event) {
+      var row = event.target.closest('tr');
+      if (row) {
+        row.style.position = 'relative';
+        row.style.zIndex = 1045;
+      }
+    });
+    document.addEventListener('hide.bs.dropdown', function (event) {
+      var row = event.target.closest('tr');
+      if (row) {
+        row.style.zIndex = '';
+        row.style.position = '';
+      }
+    });
   </script>
 
   <style>

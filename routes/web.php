@@ -1,11 +1,19 @@
 <?php
 
+use App\Http\Controllers\Admin\CarController;
+use App\Http\Controllers\Admin\ChauffeurController;
 use App\Http\Controllers\Admin\ColisPriseEnChargeController;
+use App\Http\Controllers\Admin\CompagnieController;
+use App\Http\Controllers\Admin\ConfigurationController;
 use App\Http\Controllers\Admin\EnvoiColisController;
+use App\Http\Controllers\Admin\EscaleController;
 use App\Http\Controllers\Admin\GaresController;
 use App\Http\Controllers\Admin\HomeController;
+use App\Http\Controllers\Admin\HoraireController;
 use App\Http\Controllers\Admin\LivraisonColisController;
 use App\Http\Controllers\Admin\MouvementColisController;
+use App\Http\Controllers\Admin\PermissionController;
+use App\Http\Controllers\Admin\PlaceLimiteController;
 use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +45,60 @@ Route::middleware(['auth:staff', 'permission:Configuration_gestion_gare'])->pref
     Route::post('/Liste_gares/edit', [GaresController::class, 'update'])->name('admin.gares.update');
     Route::get('/Liste_gares/suspend/{idAgence}', [GaresController::class, 'suspend'])->name('admin.gares.suspend');
     Route::get('/Liste_gares/delete/{idAgence}', [GaresController::class, 'destroy'])->name('admin.gares.destroy');
+});
+
+Route::middleware(['auth:staff', 'super_admin'])->prefix('admin')->group(function () {
+    Route::get('/Compagnies', [CompagnieController::class, 'index'])->name('admin.compagnie.index');
+    Route::post('/Compagnies/store', [CompagnieController::class, 'store'])->name('admin.compagnie.store');
+    Route::post('/Compagnies/edit', [CompagnieController::class, 'update'])->name('admin.compagnie.update');
+    Route::get('/Compagnies/delete/{idCompagnie}', [CompagnieController::class, 'destroy'])->name('admin.compagnie.destroy');
+});
+
+Route::middleware(['auth:staff', 'permission:Configuration_gestion_escale'])->prefix('admin')->group(function () {
+    Route::get('/Add_liste_escales', [EscaleController::class, 'index'])->name('admin.escale.index');
+    Route::post('/Add_liste_escales/store', [EscaleController::class, 'store'])->name('admin.escale.store');
+    Route::post('/Add_liste_escales/update', [EscaleController::class, 'update'])->name('admin.escale.update');
+    Route::get('/Add_liste_escales/delete/{idEscale}', [EscaleController::class, 'destroy'])->name('admin.escale.destroy');
+});
+
+Route::middleware(['auth:staff', 'permission:Configuration_gestion_horaire'])->prefix('admin')->group(function () {
+    Route::get('/Add_liste_horaire', [HoraireController::class, 'index'])->name('admin.horaire.index');
+    Route::post('/Add_liste_horaire/store', [HoraireController::class, 'store'])->name('admin.horaire.store');
+    Route::post('/Add_liste_horaire/edit', [HoraireController::class, 'update'])->name('admin.horaire.update');
+    Route::get('/Add_liste_horaire/delete/{idHeure}', [HoraireController::class, 'destroy'])->name('admin.horaire.destroy');
+});
+
+Route::middleware(['auth:staff', 'permission:Configuration_gestion_car/chauffeur'])->prefix('admin')->group(function () {
+    Route::get('/Cars_chauffeurs', [CarController::class, 'index'])->name('admin.car.index');
+    Route::post('/Cars_chauffeurs/store', [CarController::class, 'store'])->name('admin.car.store');
+    Route::post('/Cars_chauffeurs/update', [CarController::class, 'update'])->name('admin.car.update');
+    Route::get('/Cars_chauffeurs/delete/{idCar}', [CarController::class, 'destroy'])->name('admin.car.destroy');
+
+    Route::post('/Chauffeurs_cars/store', [ChauffeurController::class, 'store'])->name('admin.chauffeur.store');
+    Route::post('/Chauffeurs_cars/update', [ChauffeurController::class, 'update'])->name('admin.chauffeur.update');
+    Route::get('/Chauffeurs_cars/delete/{idChauffeur}', [ChauffeurController::class, 'destroy'])->name('admin.chauffeur.destroy');
+});
+
+Route::middleware(['auth:staff', 'permission:utilisateur_apercu'])->prefix('admin')->group(function () {
+    Route::get('/Configurations', [ConfigurationController::class, 'index'])->name('admin.configuration.index');
+    Route::post('/Configurations/store', [ConfigurationController::class, 'store'])->name('admin.configuration.store');
+    Route::post('/Configurations/update', [ConfigurationController::class, 'update'])->name('admin.configuration.update');
+    Route::post('/Configurations/status', [ConfigurationController::class, 'updateStatus'])->name('admin.configuration.status');
+    Route::post('/Configurations/destroy', [ConfigurationController::class, 'destroy'])->name('admin.configuration.destroy');
+});
+
+Route::middleware(['auth:staff', 'super_admin'])->prefix('admin')->group(function () {
+    Route::get('/Add_liste_horaire/add_permission', [PermissionController::class, 'catalogue'])->name('admin.permission.catalogue');
+    Route::post('/Add_liste_horaire/add_permission', [PermissionController::class, 'storeCatalogue'])->name('admin.permission.catalogue.store');
+});
+
+Route::middleware('auth:staff')->prefix('admin')->group(function () {
+    Route::match(['get', 'post'], '/Permissions/assigner/{idUtilisateur}', [PermissionController::class, 'assigner'])->name('admin.permission.assigner');
+});
+
+Route::middleware(['auth:staff', 'permission:Configuration_place/limite'])->prefix('admin')->group(function () {
+    Route::get('/Compagnies/place_limite', [PlaceLimiteController::class, 'index'])->name('admin.place-limite.index');
+    Route::post('/Compagnies/edit1', [PlaceLimiteController::class, 'update'])->name('admin.place-limite.update');
 });
 
 Route::middleware('auth:staff')->prefix('admin')->group(function () {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Agence;
+use App\Models\Compagnie;
 use App\Support\Flash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,8 +29,9 @@ class GaresController extends Controller
         // Rejoue la modal d'ajout pré-remplie après une tentative en échec (POST -> Redirect
         // -> GET) : les lignes soumises sont passées une seule fois via la session flash.
         $lignesEnErreur = $request->session()->get('gares_lignes_en_erreur', []);
+        $listeCompagnie = $user->isSuperAdmin() ? Compagnie::orderBy('nom_compagnie')->get() : collect();
 
-        return view('admin.gares.index', ['listes' => $listes, 'lignesEnErreur' => $lignesEnErreur]);
+        return view('admin.gares.index', ['listes' => $listes, 'lignesEnErreur' => $lignesEnErreur, 'listeCompagnie' => $listeCompagnie]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -47,7 +49,15 @@ class GaresController extends Controller
     private function saveGares(Request $request): array
     {
         $user = Auth::guard('staff')->user();
-        $idCompagnie = $user->id_compagnie;
+        // Un super_admin n'a pas de compagnie propre (id_compagnie NULL) : il doit choisir
+        // pour quelle compagnie il ajoute ces gares, sinon l'INSERT échoue (colonne NOT NULL).
+        $idCompagnie = $user->isSuperAdmin() ? $request->input('id_compagnie') : $user->id_compagnie;
+
+        if ($user->isSuperAdmin() && ! $idCompagnie) {
+            Flash::set('Veuillez choisir une compagnie.', 'danger');
+
+            return [];
+        }
 
         $localites = (array) $request->input('localite', []);
         $numeroGares = (array) $request->input('numeroGare', []);

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Agence;
 use App\Models\Compagnie;
+use App\Models\Permission;
 use App\Models\Utilisateur;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -16,7 +17,7 @@ class StaffDemoSeeder extends Seeder
      */
     public function run(): void
     {
-        Utilisateur::updateOrCreate(
+        $superAdmin = Utilisateur::updateOrCreate(
             ['emailUser' => 'superadmin@transhub.test'],
             [
                 'utilisateurs' => 'Super Admin',
@@ -27,6 +28,7 @@ class StaffDemoSeeder extends Seeder
                 'id_compagnie' => null,
             ]
         );
+        Permission::assignPermissionsParDefautPourRole($superAdmin->idUser, 'super_admin');
 
         $compagnie = Compagnie::firstOrCreate(
             ['nom_compagnie' => 'ANN EXPRESS'],
@@ -38,7 +40,7 @@ class StaffDemoSeeder extends Seeder
             ['code' => 1, 'numeroGare' => 'BKO-01', 'tel' => '+22300000000', 'status' => 1]
         );
 
-        Utilisateur::updateOrCreate(
+        $adminCompagnie = Utilisateur::updateOrCreate(
             ['emailUser' => 'admin.compagnie@transhub.test'],
             [
                 'utilisateurs' => 'Admin Compagnie',
@@ -49,5 +51,6 @@ class StaffDemoSeeder extends Seeder
                 'id_compagnie' => $compagnie->id_compagnie,
             ]
         );
+        Permission::assignPermissionsParDefautPourRole($adminCompagnie->idUser, 'Admin');
     }
 }

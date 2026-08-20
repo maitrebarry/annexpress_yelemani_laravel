@@ -1,58 +1,75 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# TransHub Admin (transgest-laravel)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Portage Laravel de l'application legacy PHP `Projets_licence` (gestion de compagnies de
+transport : billets, colis, caisse, configuration). Beaucoup de fichiers Laravel portent un
+commentaire `Port de Projets_licence/...` pointant vers leur source d'origine — utile pour
+retrouver la logique métier legacy en cas de doute.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Laravel, PHP 8.4, MySQL (base `transgest_db`)
+- Auth admin/staff sur le guard **`auth:staff`** (pas le guard `web` par défaut), backé par
+  `App\Models\Utilisateur` (table `utilisateur`, PK `idUser`)
+- Bootstrap 5 + jQuery + SweetAlert2 (déjà chargés globalement, cf. `resources/views/admin/partials/foot.blade.php`)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Démarrer en local
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+php artisan migrate --seed   # crée notamment les comptes de démo ci-dessous
+php artisan storage:link     # nécessaire pour les photos (utilisateurs, chauffeurs)
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Comptes de démo (`database/seeders/StaffDemoSeeder.php`), mot de passe `password` :
+- `superadmin@transhub.test` — `super_admin`, toutes compagnies
+- `admin.compagnie@transhub.test` — `Admin`, scopé à la compagnie "ANN EXPRESS"
 
-## Contributing
+## Conventions à suivre pour tout nouvel écran admin
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- Vue Blade dans `resources/views/admin/<module>/index.blade.php`, `@extends('layouts.admin')`.
+- **Modales, pas de pages séparées** pour créer/modifier/supprimer (`@section('modals')` +
+  `@section('scripts')`) — choix explicite du produit pour que l'admin reste rapide.
+- Notifications via `App\Support\Flash::set($message, $type)`, rendues par
+  `@include('admin.partials.set_flash')` sous forme de toast SweetAlert2 animé (pas de bandeau statique).
+- Permissions : middleware de route `permission:<nom_permission>` (voir
+  `App\Http\Middleware\EnsureHasPermission`) + `App\Models\Permission` pour le catalogue par défaut.
+- Route naming : `admin.<module>.<action>`.
+- **Piège récurrent** : `super_admin` a `id_compagnie = NULL` (pas rattaché à une compagnie).
+  Toute création qui écrit `id_compagnie` doit lui proposer un `<select>` compagnie dans la
+  modale ; sinon l'INSERT échoue (colonnes `id_compagnie` NOT NULL sur `agence`, `horaire`,
+  `escale`, `car`...).
 
-## Code of Conduct
+## Modules — état d'avancement
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Cette section doit être mise à jour à chaque module terminé, pour que n'importe quel
+développeur (ou agent) puisse reprendre le travail sans redécouvrir le contexte.
 
-## Security Vulnerabilities
+### Section "Configuration" (menu Paramètres) — ✅ terminée (2026-08-20)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Module | Contrôleur(s) | Vue | Notes |
+|---|---|---|---|
+| Utilisateur | `Admin\ConfigurationController` | `admin/configuration/index.blade.php` | Liste, ajout/modif/activation/suppression en modales. L'ancienne page séparée "add_utilisateurs" a été fusionnée en modale. Lien vers l'assignation de permissions par ligne. |
+| Compagnie | `Admin\CompagnieController` | `admin/compagnie/index.blade.php` | super_admin uniquement. Upload logo. |
+| Gares | `Admin\GaresController` | `admin/gares/index.blade.php` | Préexistant, a servi de patron pour les autres modules. Ajout multi-lignes. |
+| Escale | `Admin\EscaleController` | `admin/escale/index.blade.php` | Ajout multi-lignes. |
+| Horaire | `Admin\HoraireController` | `admin/horaire/index.blade.php` | Ajout multi-lignes, champ `time`. |
+| Cars & Chauffeurs | `Admin\CarController`, `Admin\ChauffeurController` | `admin/car/index.blade.php` | Une seule page à deux onglets (Cars / Chauffeurs) sans rechargement, alors que le legacy utilisait deux pages séparées. Photo du chauffeur modifiable. |
+| Permissions | `Admin\PermissionController` | `admin/permission/catalogue.blade.php`, `admin/permission/assigner.blade.php` | Catalogue (super_admin) + écran d'assignation par utilisateur (Admin/super_admin, scopé à la compagnie). |
+| Place limite | `Admin\PlaceLimiteController` | `admin/place-limite/index.blade.php` | Limite de places "demain" par compagnie. |
 
-## License
+Modèles ajoutés : `Escale`, `Horaire`, `Car`, `Chauffeur`, `Permission`, `PlaceMinimale`
+(les modèles `Utilisateur`, `Agence`, `Compagnie` existaient déjà).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Autres sections déjà présentes avant ce chantier
+
+- **Colis** : `Admin\ColisPriseEnChargeController`, `EnvoiColisController`,
+  `MouvementColisController`, `LivraisonColisController` — `resources/views/admin/colis/**`.
+- **Accueil / dashboard** : `Admin\HomeController` — `admin/home.blade.php`.
+- **Auth** : `Auth\LoginController`.
+
+### Pas encore portées depuis `Projets_licence`
+
+Billets/réservations, caisse, dépenses, programmation des voyages, banque, rapports —
+non explorées lors de ce chantier Configuration. Vérifier `Projets_licence/app/controllers/admin/`
+pour la liste complète avant de commencer.

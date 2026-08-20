@@ -80,7 +80,7 @@
                             <div class="alert alert-warning mb-0">
                                 <i class="bx bx-error me-1"></i>
                                 Aucun autre car programmé aujourd'hui. Activez et programmez un autre car
-                                (menus <em>Cars &amp; chauffeurs</em> et <em>Programmation des voyages</em>)
+                                (menus <em>Cars &amp; chauffeurs</em> et <em>Trajets programmés</em>)
                                 pour pouvoir réaffecter ce colis.
                             </div>
                         @else

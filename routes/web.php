@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CaisseController;
 use App\Http\Controllers\Admin\CarController;
 use App\Http\Controllers\Admin\ChauffeurController;
 use App\Http\Controllers\Admin\ColisPriseEnChargeController;
@@ -14,6 +15,10 @@ use App\Http\Controllers\Admin\LivraisonColisController;
 use App\Http\Controllers\Admin\MouvementColisController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PlaceLimiteController;
+use App\Http\Controllers\Admin\ProgrammationCarController;
+use App\Http\Controllers\Admin\ProgrammationVoyageController;
+use App\Http\Controllers\Admin\ProgrammeController;
+use App\Http\Controllers\Admin\TransfertGareController;
 use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -101,6 +106,41 @@ Route::middleware(['auth:staff', 'permission:Configuration_place/limite'])->pref
     Route::post('/Compagnies/edit1', [PlaceLimiteController::class, 'update'])->name('admin.place-limite.update');
 });
 
+Route::middleware(['auth:staff', 'permission:Programme_Creation'])->prefix('admin')->group(function () {
+    Route::get('/Programmer_voyages', [ProgrammeController::class, 'index'])->name('admin.programme.index');
+    Route::get('/Programmer_voyages/add_programmer', [ProgrammeController::class, 'create'])->name('admin.programme.create');
+    Route::post('/Programmer_voyages/add_programmer', [ProgrammeController::class, 'store'])->name('admin.programme.store');
+    Route::post('/Programmer_voyages/edit', [ProgrammeController::class, 'update'])->name('admin.programme.update');
+    Route::get('/Programmer_voyages/delete/{idProgrammer}', [ProgrammeController::class, 'destroy'])->name('admin.programme.destroy');
+});
+
+Route::middleware(['auth:staff', 'permission:Programme_programmer_car'])->prefix('admin')->group(function () {
+    Route::get('/Programmation_cars', [ProgrammationCarController::class, 'index'])->name('admin.programmation-car.index');
+    Route::post('/Programmation_cars/store', [ProgrammationCarController::class, 'store'])->name('admin.programmation-car.store');
+    Route::post('/Programmation_cars/ajouter_trajet', [ProgrammationCarController::class, 'ajouterTrajet'])->name('admin.programmation-car.ajouter-trajet');
+    Route::get('/Programmation_cars/supprimer/{idCar}', [ProgrammationCarController::class, 'destroy'])->name('admin.programmation-car.destroy');
+});
+
+Route::middleware(['auth:staff', 'permission:Programme_programmation_voyage'])->prefix('admin')->group(function () {
+    Route::get('/Programmation_voyages', [ProgrammationVoyageController::class, 'dashboard'])->name('admin.programmation-voyage.dashboard');
+    Route::post('/Programmation_voyages/store', [ProgrammationVoyageController::class, 'store'])->name('admin.programmation-voyage.store');
+    Route::post('/Programmation_voyages/valider-arrivee', [ProgrammationVoyageController::class, 'validerArrivee'])->name('admin.programmation-voyage.valider-arrivee');
+    Route::post('/Programmation_voyages/debloquer-arrive', [ProgrammationVoyageController::class, 'debloquerArrive'])->name('admin.programmation-voyage.debloquer-arrive');
+    Route::post('/Programmation_voyages/debloquer-jamais-parti', [ProgrammationVoyageController::class, 'debloquerJamaisParti'])->name('admin.programmation-voyage.debloquer-jamais-parti');
+    Route::get('/Programmation_voyages/liste_programmer_voyage', [ProgrammationVoyageController::class, 'listeJournaliere'])->name('admin.programmation-voyage.liste-journaliere');
+    Route::get('/Programmation_voyages/edit/{idProgrammation}', [ProgrammationVoyageController::class, 'edit'])->name('admin.programmation-voyage.edit');
+    Route::post('/Programmation_voyages/edit/{idProgrammation}', [ProgrammationVoyageController::class, 'update'])->name('admin.programmation-voyage.update');
+});
+
+Route::middleware('auth:staff')->prefix('admin')->group(function () {
+    Route::get('/Transferts_gares/candidats/{idProgrammation}', [TransfertGareController::class, 'candidats'])->name('admin.transfert-gare.candidats');
+    Route::post('/Transferts_gares/executer', [TransfertGareController::class, 'executer'])->name('admin.transfert-gare.executer');
+});
+
+Route::middleware(['auth:staff', 'permission:Programme_programmation_voyage'])->prefix('admin')->group(function () {
+    Route::get('/Transferts_gares/historique', [TransfertGareController::class, 'historique'])->name('admin.transfert-gare.historique');
+});
+
 Route::middleware('auth:staff')->prefix('admin')->group(function () {
     Route::get('/Colis_prise_en_charges', [ColisPriseEnChargeController::class, 'index'])->name('admin.colis.index');
     Route::post('/Colis_prise_en_charges', [ColisPriseEnChargeController::class, 'update'])->name('admin.colis.update');
@@ -127,5 +167,25 @@ Route::middleware('auth:staff')->prefix('admin')->group(function () {
     Route::middleware('permission:colis_livraison')->group(function () {
         Route::get('/Livraison_colis', [LivraisonColisController::class, 'index'])->name('admin.colis.livraison.index');
         Route::post('/Livraison_colis', [LivraisonColisController::class, 'store'])->name('admin.colis.livraison.store');
+    });
+});
+
+Route::middleware(['auth:staff', 'permission:Caisse_apercue'])->prefix('admin')->group(function () {
+    Route::get('/Caisse/ma_caisse', [CaisseController::class, 'maCaisse'])->name('admin.caisse.ma-caisse');
+    Route::post('/Caisse/ouvrir_caisse_user', [CaisseController::class, 'ouvrirCaisse'])->name('admin.caisse.ouvrir-caisse');
+    Route::post('/Caisse/fermer_caisse_user', [CaisseController::class, 'fermerCaisse'])->name('admin.caisse.fermer-caisse');
+    Route::get('/Caisse/caisses_escale', [CaisseController::class, 'caissesEscale'])->name('admin.caisse.caisses-escale');
+    Route::get('/Caisse/rapport_proprietaire', [CaisseController::class, 'rapportProprietaire'])->name('admin.caisse.rapport-proprietaire');
+
+    Route::middleware('permission:Caisse_billant')->group(function () {
+        Route::get('/Caisse/bilant_caisse_billets', [CaisseController::class, 'bilantBillets'])->name('admin.caisse.bilant-billets');
+        Route::get('/Caisse/bilant_caisse_colis', [CaisseController::class, 'bilantColis'])->name('admin.caisse.bilant-colis');
+        Route::get('/Caisse/mouvements/{id}', [CaisseController::class, 'mouvements'])->name('admin.caisse.mouvements');
+    });
+
+    Route::middleware('permission:Caisse_modifier')->group(function () {
+        Route::post('/Caisse/verser', [CaisseController::class, 'verser'])->name('admin.caisse.verser');
+        Route::post('/Caisse/valider_versement', [CaisseController::class, 'validerVersement'])->name('admin.caisse.valider-versement');
+        Route::post('/Caisse/cloture_escale', [CaisseController::class, 'clotureEscale'])->name('admin.caisse.cloture-escale');
     });
 });

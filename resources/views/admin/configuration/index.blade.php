@@ -85,7 +85,8 @@
                                                         data-email="{{ $u->emailUser }}"
                                                         data-telephone="{{ $u->telephone }}"
                                                         data-droit="{{ $u->droit }}"
-                                                        data-profile="{{ $u->profile }}">
+                                                        data-profile="{{ $u->profile }}"
+                                                        data-photo="{{ $u->photo ? asset('storage/profiles/'.$u->photo) : '' }}">
                                                         <i class="bx bx-edit me-2"></i>Modifier
                                                     </a>
                                                     <a class="dropdown-item" href="javascript:;"
@@ -282,7 +283,7 @@
                     <h5 class="modal-title text-white">Modifier l'utilisateur</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form method="post" action="{{ route('admin.configuration.update') }}">
+                <form method="post" action="{{ route('admin.configuration.update') }}" enctype="multipart/form-data">
                     @csrf
                     <div class="modal-body">
                         <input type="hidden" name="idUser" id="edit_idUser">
@@ -320,6 +321,13 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Nouveau mot de passe</label>
                                 <input type="password" class="form-control" id="edit_motPasse" name="motPasse" placeholder="Laisser vide pour ne pas modifier" minlength="6">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Photo</label>
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <img id="edit_photo_preview" src="" alt="Photo actuelle" class="rounded-circle d-none" width="40" height="40" style="object-fit: cover;">
+                                </div>
+                                <input type="file" class="form-control" id="edit_photo" name="photo" accept="image/*">
                             </div>
                         </div>
                     </div>
@@ -376,6 +384,15 @@
                     toggleEditService();
                     if (this.dataset.profile) {
                         editProfile.value = this.dataset.profile;
+                    }
+                    document.getElementById('edit_photo').value = '';
+                    var preview = document.getElementById('edit_photo_preview');
+                    if (this.dataset.photo) {
+                        preview.src = this.dataset.photo;
+                        preview.classList.remove('d-none');
+                    } else {
+                        preview.src = '';
+                        preview.classList.add('d-none');
                     }
                 });
             });

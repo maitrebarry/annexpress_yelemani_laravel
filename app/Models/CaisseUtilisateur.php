@@ -31,4 +31,14 @@ class CaisseUtilisateur extends Model
         'statut',
         'reference',
     ];
+
+    public function utilisateur()
+    {
+        return $this->belongsTo(Utilisateur::class, 'id_utilisateur', 'idUser');
+    }
+
+    public function agence()
+    {
+        return $this->belongsTo(Agence::class, 'id_agence', 'idAgence');
+    }
 }

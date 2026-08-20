@@ -141,6 +141,7 @@ class ConfigurationController extends Controller
             'droit' => ['required', Rule::in($droitsAutorises)],
             'profile' => ['nullable', Rule::in(['billet', 'colis'])],
             'motPasse' => ['nullable', 'string', 'min:6'],
+            'photo' => ['nullable', 'image', 'max:2048'],
         ]);
 
         $profile = $data['droit'] === 'Utilisateur' ? ($data['profile'] ?? null) : null;
@@ -153,6 +154,14 @@ class ConfigurationController extends Controller
 
         if (! empty($data['motPasse'])) {
             $cible->motPasse = Hash::make($data['motPasse']);
+        }
+
+        if ($request->hasFile('photo')) {
+            if ($cible->photo) {
+                Storage::disk('public')->delete('profiles/'.$cible->photo);
+            }
+            $path = $request->file('photo')->store('profiles', 'public');
+            $cible->photo = basename($path);
         }
 
         $cible->save();

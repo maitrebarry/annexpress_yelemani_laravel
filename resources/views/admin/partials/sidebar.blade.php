@@ -241,7 +241,7 @@
                     || $authUser->userHasPermission('Programme_hors_programme');
               @endphp
               @if ($peutVoirGProgramme)
-                <li class="menu-label">Gestion des programmations</li>
+                <li class="menu-label">Programmation</li>
                 <li>
                   <a href="javascript:;" class="has-arrow">
                     <div class="parent-icon"><i class="bx bx-calendar"></i></div>
@@ -249,19 +249,19 @@
                   </a>
                 <ul>
                   @if ($authUser->userHasPermission('Programme_Creation'))
-                    <li> <a href="{{ url('/admin/Programmer_voyages') }}"><i class="bi bi-arrow-right-short"></i>Programme du voyage</a></li>
+                    <li> <a href="{{ url('/admin/Programmer_voyages') }}"><i class="bi bi-arrow-right-short"></i>Voyages</a></li>
                   @endif
                   @if ($authUser->userHasPermission('Programme_programmer_car'))
-                    <li> <a href="{{ url('/admin/Programmation_cars') }}"><i class="bi bi-arrow-right-short"></i>Affectation des cars</a></li>
+                    <li> <a href="{{ url('/admin/Programmation_cars') }}"><i class="bi bi-arrow-right-short"></i>Cars</a></li>
                   @endif
                   @if ($authUser->userHasPermission('Programme_programmation_voyage'))
-                    <li> <a href="{{ url('/admin/Programmation_voyages/liste_programmer_voyage') }}"><i class="bi bi-arrow-right-short"></i>Programmation du voyage</a></li>
+                    <li> <a href="{{ url('/admin/Programmation_voyages/liste_programmer_voyage') }}"><i class="bi bi-arrow-right-short"></i>Trajets programmés</a></li>
                   @endif
                   @if ($authUser->userHasPermission('Programme_programmation_voyage') && in_array($droit, ['Admin', 'chef_d_escale', 'super_admin', 'PDG'], true))
-                    <li> <a href="{{ url('/admin/Transferts_gares/historique') }}"><i class="bi bi-arrow-right-short"></i>Transferts entre gares</a></li>
+                    <li> <a href="{{ url('/admin/Transferts_gares/historique') }}"><i class="bi bi-arrow-right-short"></i>Transferts</a></li>
                   @endif
                   @if ($authUser->userHasPermission('Programme_hors_programme'))
-                    <li> <a href="#"><i class="bi bi-arrow-right-short"></i>Hors programmer</a></li>
+                    <li> <a href="#"><i class="bi bi-arrow-right-short"></i>Hors programme</a></li>
                   @endif
                 </ul>
                 </li>

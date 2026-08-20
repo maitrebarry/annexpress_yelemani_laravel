@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Agence;
+use App\Models\Billet;
 use App\Models\CaisseUtilisateur;
 use App\Models\ClotureEscale;
 use App\Models\JournalCaisse;
@@ -110,6 +111,25 @@ class CaisseUtilisateurService
         DB::table('colis')->where('id_colis', $idColis)->update(['id_caisse_user' => $caisse->id_caisse_user]);
 
         $this->insererJournal($caisse->id_caisse_user, $idUtilisateur, 'colis', $codeColis, $montant, "Colis $codeColis");
+
+        return $caisse->id_caisse_user;
+    }
+
+    public function crediterBillet(int $idUtilisateur, float $montant, string $numeroBillets, int $idBillet): int|false
+    {
+        $caisse = $this->getCaisseOuverte($idUtilisateur);
+        if (! $caisse) {
+            return false;
+        }
+
+        CaisseUtilisateur::where('id_caisse_user', $caisse->id_caisse_user)->update([
+            'total_billets' => DB::raw('total_billets + '.$montant),
+            'nb_billets' => DB::raw('nb_billets + 1'),
+        ]);
+
+        Billet::where('idBillets', $idBillet)->update(['id_caisse_user' => $caisse->id_caisse_user]);
+
+        $this->insererJournal($caisse->id_caisse_user, $idUtilisateur, 'billet', $numeroBillets, $montant, "Billet $numeroBillets");
 
         return $caisse->id_caisse_user;
     }

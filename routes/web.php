@@ -1,11 +1,15 @@
 <?php
 
+use App\Http\Controllers\Admin\BanqueController;
+use App\Http\Controllers\Admin\BilletController;
 use App\Http\Controllers\Admin\CaisseController;
 use App\Http\Controllers\Admin\CarController;
 use App\Http\Controllers\Admin\ChauffeurController;
 use App\Http\Controllers\Admin\ColisPriseEnChargeController;
 use App\Http\Controllers\Admin\CompagnieController;
 use App\Http\Controllers\Admin\ConfigurationController;
+use App\Http\Controllers\Admin\DepenseController;
+use App\Http\Controllers\Admin\DepotBanqueController;
 use App\Http\Controllers\Admin\EnvoiColisController;
 use App\Http\Controllers\Admin\EscaleController;
 use App\Http\Controllers\Admin\GaresController;
@@ -188,4 +192,71 @@ Route::middleware(['auth:staff', 'permission:Caisse_apercue'])->prefix('admin')-
         Route::post('/Caisse/valider_versement', [CaisseController::class, 'validerVersement'])->name('admin.caisse.valider-versement');
         Route::post('/Caisse/cloture_escale', [CaisseController::class, 'clotureEscale'])->name('admin.caisse.cloture-escale');
     });
+});
+
+Route::middleware(['auth:staff', 'permission:Depenses_gestion'])->prefix('admin')->group(function () {
+    Route::get('/Depenses', [DepenseController::class, 'index'])->name('admin.depense.index');
+    Route::post('/Depenses', [DepenseController::class, 'store'])->name('admin.depense.store');
+    Route::get('/Depenses/benefice', [DepenseController::class, 'benefice'])->name('admin.depense.benefice');
+    Route::post('/Depenses/valider/{id}', [DepenseController::class, 'valider'])->name('admin.depense.valider');
+    Route::post('/Depenses/rejeter/{id}', [DepenseController::class, 'rejeter'])->name('admin.depense.rejeter');
+});
+
+// Pas de permission dédiée en base pour Banque/Dépôts_banque (le legacy gate ces écrans
+// par rôle uniquement, comme TransfertGareController) : gating fait en contrôleur.
+Route::middleware('auth:staff')->prefix('admin')->group(function () {
+    Route::get('/Banques', [BanqueController::class, 'index'])->name('admin.banque.index');
+    Route::post('/Banques', [BanqueController::class, 'store'])->name('admin.banque.store');
+    Route::post('/Banques/{id}', [BanqueController::class, 'update'])->name('admin.banque.update');
+    Route::get('/Banques/mouvement/{id}', [BanqueController::class, 'mouvements'])->name('admin.banque.mouvements');
+
+    Route::get('/Depots_banque', [DepotBanqueController::class, 'index'])->name('admin.depot-banque.index');
+    Route::post('/Depots_banque', [DepotBanqueController::class, 'store'])->name('admin.depot-banque.store');
+    Route::get('/Depots_banque/enAttente', [DepotBanqueController::class, 'enAttente'])->name('admin.depot-banque.en-attente');
+    Route::post('/Depots_banque/confirmer/{id}', [DepotBanqueController::class, 'confirmer'])->name('admin.depot-banque.confirmer');
+    Route::post('/Depots_banque/rejeter/{id}', [DepotBanqueController::class, 'rejeter'])->name('admin.depot-banque.rejeter');
+    Route::get('/Depots_banque/historique', [DepotBanqueController::class, 'historique'])->name('admin.depot-banque.historique');
+});
+
+Route::middleware(['auth:staff', 'permission:Billets_creation'])->prefix('admin')->group(function () {
+    Route::get('/Add_billets', [BilletController::class, 'create'])->name('admin.billet.create');
+    Route::post('/Add_billets', [BilletController::class, 'store'])->name('admin.billet.store');
+});
+
+Route::middleware(['auth:staff', 'permission:Billets_apercue'])->prefix('admin')->group(function () {
+    Route::get('/Liste_du_jours', [BilletController::class, 'index'])->name('admin.billet.index');
+    Route::get('/Liste_du_jours/historique', [BilletController::class, 'historique'])->name('admin.billet.historique');
+});
+
+Route::middleware(['auth:staff', 'permission:Billets_impression'])->prefix('admin')->group(function () {
+    // Chemin figé : public/mon_js/thermal-print.js (déjà présent, réutilisé tel quel) appelle
+    // cette URL en dur.
+    Route::get('/Liste_du_jours/donneesTicketThermique/{id}', [BilletController::class, 'donneesTicketThermique'])->name('admin.billet.ticket-thermique');
+});
+
+Route::middleware(['auth:staff', 'permission:Billets_annulation'])->prefix('admin')->group(function () {
+    Route::post('/Liste_du_jours/annuler', [BilletController::class, 'annuler'])->name('admin.billet.annuler');
+    Route::get('/Liste_du_jours/demandesAnnulation', [BilletController::class, 'demandesAnnulation'])->name('admin.billet.demandes-annulation');
+    Route::post('/Liste_du_jours/confirmerAnnulation/{id}', [BilletController::class, 'confirmerAnnulation'])->name('admin.billet.confirmer-annulation');
+    Route::post('/Liste_du_jours/rejeterAnnulation/{id}', [BilletController::class, 'rejeterAnnulation'])->name('admin.billet.rejeter-annulation');
+});
+
+Route::middleware(['auth:staff', 'permission:Billets_reporte'])->prefix('admin')->group(function () {
+    Route::post('/Liste_du_jours/reporter', [BilletController::class, 'reporter'])->name('admin.billet.reporter');
+});
+
+Route::middleware(['auth:staff', 'permission:Billets_embarquement'])->prefix('admin')->group(function () {
+    Route::get('/Liste_du_jours/embarquement', [BilletController::class, 'embarquement'])->name('admin.billet.embarquement');
+    Route::post('/Liste_du_jours/decollerCar', [BilletController::class, 'decollerCar'])->name('admin.billet.decoller-car');
+    Route::post('/Liste_du_jours/marquerEmbarque', [BilletController::class, 'marquerEmbarque'])->name('admin.billet.marquer-embarque');
+    Route::post('/Liste_du_jours/annulerEmbarquement', [BilletController::class, 'annulerEmbarquement'])->name('admin.billet.annuler-embarquement');
+    Route::post('/Liste_du_jours/marquerEmbarqueLot', [BilletController::class, 'marquerEmbarqueLot'])->name('admin.billet.marquer-embarque-lot');
+    Route::post('/Liste_du_jours/demanderReport', [BilletController::class, 'demanderReport'])->name('admin.billet.demander-report');
+});
+
+Route::middleware(['auth:staff', 'permission:Billets_annulation'])->prefix('admin')->group(function () {
+    Route::get('/Liste_du_jours/demandesReport', [BilletController::class, 'demandesReport'])->name('admin.billet.demandes-report');
+    Route::post('/Liste_du_jours/transmettreReport/{id}', [BilletController::class, 'transmettreReport'])->name('admin.billet.transmettre-report');
+    Route::post('/Liste_du_jours/confirmerReport/{id}', [BilletController::class, 'confirmerReportDemande'])->name('admin.billet.confirmer-report');
+    Route::post('/Liste_du_jours/rejeterReport/{id}', [BilletController::class, 'rejeterReportDemande'])->name('admin.billet.rejeter-report');
 });

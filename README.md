@@ -115,6 +115,121 @@ sur `(id_agence, date_cloture)` pour être réellement idempotent — le legacy 
 correspondante, donc chaque relance créait une clôture en double au lieu de mettre à
 jour l'existante (bug legacy, pas une divergence de comportement voulue).
 
+### Sections "Dépenses" (menu Finances) et "Banque" — ✅ terminées (2026-08-20)
+
+Écran build from scratch : les tables `depense`, `banques`, `depots_banque` et leurs
+migrations existaient déjà (créées avant ce chantier, jamais lues/écrites) mais aucun
+modèle/contrôleur/vue n'existait — les liens sidebar `Finances → Dépenses` et
+`Banque → Dépôt en banque` étaient des 404.
+
+**Écart avec le legacy, discuté et confirmé avec l'utilisateur :** le legacy calcule le
+"solde disponible" d'un dépôt en banque depuis l'ancienne caisse de gare (table `caisse`,
+système mort — voir section Caisse ci-dessus), ce qui aurait rendu "Faire un dépôt"
+non fonctionnel dans cette app (0 ligne, aucune création possible). Remplacé par un
+solde cumulatif calculé depuis `versements_caisse` (système individuel réellement
+utilisé) : `SOMME(versements validés de la gare) − SOMME(dépôts déjà confirmés de la
+gare)` — voir `DepotBanqueService::soldeDisponible()`. Ce solde ne se remet pas à zéro
+chaque jour : un chef d'escale peut accumuler plusieurs jours de versements validés
+avant de faire un seul dépôt.
+
+Autres corrections faites en passant (pas de nouvelles décisions, juste des bugs trouvés
+en lisant le modèle legacy) : migration `depense.categorie` complétée avec
+`'Remboursement annulation'` (présent dans la constante PHP legacy, absent de l'enum
+SQL) ; `depense.montant` passé de `integer` à `decimal(12,2)` (cohérence avec
+`banques.solde`/`depots_banque.montant`) ; `depots_banque.id_caisse` rendu nullable
+(toujours `NULL` désormais, conservé pour parité de schéma uniquement).
+
+| Écran | Contrôleur | Vue | Notes |
+|---|---|---|---|
+| Dépenses | `Admin\DepenseController` | `admin/depense/index.blade.php` | ✅ terminé. Formulaire "Enregistrer une dépense" en **modale** (le legacy avait un formulaire toujours visible en haut de page). Portée locale (déduite de la caisse ouverte de la gare) ou globale (Admin uniquement). Valider/Rejeter (Admin) via confirmation SweetAlert2. |
+| Bénéfice de la compagnie | `Admin\DepenseController@benefice` | `admin/depense/benefice.blade.php` | ✅ terminé. Filtrable jour/mois/tout, KPI cards + carte "Bénéfice net". Port quasi direct du legacy (déjà dans le style cible). |
+| Comptes banque | `Admin\BanqueController` | `admin/banque/index.blade.php` | ✅ terminé. Création/modification en modales (déjà ainsi dans le legacy). **Amélioration** : "Mouvements" devient une **modale alimentée en AJAX** (`BanqueController::mouvements`, JSON) au lieu d'une page séparée — jamais de rechargement pour consulter l'historique d'un compte. |
+| Dépôt en banque | `Admin\DepotBanqueController` | `admin/depot-banque/{index,en-attente,historique}.blade.php` | ✅ terminé. "Faire un dépôt" en **modale**, avec le solde disponible affiché en direct pour un chef d'escale. Confirmer (SweetAlert2) / Rejeter (modale avec motif) sur les demandes en attente. |
+
+Modèles ajoutés : `Depense`, `Banque`, `DepotBanque`. Logique métier dans
+`App\Services\{DepenseService,BanqueService,DepotBanqueService}` (même découpage
+contrôleur-fin/service-gras que `CaisseUtilisateurService`). Pas de permission dédiée
+en base pour Banque/Dépôt en banque (le legacy gate ces écrans par rôle uniquement,
+`Admin`/`chef_d_escale`/`PDG`, jamais `super_admin` — même gating que le sidebar
+existant) ; `Depenses_gestion` (déjà dans le catalogue) gate la section Dépenses.
+
+### Section "Billets" (menu G-réservation) — 🚧 en cours (commencée 2026-08-20)
+
+Le module legacy "Billets" est en réalité 4 contrôleurs/modèles distincts (~2 850 lignes) :
+création (`Add_billets`), cycle de vie (`Liste_du_jours`, 682+1338 lignes — historique,
+annulation en 2 temps, report en 2 temps, embarquement), validation "en entente"
+(`Liste_ententes`, 706 lignes) et rapports (`Rapport_billets`). Comme pour G-programme,
+livré en plusieurs fois plutôt qu'en un seul chantier : **ce chantier couvre Achat de
+billet + Liste des tickets/Historique + Annulation + Report (direct et en 2 temps) +
+Embarquement** ; validation "en entente" et rapports mensuels/annuels restent à porter
+(liens sidebar déjà en place, non encore fonctionnels — mêmes permissions `Billets_*`
+déjà dans le catalogue).
+
+**Report : le legacy a deux mécanismes distincts, les deux sont construits :**
+1. `reporter()` — report **direct**, immédiat, gate uniquement par la permission
+   `Billets_reporte` (pas de validation Admin). Disponible depuis la Liste des tickets.
+2. `demanderReport()`→`transmettreReport()`→`confirmerReport()` — workflow en **3 rôles**
+   (agent simple → chef d'escale → Admin, avec saut de la 1ère étape si c'est déjà un chef
+   d'escale/Admin/PDG qui demande), déclenché depuis l'écran **Embarquement** (client non
+   présenté). Confirmé réellement atteignable dans cette app : le profil "billettière"
+   (`Utilisateur` + `profile=billet`) a `Billets_embarquement` par défaut au catalogue.
+   Les deux mécanismes réutilisent le même moteur de bascule des compteurs de places
+   (`BilletService::appliquerReport()`, extrait de la logique déjà écrite pour le report
+   direct — pas dupliqué).
+
+**Écart avec le legacy, confirmé avec l'utilisateur :** l'impression utilise uniquement
+le pont thermique existant (`public/mon_js/thermal-print.js`, déjà présent, aucune
+nouvelle dépendance) — pas le PDF de secours Dompdf+QR code du legacy (`dompdf/dompdf` et
+`endroid/qr-code` ne sont pas installés). Conséquence connue : si le pont d'impression
+est injoignable, `thermal-print.js` tente d'ouvrir `/admin/Liste_du_jours/recu/{id}` en
+repli — cette route n'existe pas encore, donc ce cas précis affichera un 404 au lieu d'un
+PDF. Acceptable pour l'instant, à corriger quand le PDF sera porté.
+
+| Écran | Contrôleur | Vue | Notes |
+|---|---|---|---|
+| Achat de ticket | `Admin\BilletController` | `admin/billet/create.blade.php` | ✅ terminé. Page unique (pas un assistant multi-étapes — c'est fondamentalement une seule action), mais avec un **résumé de réservation en direct** (destination/heure/escale/places/prix total, mis à jour à chaque changement) que le legacy n'avait pas. Reprend la logique JS de cascade départ→destination→heure→escale du legacy (aucun rechargement de page), juste restylée. Prix toujours recalculé côté serveur, jamais fait confiance au client. |
+| Liste des tickets | `Admin\BilletController@index` | `admin/billet/index.blade.php` | ✅ terminé. **Consolide Liste_du_jours + Liste_de_demains** (2 pages legacy séparées) en une seule page à 2 onglets (Aujourd'hui / Demain), même traitement que Cars & Chauffeurs. Filtre par `jourVoyage` en SQL — le legacy filtrait "demain" côté vue (PHP `foreach`+`if`), corrigé au passage. |
+| Historique des billets | `Admin\BilletController@historique` | `admin/billet/historique.blade.php` | ✅ terminé. Filtrable par date/destination/heure, badges de statut colorés. |
+| Annulation | `Admin\BilletController` (annuler/demandesAnnulation/confirmerAnnulation/rejeterAnnulation) | Modales sur `admin/billet/partials/table-billets.blade.php` + `admin/billet/demandes-annulation.blade.php` | ✅ terminé. Reste en 2 temps comme le legacy : chef d'escale ne peut que **demander** (rien ne bouge), Admin **confirme** (restitue la place, rembourse) ou **rejette**. IDOR corrigé au passage : le legacy ne vérifiait pas que le chef d'escale demandeur possède bien la gare du billet visé. |
+| Report (direct) | `Admin\BilletController@reporter` | Modale sur `admin/billet/partials/table-billets.blade.php` | ✅ terminé. PDG explicitement bloqué (ajout délibéré : le legacy ne gate cette action que par permission, que PDG a par défaut — seule action mutante de toute l'app qu'un rôle lecture-seule aurait pu déclencher sans ce correctif). |
+| Embarquement | `Admin\BilletController` (embarquement/decollerCar/marquerEmbarque/annulerEmbarquement/marquerEmbarqueLot/demanderReport) | `admin/billet/embarquement.blade.php` | ✅ terminé. Bannière "cars complets", cartes par car du jour avec bouton "Faire décoller" (désactivé tant que des passagers restent non traités), embarquement individuel + en masse (case à cocher), "Reporter" ouvre la demande de report en 2 temps. Toutes les actions passent par `fetch()` + rechargement (pas de patch DOM manuel côté JS, pour éviter de dupliquer le rendu des lignes en JS — voir la leçon XSS/robustesse déjà tirée pour la Banque) ; nécessite le `<meta name="csrf-token">` ajouté à `admin/partials/header.blade.php` (nouveau pour cette app — jusqu'ici l'AJAX ne servait qu'à des lectures). |
+| Demandes de report | `Admin\BilletController` (demandesReport/transmettreReport/confirmerReportDemande/rejeterReportDemande) | `admin/billet/demandes-report.blade.php` | ✅ terminé. Même écran pour les 2 étapes, contenu différent selon le rôle (chef d'escale : Transmettre/Rejeter sa gare ; Admin : Confirmer/Rejeter, compagnie entière) — même traitement que `demandes-annulation.blade.php`. |
+
+Modèles ajoutés : `Billet` (table `billets`), `Client` (table `client`, un client recréé
+à chaque réservation — pas de recherche/réutilisation, fidèle au legacy), `Suivis` (table
+`suivis`, quota de places pour "demain"). Logique métier dans `App\Services\BilletService`
+(port de `Add_billet.php` + les méthodes liste/historique/annulation/report de
+`Liste_du_jour.php`). `Programme::resolveDestinationPrincipale()` ajouté (retrouve la
+destination finale d'un trajet à partir du nom stocké sur un billet, qui peut être une
+escale) — utilisé par l'annulation et le report pour retrouver la bonne ligne
+`programmation_voyage`/`suivis`. `CaisseUtilisateurService::crediterBillet()` ajouté
+(miroir exact de `crediterColis()`, comblait un manque déjà identifié dans la mémoire du
+chantier Caisse). Verrouillage anti-survente : `car` (aujourd'hui, `lockForUpdate()`) ou
+`suivis` (demain, quota + `lockForUpdate()`) — la réservation échoue proprement si aucune
+caisse individuelle n'est ouverte pour l'utilisateur (transaction annulée en entier,
+aucune ligne `client` orpheline).
+
+**Écart avec le legacy (même classe déjà corrigée pour Dépôt en banque/Dépense) :** le
+remboursement d'une annulation confirmée vise la caisse individuelle actuellement ouverte
+de la gare (`caisse_utilisateur`), pas l'ancienne caisse de gare (table `caisse`, morte
+dans cette app).
+
+`decolle_le`/`decolle_par` sur `programmation_voyage` (colonnes déjà présentes, jamais
+renseignées avant ce chantier — voir mémoire G-programme) sont désormais réellement écrites
+par `BilletService::decollerCar()`. "Cars en approche"/flotte restent hors-scope (toujours
+non alimentés par un écran existant, comme documenté précédemment).
+
+**Bug trouvé et corrigé pendant la vérification, pas une décision de conception :** le
+`$fillable` du modèle `Billet` (posé lors du chantier création) ne listait que les
+colonnes utiles à la réservation — les colonnes d'annulation/report
+(`motif_annulation`, `demande_annulation_par`, `date_repporte`, etc.) étaient donc
+silencieusement ignorées par les `update()` Eloquent (protection mass-assignment).
+Complété. Une deuxième régression similaire (montant de remboursement toujours à 0 car
+`montant_payer` vit sur `client`, jamais chargé par la requête `Billet` seule utilisée
+par l'annulation) a aussi été trouvée et corrigée — capturée uniquement parce que la
+vérification allait jusqu'à inspecter la table `depense` et pas seulement le message flash
+(les deux branches success/warning partagent la sous-chaîne "Billet annulé avec succès").
+
 ### Autres sections déjà présentes avant ce chantier
 
 - **Colis** : `Admin\ColisPriseEnChargeController`, `EnvoiColisController`,
@@ -124,7 +239,10 @@ jour l'existante (bug legacy, pas une divergence de comportement voulue).
 
 ### Pas encore portées depuis `Projets_licence`
 
-Billets/réservations, dépenses, banque, rapports — non explorées lors de ce chantier.
+Rapports — non explorés lors de ce chantier.
 Programmation des voyages : voir "G-programme" ci-dessus (tout fait sauf Hors programme).
 Caisse : voir ci-dessus (système individuel fait, caisse de gare hors scope).
+Dépenses/Banque : voir ci-dessus (terminées).
+Billets : voir ci-dessus (Achat + Liste/Historique + Annulation + Report + Embarquement
+faits ; validation "en entente" et rapports restent à porter).
 Vérifier `Projets_licence/app/controllers/admin/` pour la liste complète avant de commencer.

@@ -166,6 +166,14 @@ class ConfigurationController extends Controller
 
         $cible->save();
 
+        // Attribue automatiquement le jeu de permissions par défaut du (nouveau) rôle/service
+        // — additif uniquement (insertOrIgnore), ne retire jamais une permission déjà
+        // accordée manuellement via l'écran "Assigner les permissions". Sans cet appel, un
+        // utilisateur promu chef d'escale ou dont le service (billet/colis) change via ce
+        // formulaire d'édition n'obtenait aucune des permissions correspondantes — seule la
+        // création (store()) le faisait jusqu'ici.
+        Permission::assignPermissionsParDefautPourRole($cible->idUser, $data['droit'], $profile);
+
         Flash::set('Utilisateur modifié avec succès.', 'success');
 
         return redirect()->route('admin.configuration.index');

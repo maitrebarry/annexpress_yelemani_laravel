@@ -4,6 +4,11 @@
     $authUser = auth('staff')->user()->load('agence');
     $droit = $authUser->droit;
     $profile = $authUser->profile;
+
+    $heure = now()->hour;
+    $salutation = $heure < 12 ? 'Bonjour' : ($heure < 18 ? 'Bon après-midi' : 'Bonsoir');
+    $prenom = trim(explode(' ', trim((string) $authUser->utilisateurs))[0] ?? '');
+    $salutationIcone = $heure < 8 || $heure >= 19 ? 'bi-moon-stars-fill' : 'bi-sun-fill';
 @endphp
 
 @section('title', 'Accueil · TransHub Admin')
@@ -28,7 +33,10 @@
                     @endif
                 </div>
                 <div>
-                    <h4 class="tg-hero__title mb-0">
+                    <div class="tg-hero__greeting">
+                        <i class="bi {{ $salutationIcone }}"></i> {{ $salutation }}{{ $prenom ? ', '.$prenom : '' }}
+                    </div>
+                    <h4 class="tg-hero__title mb-0 text-white">
                         @if ($droit === 'super_admin')
                             Tableau de bord plateforme
                         @elseif ($droit === 'Admin')
@@ -44,7 +52,7 @@
                             Espace personnel
                         @endif
                     </h4>
-                    <p class="tg-hero__subtitle">
+                    <p class="tg-hero__subtitle text-white">
                         @if ($droit === 'super_admin')
                             Vue globale de l'ensemble des compagnies
                         @elseif ($droit === 'Admin')
@@ -60,6 +68,7 @@
             <div class="tg-hero__date-chip">
                 <div class="tg-date-label">Aujourd'hui</div>
                 <div class="tg-date-value" id="currentDate"></div>
+                <div class="tg-live-badge"><span class="tg-live-dot"></span> En direct</div>
             </div>
         </div>
     </div>
@@ -111,7 +120,7 @@
 
     <div class="row mb-4">
         <div class="col-12">
-            <div class="tg-panel">
+            <div class="tg-panel tg-observe">
                 <div class="d-flex align-items-center mb-3">
                     <span class="tg-panel__icon" style="background: rgba(59,130,246,0.12); color: var(--accent);"><i class="bi bi-building"></i></span>
                     <div>
@@ -162,7 +171,7 @@
         <label for="dateFiltre" class="fw-semibold small text-muted mb-0">
             <i class="bi bi-funnel-fill me-1"></i> Chiffres du {{ \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') }}
         </label>
-        <form method="get" class="d-flex flex-wrap align-items-center gap-2 mb-0">
+        <form method="get" class="d-flex flex-nowrap align-items-center gap-2 mb-0 tg-filter-form">
             @if ($droit === 'Admin' && $listeGares->isNotEmpty())
                 <select name="gare" id="gareSelectFiltre" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value="">Toutes les gares (vue globale)</option>
@@ -300,7 +309,7 @@
         <div class="tg-section-label"><i class="bi bi-bus-front me-1"></i>Cars vers votre gare</div>
         <div class="row mb-4">
             <div class="col-12">
-                <div class="tg-panel">
+                <div class="tg-panel tg-observe">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                         <div class="d-flex align-items-center">
                             <span class="tg-panel__icon" style="background: rgba(59,130,246,0.12); color: var(--accent);"><i class="bi bi-bus-front"></i></span>
@@ -425,7 +434,7 @@
                 $maxBillets = max(array_column($topGares, 'total_billets'));
             @endphp
             <div class="col-lg-7">
-                <div class="tg-panel h-100">
+                <div class="tg-panel tg-observe h-100">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                         <div class="d-flex align-items-center">
                             <span class="tg-panel__icon" style="background: rgba(245,158,11,0.14); color: var(--tg-orange);"><i class="bi bi-trophy-fill"></i></span>
@@ -450,7 +459,7 @@
                                     <span class="badge bg-primary rounded-pill">{{ number_format($gare['total_billets']) }} billets</span>
                                 </div>
                                 <div class="progress-custom">
-                                    <div class="progress-bar-custom" style="width: {{ $percent }}%;"></div>
+                                    <div class="progress-bar-custom" style="width: 0%;" data-target-width="{{ $percent }}"></div>
                                 </div>
                             </div>
                         </div>
@@ -459,7 +468,7 @@
             </div>
         @endif
 
-        <!-- RÉPARTITION COLIS (données réelles, donut CSS) -->
+        <!-- RÉPARTITION COLIS (données réelles, donut ApexCharts) -->
         @if ($showColis)
             @php
                 $segments = [
@@ -470,20 +479,10 @@
                     ['label' => 'En attente', 'valeur' => (int) $colisJour['attente'], 'color' => '#ef4444'],
                 ];
                 $totalColis = array_sum(array_column($segments, 'valeur'));
-                $stops = [];
-                $cursor = 0;
-                foreach ($segments as $segment) {
-                    if ($totalColis === 0 || $segment['valeur'] === 0) {
-                        continue;
-                    }
-                    $start = $cursor;
-                    $cursor += ($segment['valeur'] / $totalColis) * 360;
-                    $stops[] = "{$segment['color']} {$start}deg {$cursor}deg";
-                }
-                $conicGradient = $totalColis > 0 ? 'conic-gradient('.implode(', ', $stops).')' : 'conic-gradient(var(--tg-gray-200) 0deg 360deg)';
+                $segmentsNonZero = array_values(array_filter($segments, fn ($s) => $s['valeur'] > 0));
             @endphp
             <div class="col-lg-5">
-                <div class="tg-panel h-100">
+                <div class="tg-panel tg-observe h-100">
                     <div class="d-flex align-items-center mb-3">
                         <span class="tg-panel__icon" style="background: rgba(16,185,129,0.14); color: var(--tg-success);"><i class="bi bi-pie-chart-fill"></i></span>
                         <div>
@@ -498,12 +497,7 @@
                         </div>
                     @else
                         <div class="tg-donut-wrap">
-                            <div class="tg-donut" style="background: {{ $conicGradient }};">
-                                <div class="tg-donut__hole">
-                                    <strong>{{ (int) $totalColis }}</strong>
-                                    <span>colis</span>
-                                </div>
-                            </div>
+                            <div id="colisDonutChart" class="tg-donut-chart" data-series="{{ json_encode(array_column($segmentsNonZero, 'valeur')) }}" data-labels="{{ json_encode(array_column($segmentsNonZero, 'label')) }}" data-colors="{{ json_encode(array_column($segmentsNonZero, 'color')) }}" data-total="{{ (int) $totalColis }}"></div>
                             <div class="tg-donut-legend">
                                 @foreach ($segments as $segment)
                                     @continue($segment['valeur'] === 0)
@@ -528,7 +522,7 @@
     <!-- ACTIVITÉS RÉCENTES (données réelles, timeline) -->
     <div class="row">
         <div class="col-12">
-            <div class="tg-panel">
+            <div class="tg-panel tg-observe">
                 <div class="d-flex align-items-center mb-3">
                     <span class="tg-panel__icon" style="background: rgba(15,23,42,0.06); color: var(--tg-navy);"><i class="bi bi-clock-history"></i></span>
                     <div>
@@ -576,5 +570,111 @@
             document.getElementById('currentDate').innerHTML = now.toLocaleDateString('fr-FR', options);
         }
         updateDate();
+
+        // Compte à rebours animé sur les valeurs des cartes KPI : ne touche qu'au segment
+        // numérique en tête du texte (ex: "1 234" dans "1 234 F"), le reste (suffixe,
+        // ou texte non numérique comme "Fermée") reste intact.
+        (function animateStatValues() {
+            document.querySelectorAll('.tg-stat-card__value').forEach(function (el) {
+                var original = el.textContent.trim();
+                var match = original.match(/^-?[\d\s]+(?:[.,]\d+)?/);
+                if (! match) return;
+
+                var numPart = match[0];
+                var suffix = original.slice(numPart.length);
+                var target = parseFloat(numPart.replace(/\s/g, '').replace(',', '.'));
+                if (isNaN(target)) return;
+
+                var duration = 900;
+                var startTime = null;
+
+                function frame(timestamp) {
+                    if (! startTime) startTime = timestamp;
+                    var progress = Math.min((timestamp - startTime) / duration, 1);
+                    var eased = 1 - Math.pow(1 - progress, 3);
+                    var current = Math.round(target * eased);
+                    el.textContent = current.toLocaleString('fr-FR') + suffix;
+                    if (progress < 1) {
+                        requestAnimationFrame(frame);
+                    } else {
+                        el.textContent = original;
+                    }
+                }
+                requestAnimationFrame(frame);
+            });
+        })();
+
+        // Révèle les panneaux/barres au moment où ils entrent dans le viewport (utile sur
+        // les rôles avec une page longue, ex. Admin avec Top des gares + Répartition colis +
+        // Activités récentes) plutôt que de tout animer d'un coup au chargement.
+        (function observeEntrances() {
+            var targets = document.querySelectorAll('.tg-observe, .progress-bar-custom[data-target-width]');
+            if (! ('IntersectionObserver' in window) || ! targets.length) {
+                targets.forEach(function (el) {
+                    el.classList.add('tg-observe--visible');
+                    if (el.dataset.targetWidth) el.style.width = el.dataset.targetWidth + '%';
+                });
+                return;
+            }
+
+            var observer = new IntersectionObserver(function (entries, obs) {
+                entries.forEach(function (entry) {
+                    if (! entry.isIntersecting) return;
+                    var el = entry.target;
+                    if (el.classList.contains('tg-observe')) {
+                        el.classList.add('tg-observe--visible');
+                    }
+                    if (el.dataset.targetWidth) {
+                        el.style.width = el.dataset.targetWidth + '%';
+                    }
+                    obs.unobserve(el);
+                });
+            }, { threshold: 0.15 });
+
+            targets.forEach(function (el) { observer.observe(el); });
+        })();
+
+        // Donut ApexCharts "Répartition colis" : remplace l'ancien conic-gradient CSS
+        // statique par un vrai graphique interactif (survol = tooltip avec le détail),
+        // tout en gardant la légende HTML déjà construite juste à côté.
+        (function renderColisDonut() {
+            var el = document.getElementById('colisDonutChart');
+            if (! el || typeof ApexCharts === 'undefined') return;
+
+            var series = JSON.parse(el.dataset.series || '[]');
+            var labels = JSON.parse(el.dataset.labels || '[]');
+            var colors = JSON.parse(el.dataset.colors || '[]');
+            var total = el.dataset.total || '0';
+
+            var chart = new ApexCharts(el, {
+                chart: { type: 'donut', height: 170, animations: { speed: 500 } },
+                series: series,
+                labels: labels,
+                colors: colors,
+                legend: { show: false },
+                dataLabels: { enabled: false },
+                stroke: { width: 2, colors: ['#fff'] },
+                tooltip: { y: { formatter: function (v) { return v + ' colis'; } } },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '72%',
+                            labels: {
+                                show: true,
+                                total: {
+                                    show: true,
+                                    label: 'colis',
+                                    fontSize: '0.6rem',
+                                    color: '#475569',
+                                    formatter: function () { return total; }
+                                },
+                                value: { fontSize: '1.15rem', fontWeight: 800, color: '#0f172a' }
+                            }
+                        }
+                    }
+                }
+            });
+            chart.render();
+        })();
     </script>
 @endsection

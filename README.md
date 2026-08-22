@@ -297,6 +297,20 @@ non plus. Badges d'état : Disponible / Position inconnue / Embarquement en cour
 (avec durée écoulée depuis le décollage) / Anomalie (transit sans programmation active
 correspondante, renvoie vers "Cars bloqués").
 
+**Widget "Cars vers votre gare" ajouté sur la page d'accueil du chef d'escale**, même
+session — port du bloc `Homes::home()`/`home.view.php` équivalent (données
+`getCarsInTransit()`+`getCarsProgrammesVersMaGare()` du legacy, jamais portées avant). Deux
+nouvelles méthodes `HomeStatsService::getCarsEnTransitVersGare()`/`getCarsProgrammesVersGare()`
+(prennent `$ville` en paramètre plutôt que de lire la session, cohérent avec le reste du
+service) appelées depuis `HomeController::index()` seulement pour `chef_d_escale`, affichées
+dans `admin/home.blade.php` juste avant la section Finances (même emplacement que le legacy).
+Distingue "En transit" (badge vert, décollage réel enregistré) de "Programmé" (badge orange,
+pas encore décollé) — même logique de `decolle_le` que le dashboard Trajets programmés/l'écran
+Flotte. **Non vérifié en HTTP réel** (la vérification a été interrompue côté utilisateur) —
+seulement relu statiquement (`php -l`, revue du code) ; la requête `decolle_le IS NOT NULL`
+réutilise exactement le même pattern déjà testé bout en bout pour l'écran Flotte ci-dessus. À
+vérifier en conditions réelles avant de considérer ce widget définitivement acquis.
+
 Vérifié en HTTP réel (`php artisan serve` + `curl`) : les 5 états de badge s'affichent
 correctement (Position inconnue par défaut, En route avec durée/gare, Embarquement en cours,
 Anomalie), et l'accès est bien refusé à un chef_d_escale (redirigé vers l'accueil). Fixtures

@@ -1320,3 +1320,24 @@ a.tg-stat-card {
     color: var(--tg-orange);
     font-weight: 600;
 }
+
+/* ── Classes "subtle"/"emphasis" (Bootstrap 5.3) ────────────────
+   La version de Bootstrap chargée par l'app n'inclut pas ces
+   utilitaires : sans ça, les badges de statut (Annulé, Annulation
+   demandée, Validé, etc.) s'affichaient sans fond ni texte colorés
+   (couleur "invisible"). Valeurs alignées sur les tons clairs
+   officiels de Bootstrap 5.3. */
+.bg-danger-subtle    { background-color: #f8d7da !important; }
+.bg-warning-subtle   { background-color: #fff3cd !important; }
+.bg-success-subtle   { background-color: #d1e7dd !important; }
+.bg-primary-subtle   { background-color: #cfe2ff !important; }
+.bg-secondary-subtle { background-color: #e2e3e5 !important; }
+
+.border-danger-subtle    { border-color: #f1aeb5 !important; }
+.border-warning-subtle   { border-color: #ffe69c !important; }
+.border-success-subtle   { border-color: #a3cfbb !important; }
+.border-secondary-subtle { border-color: #c4c8cb !important; }
+
+.text-danger-emphasis    { color: #842029 !important; }
+.text-warning-emphasis   { color: #664d03 !important; }
+.text-success-emphasis   { color: #0f5132 !important; }

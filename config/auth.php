@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\PartenaireCompte;
 use App\Models\User;
 use App\Models\Utilisateur;
 
@@ -48,6 +49,15 @@ return [
             'driver' => 'session',
             'provider' => 'utilisateurs',
         ],
+
+        // Espace partenaire (site public) : compagnies de transport qui s'inscrivent
+        // elles-mêmes pour discuter avec l'admin (voir App\Models\PartenaireCompte).
+        // Distinct de `staff` (comptes internes) et de l'espace client (qui n'a pas de
+        // vrai guard — pas de mot de passe côté legacy, voir SuiviColisController/memo).
+        'partenaire' => [
+            'driver' => 'session',
+            'provider' => 'partenaires',
+        ],
     ],
 
     /*
@@ -81,6 +91,11 @@ return [
         'utilisateurs' => [
             'driver' => 'eloquent',
             'model' => Utilisateur::class,
+        ],
+
+        'partenaires' => [
+            'driver' => 'eloquent',
+            'model' => PartenaireCompte::class,
         ],
     ],
 

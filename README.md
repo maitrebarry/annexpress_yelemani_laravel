@@ -367,6 +367,84 @@ ajoutée.
 - **Accueil / dashboard** : `Admin\HomeController` — `admin/home.blade.php`.
 - **Auth** : `Auth\LoginController`.
 
+### Section "Site public" (vitrine, hors `/admin`) — 🚧 en cours (commencée 2026-08-22)
+
+Nouveau chantier séparé de l'admin : le site public destiné aux visiteurs/clients
+(`Projets_licence/app/controllers/site/`), qui n'avait aucun équivalent Laravel avant
+cette session (ni contrôleur, ni vue, ni route hors `/admin`). Pas de guard d'auth dédié
+pour le moment (les 3 pages ci-dessous sont en lecture seule, sans espace client/partenaire).
+
+| Écran | Contrôleur(s) | Vue | Notes |
+|---|---|---|---|
+| Accueil | `Site\HomeController` | `site/home.blade.php` | ✅ terminé. Hero (slider `public/assets_site/img/hero-slides/*`), recherche (branchée sur `site.recherche`), suivi colis (branché sur `site.suivi-colis`), compagnies partenaires, "Destinations populaires" par compagnie (onglets), stats réelles (destinations/compagnies/clients/trajets, plus de valeurs fictives). |
+| Compagnies | `Site\CompagnieController@index` | `site/compagnies.blade.php` | ✅ terminé. Catalogue avec vrais chiffres par compagnie (trajets/destinations) au lieu des `rand()` du legacy. Recherche en direct côté client (JS). |
+| Détails trajets d'une compagnie | `Site\CompagnieController@show` | `site/compagnie-trajets.blade.php` | ✅ terminé (port de l'écran legacy "Programmer"). Trajets groupés par gare de départ, filtrables en direct (JS), escales/tarifs affichés par trajet. Route `/compagnies/{compagnie}/trajets` avec binding Eloquent standard — le legacy encodait l'id en base64 dans l'URL, inutile ici (pas une donnée sensible). |
+| Recherche | `Site\RechercheController` | `site/recherche.blade.php` | ✅ terminé. Filtre départ/destination/compagnie (tous optionnels) tous compagnies confondues, trié par prix. Le champ "date" est affiché/conservé dans l'URL mais ne filtre rien, fidèle au legacy : `programmer` décrit des trajets récurrents quotidiens, pas des instances datées (celles-ci vivent côté admin dans `programmation_voyage`, jamais exposées ici). |
+| Suivi de colis public | `Site\SuiviColisController` | `site/suivi-colis.blade.php` | ✅ terminé. Sélection visuelle de la compagnie puis code de suivi (les deux sont obligatoires : le code seul ne suffit pas, pour empêcher l'énumération des colis d'une compagnie). PRG (redirection vers `?show_code=...&id_compagnie=...` après une recherche réussie) pour avoir une URL de résultat propre/partageable et éviter le renvoi de formulaire au rechargement. Réutilise le scope `Colis::avecDetails()` déjà existant côté admin plutôt que dupliquer les jointures expéditeur/destinataire/agence. Timeline de statut animée (enregistré → en_cours → reçu → livré). |
+| Contact | `Site\ContactController` | `site/contact.blade.php` | ✅ terminé. Stats réelles + formulaire décoratif (le legacy ne le traitait pas non plus côté serveur). |
+| Espace partenaire | `Site\PartenaireController` | `site/partenaire/{login,discussion}.blade.php` | ✅ terminé. Connexion/inscription (guard Laravel `partenaire`, voir stratégie d'auth ci-dessous) + messagerie avec l'admin. **Contrepartie admin construite dans la foulée** : `Admin\PartenariatController` (`/admin/Partenariats`, super_admin) — sans elle, un partenaire pourrait écrire mais personne ne pourrait lui répondre depuis l'interface (le lien sidebar existait déjà avant ce chantier, jamais implémenté, menait à un 404). |
+
+#### Stratégie d'authentification client/partenaire
+
+Décidée pendant ce chantier (les deux écrans restants — Espace client, Espace partenaire —
+en avaient besoin) :
+
+- **Partenaire → vrai guard Laravel `partenaire`** (`config/auth.php`, provider Eloquent sur
+  `App\Models\PartenaireCompte`), session, mêmes conventions que le guard `staff` existant
+  (`Auth::guard('partenaire')->attempt()/login()/logout()`, middleware
+  `guest:partenaire`/`auth:partenaire`). Justifié : un compte partenaire a un vrai mot de
+  passe et une identité durable, exactement le cas d'usage pour lequel Laravel Auth existe.
+- **Client → PAS de guard Laravel.** Le legacy authentifie par numéro de billet + téléphone,
+  sans mot de passe (`EspaceClient::login()` : `JOIN billets ON id_client... WHERE
+  numeroBillets = ? AND numeroClient = ?`) — et une ligne `client` est créée à chaque
+  réservation (pas de compte réutilisé d'une réservation à l'autre, voir `App\Models\Client`).
+  Ce n'est pas un compte au sens propre, donc forcer ça dans le contrat Authenticatable/Guard
+  serait artificiel. À la place (pour l'écran Espace client, pas encore construit) : simples
+  valeurs de session (`session(['client_id' => ...])`) posées après vérification manuelle du
+  couple billet+téléphone, protégées par un middleware dédié léger — reproduit fidèlement
+  `requireClientLogin()` du legacy sans le forcer dans le système de Guard.
+
+Route `/` (page d'accueil du site, plus de redirection auto vers `/admin` ou `/login` selon
+l'auth staff — l'admin y accède désormais via le lien "Espace pro" du menu, qui mène à
+`/login`). Nouvelles routes `site.home`/`site.compagnies`/`site.compagnie.trajets`/
+`site.recherche`/`site.suivi-colis`/`site.contact` dans `routes/web.php`, sans middleware
+(public). Nouveau `resources/views/site/partials/nav.blade.php` (en-tête + menu mobile
+partagé par toutes les pages) et `public/assets_site/css/site-common.css` (styles communs —
+reset, variables, boutons, footer, bandeau de page — extraits des templates legacy
+quasi-identiques pour éviter de les dupliquer). Nouvelles méthodes statiques sur
+`App\Models\Programme` : `pourVitrine($idCompagnie)`, `pourCompagnieAvecEscales($idCompagnie)`,
+`villesDisponibles()`, `rechercher($depart, $destination, $idCompagnie)`.
+
+**Piège MariaDB rencontré sur `pourCompagnieAvecEscales()`** : le `GROUP_CONCAT` des
+escales (port du `GROUP BY p.idProgrammer` du legacy) fait planter cette instance MariaDB
+(`ONLY_FULL_GROUP_BY`, erreur 1055) même en groupant uniquement par la clé primaire
+`programmer.idProgrammer` — l'exception de dépendance fonctionnelle de MySQL pour "GROUP BY
+sur la PK" n'est pas fiable sur cette version de MariaDB (10.4.32), contrairement à ce que la
+doc MySQL laisse penser. Contourné avec une sous-requête corrélée (`(SELECT GROUP_CONCAT(...)
+... WHERE lt.id_trajets = programmer.idProgrammer)` dans le `SELECT`) plutôt qu'un `GROUP BY`
+sur la requête principale — à réutiliser si un futur écran a besoin d'un `GROUP_CONCAT`
+similaire.
+
+**Liens/formulaires volontairement inertes pour l'instant** (seule fonctionnalité restante :
+la réservation elle-même) : ils affichent un message "Cette fonctionnalité arrive bientôt !"
+au clic/submit (fonction JS `tgBientot()` dans le nav partial) plutôt que de mener à un 404 —
+même logique que les liens `href="#"` déjà utilisés côté admin pour les écrans pas encore
+construits (ex. "Hors programme"). Concrètement tous les boutons "Réserver" (recherche +
+détails trajets) sont encore inertes : la réservation elle-même (`Reservation_formulaire`)
+reste à porter. Un bug legacy a été corrigé au passage : `nav.view.php` et chaque page
+avaient chacun leur propre `<div id="mobileNav">` (id dupliqué), rendant le lien "Espace pro"
+du panneau mobile de page totalement inatteignable au clic ; il n'y a maintenant qu'un seul
+panneau mobile (dans le nav partagé), avec un vrai lien "Espace pro" vers `/login`.
+
+**Pas encore portées** (prochaines étapes de ce chantier, voir
+`Projets_licence/app/controllers/site/`) : Reservation_formulaire (réservation en ligne — le
+plus complexe : transaction, PDF+QR, email), EspaceClient (login par n° billet+tél, dashboard,
+épargne, paiements — nécessite le middleware de session léger décrit ci-dessus, pas encore
+créé). Modèle Eloquent manquant : `Epargne`. La table `demande_partenariat` (migration déjà
+là) n'est en fait référencée nulle part dans le legacy — dead table, aucun modèle à créer. La
+table `reservation` (migration déjà là) a aussi un rôle encore à clarifier avec l'utilisateur
+(pré-réservation vs `billets`).
+
 ### Pas encore portées depuis `Projets_licence`
 
 Programmation des voyages : voir "G-programme" ci-dessus (tout fait sauf Hors programme).
@@ -374,4 +452,8 @@ Caisse : voir ci-dessus (système individuel fait, caisse de gare hors scope).
 Dépenses/Banque : voir ci-dessus (terminées).
 Billets : voir ci-dessus (Achat + Liste/Historique + Annulation + Report + Embarquement +
 Rapports faits ; seule la validation "en entente" (`Liste_ententes`) reste à porter).
-Vérifier `Projets_licence/app/controllers/admin/` pour la liste complète avant de commencer.
+Site public : voir "Section Site public" ci-dessus (vitrine + Recherche + détails trajets +
+Suivi colis public + Espace partenaire faits ; réservation en ligne et Espace client restent
+à porter).
+Vérifier `Projets_licence/app/controllers/admin/` et `Projets_licence/app/controllers/site/`
+pour la liste complète avant de commencer.

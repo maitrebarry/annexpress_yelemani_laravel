@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Admin\BanqueController;
 use App\Http\Controllers\Admin\BilletController;
-use App\Http\Controllers\Admin\RapportBilletController;
 use App\Http\Controllers\Admin\CaisseController;
 use App\Http\Controllers\Admin\CarController;
 use App\Http\Controllers\Admin\ChauffeurController;
@@ -11,8 +10,8 @@ use App\Http\Controllers\Admin\CompagnieController;
 use App\Http\Controllers\Admin\ConfigurationController;
 use App\Http\Controllers\Admin\DepenseController;
 use App\Http\Controllers\Admin\DepotBanqueController;
-use App\Http\Controllers\Admin\EnvoiColisController;
 use App\Http\Controllers\Admin\EmployeController;
+use App\Http\Controllers\Admin\EnvoiColisController;
 use App\Http\Controllers\Admin\EscaleController;
 use App\Http\Controllers\Admin\FlotteController;
 use App\Http\Controllers\Admin\GaresController;
@@ -22,23 +21,45 @@ use App\Http\Controllers\Admin\HoraireController;
 use App\Http\Controllers\Admin\LivraisonColisController;
 use App\Http\Controllers\Admin\LocationCarController;
 use App\Http\Controllers\Admin\MouvementColisController;
+use App\Http\Controllers\Admin\PartenariatController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PlaceLimiteController;
 use App\Http\Controllers\Admin\ProgrammationCarController;
 use App\Http\Controllers\Admin\ProgrammationVoyageController;
 use App\Http\Controllers\Admin\ProgrammeController;
+use App\Http\Controllers\Admin\RapportBilletController;
 use App\Http\Controllers\Admin\ReclamationColisController;
 use App\Http\Controllers\Admin\TransfertGareController;
 use App\Http\Controllers\Auth\LoginController;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Site\CompagnieController as SiteCompagnieController;
+use App\Http\Controllers\Site\ContactController as SiteContactController;
+use App\Http\Controllers\Site\HomeController as SiteHomeController;
+use App\Http\Controllers\Site\PartenaireController as SitePartenaireController;
+use App\Http\Controllers\Site\RechercheController as SiteRechercheController;
+use App\Http\Controllers\Site\SuiviColisController as SiteSuiviColisController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    if (Auth::guard('staff')->check()) {
-        return redirect()->route('admin.home');
-    }
+// Site public (vitrine) : pas de guard, accessible à tous. L'admin (staff) y accède via
+// le lien "Espace pro" du menu, qui mène à /login.
+Route::name('site.')->group(function () {
+    Route::get('/', [SiteHomeController::class, 'index'])->name('home');
+    Route::get('/compagnies', [SiteCompagnieController::class, 'index'])->name('compagnies');
+    Route::get('/compagnies/{compagnie}/trajets', [SiteCompagnieController::class, 'show'])->name('compagnie.trajets');
+    Route::get('/recherche', [SiteRechercheController::class, 'index'])->name('recherche');
+    Route::get('/suivi-colis', [SiteSuiviColisController::class, 'index'])->name('suivi-colis');
+    Route::get('/contact', [SiteContactController::class, 'index'])->name('contact');
 
-    return redirect()->route('login');
+    // Espace partenaire (guard `partenaire`, voir config/auth.php).
+    Route::middleware('guest:partenaire')->group(function () {
+        Route::get('/espace-partenaire', [SitePartenaireController::class, 'login'])->name('partenaire.login');
+        Route::post('/espace-partenaire/connexion', [SitePartenaireController::class, 'connexion'])->name('partenaire.connexion');
+        Route::post('/espace-partenaire/inscription', [SitePartenaireController::class, 'inscription'])->name('partenaire.inscription');
+    });
+    Route::middleware('auth:partenaire')->group(function () {
+        Route::get('/espace-partenaire/discussion', [SitePartenaireController::class, 'discussion'])->name('partenaire.discussion');
+        Route::post('/espace-partenaire/discussion', [SitePartenaireController::class, 'envoyerMessage'])->name('partenaire.message');
+        Route::post('/espace-partenaire/deconnexion', [SitePartenaireController::class, 'deconnexion'])->name('partenaire.deconnexion');
+    });
 });
 
 Route::middleware('guest:staff')->group(function () {
@@ -67,6 +88,11 @@ Route::middleware(['auth:staff', 'super_admin'])->prefix('admin')->group(functio
     Route::post('/Compagnies/store', [CompagnieController::class, 'store'])->name('admin.compagnie.store');
     Route::post('/Compagnies/edit', [CompagnieController::class, 'update'])->name('admin.compagnie.update');
     Route::get('/Compagnies/delete/{idCompagnie}', [CompagnieController::class, 'destroy'])->name('admin.compagnie.destroy');
+});
+
+Route::middleware(['auth:staff', 'super_admin'])->prefix('admin')->group(function () {
+    Route::get('/Partenariats', [PartenariatController::class, 'index'])->name('admin.partenariat.index');
+    Route::post('/Partenariats/repondre', [PartenariatController::class, 'repondre'])->name('admin.partenariat.repondre');
 });
 
 Route::middleware(['auth:staff', 'permission:Configuration_gestion_escale'])->prefix('admin')->group(function () {

@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\DB;
 class Programme extends Model
 {
     protected $table = 'programmer';
+
     protected $primaryKey = 'idProgrammer';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -75,5 +77,76 @@ class Programme extends Model
             ->value('a2.localite');
 
         return $viaEscale ?? $destinationId;
+    }
+
+    // Port simplifié de Projets_licence/app/models/Programme.php::getByCompagnie() pour
+    // la vitrine (Accueil/Compagnies) : pas besoin des escales/numéros de gare ici, voir
+    // pourCompagnieAvecEscales() pour la page de détails par compagnie.
+    public static function pourVitrine(int $idCompagnie)
+    {
+        return self::query()
+            ->join('agence as a1', 'programmer.idDepart', '=', 'a1.idAgence')
+            ->join('agence as a2', 'programmer.idDestination', '=', 'a2.idAgence')
+            ->where('programmer.id_compagnie', $idCompagnie)
+            ->orderBy('a1.localite')->orderBy('a2.localite')->orderBy('programmer.heureDepart')
+            ->get(['programmer.heureDepart', 'programmer.prix', 'a1.localite as departLocalite', 'a2.localite as destinationLocalite']);
+    }
+
+    // Port de Projets_licence/app/models/Programme.php::getByCompagnie() — version complète
+    // (numéros de gare + escales/tarifs) pour la page publique de détails d'une compagnie.
+    // Le GROUP_CONCAT est fait via une sous-requête corrélée plutôt qu'un GROUP BY sur la
+    // requête principale : ce serveur MariaDB rejette (ONLY_FULL_GROUP_BY, erreur 1055) le
+    // GROUP BY sur la seule clé primaire `programmer.idProgrammer` même si tout le reste est
+    // fonctionnellement dépendant — l'optimisation de dépendance fonctionnelle de MySQL n'est
+    // pas fiable sur cette version de MariaDB.
+    public static function pourCompagnieAvecEscales(int $idCompagnie)
+    {
+        return self::query()
+            ->join('agence as a1', 'programmer.idDepart', '=', 'a1.idAgence')
+            ->join('agence as a2', 'programmer.idDestination', '=', 'a2.idAgence')
+            ->where('programmer.id_compagnie', $idCompagnie)
+            ->orderBy('a1.localite')->orderBy('a2.localite')->orderBy('programmer.heureDepart')
+            ->get([
+                'programmer.*',
+                'a1.localite as departLocalite', 'a1.numeroGare as numeroGare1',
+                'a2.localite as destinationLocalite', 'a2.numeroGare as numeroGare2',
+                DB::raw("(SELECT GROUP_CONCAT(CONCAT(e.escales, ' (', lt.prix_escale, ' FCFA)') ORDER BY e.id_escale SEPARATOR ', ')
+                          FROM ligneTrajet lt JOIN escale e ON e.id_escale = lt.id_escales
+                          WHERE lt.id_trajets = programmer.idProgrammer AND lt.type_trajet = 'programmer') as escales_avec_frais"),
+            ]);
+    }
+
+    // Port de Projets_licence/app/models/Programme.php::getVillesDisponibles() : toutes
+    // compagnies confondues, pour le sélecteur départ/destination de la recherche publique.
+    public static function villesDisponibles()
+    {
+        return Agence::query()
+            ->where(function ($q) {
+                $q->whereIn('idAgence', fn ($sub) => $sub->select('idDepart')->from('programmer'))
+                    ->orWhereIn('idAgence', fn ($sub) => $sub->select('idDestination')->from('programmer'));
+            })
+            ->distinct()->orderBy('localite')->pluck('localite');
+    }
+
+    // Port de Projets_licence/app/models/Programme.php::rechercher() : trajets programmés,
+    // toutes compagnies confondues, filtrés par ville de départ/destination/compagnie (chaque
+    // filtre optionnel). `$date` n'est volontairement pas utilisé pour filtrer : fidèle au
+    // legacy, où `programmer` décrit des trajets récurrents quotidiens, pas des instances par
+    // date (celles-ci vivent côté admin dans `programmation_voyage`, jamais exposées ici).
+    public static function rechercher(string $depart, string $destination, string $idCompagnie = '')
+    {
+        return self::query()
+            ->join('agence as a1', 'programmer.idDepart', '=', 'a1.idAgence')
+            ->join('agence as a2', 'programmer.idDestination', '=', 'a2.idAgence')
+            ->join('compagnie as co', 'programmer.id_compagnie', '=', 'co.id_compagnie')
+            ->when($depart !== '', fn ($q) => $q->where('a1.localite', $depart))
+            ->when($destination !== '', fn ($q) => $q->where('a2.localite', $destination))
+            ->when($idCompagnie !== '', fn ($q) => $q->where('programmer.id_compagnie', $idCompagnie))
+            ->orderBy('programmer.prix')
+            ->get([
+                'programmer.*',
+                'a1.localite as departLocalite', 'a2.localite as destinationLocalite',
+                'co.id_compagnie as compagnieId', 'co.nom_compagnie', 'co.logo',
+            ]);
     }
 }

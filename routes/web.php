@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BanqueController;
 use App\Http\Controllers\Admin\BilletController;
+use App\Http\Controllers\Admin\RapportBilletController;
 use App\Http\Controllers\Admin\CaisseController;
 use App\Http\Controllers\Admin\CarController;
 use App\Http\Controllers\Admin\ChauffeurController;
@@ -11,11 +12,13 @@ use App\Http\Controllers\Admin\ConfigurationController;
 use App\Http\Controllers\Admin\DepenseController;
 use App\Http\Controllers\Admin\DepotBanqueController;
 use App\Http\Controllers\Admin\EnvoiColisController;
+use App\Http\Controllers\Admin\EmployeController;
 use App\Http\Controllers\Admin\EscaleController;
 use App\Http\Controllers\Admin\GaresController;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\HoraireController;
 use App\Http\Controllers\Admin\LivraisonColisController;
+use App\Http\Controllers\Admin\LocationCarController;
 use App\Http\Controllers\Admin\MouvementColisController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\PlaceLimiteController;
@@ -202,6 +205,25 @@ Route::middleware(['auth:staff', 'permission:Depenses_gestion'])->prefix('admin'
     Route::post('/Depenses/rejeter/{id}', [DepenseController::class, 'rejeter'])->name('admin.depense.rejeter');
 });
 
+// Pas de middleware permission unique : la page est visible si l'utilisateur a AU MOINS
+// une des deux permissions (utilisateurs OU chauffeurs) — vérifié en contrôleur, comme le
+// legacy (Employes::__construct()).
+Route::middleware('auth:staff')->prefix('admin')->group(function () {
+    Route::get('/Employes', [EmployeController::class, 'index'])->name('admin.employe.index');
+    Route::get('/Employes/listeImprimable', [EmployeController::class, 'listeImprimable'])->name('admin.employe.liste-imprimable');
+    Route::get('/Employes/printCard/{type}/{id}', [EmployeController::class, 'printCard'])->name('admin.employe.print-card');
+    Route::post('/Employes/printSelection', [EmployeController::class, 'printSelection'])->name('admin.employe.print-selection');
+});
+
+Route::middleware(['auth:staff', 'permission:Location_gestion'])->prefix('admin')->group(function () {
+    Route::get('/Locations_cars', [LocationCarController::class, 'index'])->name('admin.location-car.index');
+    Route::post('/Locations_cars', [LocationCarController::class, 'store'])->name('admin.location-car.store');
+    Route::post('/Locations_cars/ajaxCarsDisponibles', [LocationCarController::class, 'ajaxCarsDisponibles'])->name('admin.location-car.ajax-cars-disponibles');
+    Route::post('/Locations_cars/valider/{id}', [LocationCarController::class, 'valider'])->name('admin.location-car.valider');
+    Route::post('/Locations_cars/rejeter/{id}', [LocationCarController::class, 'rejeter'])->name('admin.location-car.rejeter');
+    Route::get('/Locations_cars/facture/{id}', [LocationCarController::class, 'facture'])->name('admin.location-car.facture');
+});
+
 // Pas de permission dédiée en base pour Banque/Dépôts_banque (le legacy gate ces écrans
 // par rôle uniquement, comme TransfertGareController) : gating fait en contrôleur.
 Route::middleware('auth:staff')->prefix('admin')->group(function () {
@@ -259,4 +281,9 @@ Route::middleware(['auth:staff', 'permission:Billets_annulation'])->prefix('admi
     Route::post('/Liste_du_jours/transmettreReport/{id}', [BilletController::class, 'transmettreReport'])->name('admin.billet.transmettre-report');
     Route::post('/Liste_du_jours/confirmerReport/{id}', [BilletController::class, 'confirmerReportDemande'])->name('admin.billet.confirmer-report');
     Route::post('/Liste_du_jours/rejeterReport/{id}', [BilletController::class, 'rejeterReportDemande'])->name('admin.billet.rejeter-report');
+});
+
+Route::middleware(['auth:staff', 'permission:Billets_rapport'])->prefix('admin')->group(function () {
+    Route::get('/Rapport_billets/rapport_billets', [RapportBilletController::class, 'mensuel'])->name('admin.rapport-billet.mensuel');
+    Route::get('/Rapport_billets/rapport_annuel', [RapportBilletController::class, 'annuel'])->name('admin.rapport-billet.annuel');
 });

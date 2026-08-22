@@ -153,6 +153,54 @@ en base pour Banque/Dépôt en banque (le legacy gate ces écrans par rôle uniq
 `Admin`/`chef_d_escale`/`PDG`, jamais `super_admin` — même gating que le sidebar
 existant) ; `Depenses_gestion` (déjà dans le catalogue) gate la section Dépenses.
 
+### Section "Location des cars" (menu Finances) — ✅ terminée (2026-08-21)
+
+| Écran | Contrôleur | Vue | Notes |
+|---|---|---|---|
+| Location des cars | `Admin\LocationCarController` | `admin/location-car/index.blade.php` | ✅ terminé. Réservé à Admin/chef d'escale/PDG (même gate que Dépenses). **Différence délibérée avec le legacy, demandée par l'utilisateur** : le formulaire "Nouvelle location" (toujours visible en haut de page dans le legacy) devient une **modale** avec un volet "Résumé" en direct (destination/car/période/client/frais, même traitement visuel que la page Achat de ticket) ; chaque ligne a en plus une **modale "Détails"** dédiée (le legacy n'avait aucune modale) ; Valider/Rejeter restent des confirmations SweetAlert2 mais avec boutons Bootstrap stylés (`buttonsStyling:false`, même pattern que Dépenses) plutôt que les boutons SweetAlert2 par défaut du legacy. Disponibilité des cars calculée en AJAX (`fetch()` + `<meta name="csrf-token">`, même plomberie que l'Embarquement) au fil des changements de gare/dates, avec un badge "X disponible(s)" en direct. |
+| Facture location | `Admin\LocationCarController@facture` | `admin/location-car/facture.blade.php` | ✅ terminé. Le legacy générait un PDF (Dompdf) ; **dompdf n'est pas installé dans cette app** (même écart déjà assumé pour le reçu de billet thermique) — remplacé par une page HTML imprimable autonome (`window.print()`), même contenu/mise en page que le PDF legacy (mention de signature "P.O." si la location a été créée par un chef d'escale puis validée par l'Admin). |
+
+Modèle ajouté : `LocationCar` (table `location_car`, déjà migrée, inutilisée avant ce
+chantier). Logique métier dans `App\Services\LocationCarService`, calqué très
+directement sur `DepenseService` (même résolution `id_caisse`/`id_caisse_user`, même
+convention `['ok','type','message']`, même compare-and-swap sur le `statut` pour éviter
+qu'une validation et un rejet concurrents créditent tous les deux la caisse). Différence
+propre à ce module : verrouillage anti-survente sur le car choisi (`lockForUpdate()` +
+re-vérification du chevauchement de dates dans la transaction), pour éviter que deux
+locations soumises à quelques millisecondes d'intervalle ne réservent le même car sur la
+même période.
+
+**Bug de schéma trouvé et corrigé, pas une décision de conception :** la migration
+d'origine de `location_car` ne comportait pas la colonne `id_valide_par` (ajoutée après
+coup dans le legacy via un script SQL séparé, jamais reporté dans cette migration Laravel)
+— nécessaire pour la mention "Signature (P.O. `<nom>`)" sur la facture et pour savoir qui a
+validé une location. Migration `2026_08_21_130000_add_id_valide_par_to_location_car.php`
+ajoutée (même précédent que `2026_08_20_120000_fix_depense_depots_banque_columns.php`).
+
+Vérifié de bout en bout en HTTP réel (`php artisan serve`, login `admin.compagnie@transhub.test`)
+et via `tinker` pour le chemin chef d'escale seul (pas de compte de démonstration pour ce
+rôle) : création Admin → validée + caisse créditée immédiatement ; création chef d'escale
+→ `en_attente`, puis validation Admin réelle en HTTP → `id_valide_par` renseigné, caisse
+du chef créditée ; conflit sur le même car/période correctement rejeté ; double-validation
+bloquée (compare-and-swap) ; facture HTML correcte (montant, mention de signature). Toutes
+les fixtures (`location_car`, `caisse_utilisateur` de test) supprimées par ID exact après
+coup.
+
+### Section "Employés" (menu Personnel) — ✅ terminée (2026-08-21)
+
+| Écran | Contrôleur | Vue | Notes |
+|---|---|---|---|
+| Liste des employés | `Admin\EmployeController` | `admin/employe/index.blade.php` | ✅ terminé. Vue unifiée qui fusionne comptes utilisateurs (avec droit/fonction) et chauffeurs de la compagnie ; chaque bloc n'apparaît que si l'utilisateur connecté a la permission correspondante (`utilisateur_apercu` / `Configuration_gestion_car/chauffeur` — page visible dès qu'AU MOINS une des deux est présente, vérifié en contrôleur comme le legacy). "Sélection multiple" (toolbar + cases à cocher) pour l'impression groupée de badges ; modale "Imprimer le badge" par ligne (déjà une modale dans le legacy, conservée telle quelle). |
+| Badge employé | `Admin\EmployeController@printCard` / `@printSelection` | `admin/employe/print-card.blade.php` | ✅ terminé. Port quasi verbatim du design corporate du legacy (déjà très abouti : dégradé marine/or, photo en médaillon) — impression individuelle centrée ou planche A4 de 4 badges avec pagination auto pour la sélection groupée. **PDF généré côté client** (`html2canvas` + `jsPDF`, CDN, déjà ainsi dans le legacy) — pas de Dompdf impliqué ici, contrairement aux autres exports PDF de cette app. |
+| Liste imprimable | `Admin\EmployeController@listeImprimable` | `admin/employe/liste-imprimable.blade.php` | ✅ terminé. Le legacy générait ce PDF via Dompdf (`printListPdf`) ; **dompdf n'est pas installé dans cette app** (même écart déjà assumé pour la facture de location/le reçu de billet) — remplacé par une page HTML imprimable (`window.print()`), même contenu que le PDF legacy. |
+
+Logique métier dans `App\Services\EmployeService::{buildListe,resolveEmploye}` (pas de
+nouveau modèle — recombine `Utilisateur` et `Chauffeur`, déjà existants). `resolveEmploye()`
+applique le même périmètre IDOR que `buildListe()` (un compte non `super_admin` ne peut
+résoudre/imprimer que les employés de sa propre compagnie) — vérifié avec une compagnie et
+un utilisateur factices temporaires (aucune fuite, ni dans `buildListe()` ni dans
+`resolveEmploye()`), supprimés après coup.
+
 ### Section "Billets" (menu G-réservation) — 🚧 en cours (commencée 2026-08-20)
 
 Le module legacy "Billets" est en réalité 4 contrôleurs/modèles distincts (~2 850 lignes) :
@@ -161,9 +209,9 @@ annulation en 2 temps, report en 2 temps, embarquement), validation "en entente"
 (`Liste_ententes`, 706 lignes) et rapports (`Rapport_billets`). Comme pour G-programme,
 livré en plusieurs fois plutôt qu'en un seul chantier : **ce chantier couvre Achat de
 billet + Liste des tickets/Historique + Annulation + Report (direct et en 2 temps) +
-Embarquement** ; validation "en entente" et rapports mensuels/annuels restent à porter
-(liens sidebar déjà en place, non encore fonctionnels — mêmes permissions `Billets_*`
-déjà dans le catalogue).
+Embarquement + Rapports (mensuel/annuel)** ; seule la validation "en entente"
+(`Liste_ententes`) reste à porter (lien sidebar déjà en place, non encore fonctionnel —
+permission `Billets_validation` déjà dans le catalogue).
 
 **Report : le legacy a deux mécanismes distincts, les deux sont construits :**
 1. `reporter()` — report **direct**, immédiat, gate uniquement par la permission
@@ -194,6 +242,7 @@ PDF. Acceptable pour l'instant, à corriger quand le PDF sera porté.
 | Report (direct) | `Admin\BilletController@reporter` | Modale sur `admin/billet/partials/table-billets.blade.php` | ✅ terminé. PDG explicitement bloqué (ajout délibéré : le legacy ne gate cette action que par permission, que PDG a par défaut — seule action mutante de toute l'app qu'un rôle lecture-seule aurait pu déclencher sans ce correctif). |
 | Embarquement | `Admin\BilletController` (embarquement/decollerCar/marquerEmbarque/annulerEmbarquement/marquerEmbarqueLot/demanderReport) | `admin/billet/embarquement.blade.php` | ✅ terminé. Bannière "cars complets", cartes par car du jour avec bouton "Faire décoller" (désactivé tant que des passagers restent non traités), embarquement individuel + en masse (case à cocher), "Reporter" ouvre la demande de report en 2 temps. Toutes les actions passent par `fetch()` + rechargement (pas de patch DOM manuel côté JS, pour éviter de dupliquer le rendu des lignes en JS — voir la leçon XSS/robustesse déjà tirée pour la Banque) ; nécessite le `<meta name="csrf-token">` ajouté à `admin/partials/header.blade.php` (nouveau pour cette app — jusqu'ici l'AJAX ne servait qu'à des lectures). |
 | Demandes de report | `Admin\BilletController` (demandesReport/transmettreReport/confirmerReportDemande/rejeterReportDemande) | `admin/billet/demandes-report.blade.php` | ✅ terminé. Même écran pour les 2 étapes, contenu différent selon le rôle (chef d'escale : Transmettre/Rejeter sa gare ; Admin : Confirmer/Rejeter, compagnie entière) — même traitement que `demandes-annulation.blade.php`. |
+| Rapport mensuel / annuel | `Admin\RapportBilletController` (mensuel/annuel) | `admin/rapport_billet/{mensuel,annuel}.blade.php` | ✅ terminé. Contrôleur/service dédiés (`RapportBilletService`), fidèle au découpage du legacy (fichiers `Rapport_billets`/`Rapport_billet` séparés de `Liste_du_jours`). Totaux par type (présentiel/en ligne/reporté) + répartition mensuelle/annuelle + ventilation par localité/gare (Admin/PDG voient tout, chef d'escale seulement sa gare). Liens sidebar déjà présents mais mal gatés (permissions placeholder `Billets_creation`/`Billets_apercue`/`Billets_validation`) — corrigés vers `Billets_rapport`. Bug d'affichage du legacy corrigé au passage (le rapport annuel étiquetait un simple décompte de billets comme un montant "FCFA"). |
 
 Modèles ajoutés : `Billet` (table `billets`), `Client` (table `client`, un client recréé
 à chaque réservation — pas de recherche/réutilisation, fidèle au legacy), `Suivis` (table
@@ -239,10 +288,9 @@ vérification allait jusqu'à inspecter la table `depense` et pas seulement le m
 
 ### Pas encore portées depuis `Projets_licence`
 
-Rapports — non explorés lors de ce chantier.
 Programmation des voyages : voir "G-programme" ci-dessus (tout fait sauf Hors programme).
 Caisse : voir ci-dessus (système individuel fait, caisse de gare hors scope).
 Dépenses/Banque : voir ci-dessus (terminées).
-Billets : voir ci-dessus (Achat + Liste/Historique + Annulation + Report + Embarquement
-faits ; validation "en entente" et rapports restent à porter).
+Billets : voir ci-dessus (Achat + Liste/Historique + Annulation + Report + Embarquement +
+Rapports faits ; seule la validation "en entente" (`Liste_ententes`) reste à porter).
 Vérifier `Projets_licence/app/controllers/admin/` pour la liste complète avant de commencer.

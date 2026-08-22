@@ -89,22 +89,18 @@
         </ul>
         </li>
 
-        @if ($authUser->userHasPermission('Billets_creation'))
+        @if ($authUser->userHasPermission('Billets_rapport'))
           <li>
             <a href="javascript:;" class="has-arrow">
               <div class="parent-icon"><i class="bx bx-bar-chart-alt-2"></i></div>
               <div class="menu-title">Rapport billets</div>
             </a>
-        @endif
-          <ul>
-            @if ($authUser->userHasPermission('Billets_apercue'))
+            <ul>
               <li> <a href="{{ url('/admin/Rapport_billets/rapport_billets') }}"><i class="bi bi-arrow-right-short"></i>Rapport mensuel</a></li>
-            @endif
-            @if ($authUser->userHasPermission('Billets_validation'))
               <li> <a href="{{ url('/admin/Rapport_billets/rapport_annuel') }}"><i class="bi bi-arrow-right-short"></i>Rapport annuel</a></li>
-            @endif
-          </ul>
+            </ul>
           </li>
+        @endif
 
           @if ($authUser->userHasPermission('colis_creation'))
             <li class="menu-label">Gestion des colis</li>

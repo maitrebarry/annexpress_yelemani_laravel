@@ -178,6 +178,59 @@ class HomeStatsService
         return $caisse;
     }
 
+    /**
+     * Port de Homes::home() (bloc "Cars destinés à la gare du chef d'escale" — en transit).
+     * Un car n'apparaît ici que s'il a réellement décollé (decolle_le rempli sur sa
+     * programmation active vers cette ville), pas dès la simple programmation du voyage —
+     * même condition que ProgrammationVoyageController::carsEnTransit().
+     */
+    public function getCarsEnTransitVersGare(int $idCompagnie, string $ville)
+    {
+        return DB::table('car')
+            ->where('car.status_car', 'En_transit_'.$ville)
+            ->where('car.id_compagnie', $idCompagnie)
+            ->whereExists(function ($q) use ($ville) {
+                $q->select(DB::raw(1))
+                    ->from('programmation_voyage as pv')
+                    ->whereColumn('pv.id_car_programmer', 'car.id_car')
+                    ->where('pv.id_trajet', $ville)
+                    ->where('pv.statut', 'active')
+                    ->whereNotNull('pv.decolle_le');
+            })
+            ->get(['car.id_car', 'car.numero_car', 'car.nbr_place'])
+            ->map(function ($car) use ($ville) {
+                $prog = DB::table('programmation_voyage')
+                    ->where('id_car_programmer', $car->id_car)
+                    ->where('id_trajet', $ville)
+                    ->where('statut', 'active')
+                    ->orderByDesc('date_enregistre')->orderByDesc('id_programmation')
+                    ->first(['localite_user', 'id_horaire']);
+
+                $car->provenance = $prog->localite_user ?? null;
+                $car->id_horaire = $prog->id_horaire ?? null;
+
+                return $car;
+            });
+    }
+
+    /**
+     * Port de Programmation_voyage::getCarsProgrammesVersMaGare() : cars affectés à un
+     * trajet vers cette gare aujourd'hui mais pas encore décollés — visibilité directe sur
+     * la page d'accueil du chef d'escale, avant même que le car n'apparaisse "en transit".
+     */
+    public function getCarsProgrammesVersGare(int $idCompagnie, string $ville)
+    {
+        return DB::table('programmation_voyage as pv')
+            ->join('car', 'car.id_car', '=', 'pv.id_car_programmer')
+            ->where('pv.id_trajet', $ville)
+            ->where('pv.id_compagnie', $idCompagnie)
+            ->where('pv.statut', 'active')
+            ->whereNull('pv.decolle_le')
+            ->where('pv.date_enregistre', now()->toDateString())
+            ->orderBy('pv.id_horaire')
+            ->get(['car.id_car', 'car.numero_car', 'car.nbr_place', 'pv.id_horaire', 'pv.localite_user']);
+    }
+
     public function getActiviteRecente(string $droit, int $idCompagnie, ?string $ville, ?int $idUser, ?string $profile, ?string $gareVille, int $limit = 6): array
     {
         $activites = [];

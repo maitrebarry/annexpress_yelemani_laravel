@@ -76,4 +76,30 @@ class ProgrammationVoyage extends Model
 
         return $destinations;
     }
+
+    // Etat courant de TOUS les cars de la compagnie (disponible à une gare, en transit avec
+    // ou sans décollage réel enregistré, ou anomalie sans programmation active correspondante)
+    // — vue d'ensemble pour l'écran "État de la flotte". Contrairement aux requêtes utilisées
+    // par le dashboard de Trajets programmés (qui ne montrent chacune qu'un sous-ensemble
+    // filtré : cars en transit décollés, ou cars bloqués), celle-ci renvoie une ligne par car
+    // (LEFT JOIN) pour que même les cars disponibles/au repos apparaissent.
+    public static function etatFlotte(?int $idCompagnie)
+    {
+        return DB::table('car as c')
+            ->leftJoin('programmation_voyage as pv', function ($join) {
+                $join->on('pv.id_car_programmer', '=', 'c.id_car')
+                    ->where('pv.statut', 'active')
+                    ->on('c.status_car', '=', DB::raw("CONCAT('En_transit_', pv.id_trajet)"));
+            })
+            ->leftJoin('agence as a_orig', 'a_orig.idAgence', '=', 'pv.id_agence')
+            ->leftJoin('agence as a_dest', 'a_dest.idAgence', '=', 'pv.id_agence_destination')
+            ->where('c.id_compagnie', $idCompagnie)
+            ->orderBy('c.numero_car')
+            ->get([
+                'c.id_car', 'c.numero_car', 'c.matriculle', 'c.nbr_place', 'c.status_car',
+                'pv.id_programmation', 'pv.decolle_le', 'pv.date_enregistre', 'pv.id_horaire',
+                'pv.localite_user as origine', 'pv.id_trajet as destination',
+                'a_orig.numeroGare as numeroGareDepart', 'a_dest.numeroGare as numeroGareDestination',
+            ]);
+    }
 }

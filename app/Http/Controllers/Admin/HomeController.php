@@ -102,6 +102,11 @@ class HomeController extends Controller
         if ($droit === 'chef_d_escale') {
             $data['beneficeJour'] = $this->stats->getBeneficeJour($idCompagnie, $ville, $date);
             $data['caisseGare'] = $utilisateur->id_agence ? $this->stats->getCaisseGare($utilisateur->id_agence) : null;
+
+            // Cars en approche de sa gare : déjà en transit, ou programmés mais pas encore
+            // décollés — visibilité directe sur la page d'accueil (Homes.php legacy).
+            $data['carsEnTransit'] = $ville ? $this->stats->getCarsEnTransitVersGare($idCompagnie, $ville) : collect();
+            $data['carsProgrammes'] = $ville ? $this->stats->getCarsProgrammesVersGare($idCompagnie, $ville) : collect();
         }
 
         $data['activiteRecente'] = $this->stats->getActiviteRecente($droit, $idCompagnie, $ville, $utilisateur->idUser, $profile, $gareLabel, 6);

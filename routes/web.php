@@ -14,7 +14,9 @@ use App\Http\Controllers\Admin\DepotBanqueController;
 use App\Http\Controllers\Admin\EnvoiColisController;
 use App\Http\Controllers\Admin\EmployeController;
 use App\Http\Controllers\Admin\EscaleController;
+use App\Http\Controllers\Admin\FlotteController;
 use App\Http\Controllers\Admin\GaresController;
+use App\Http\Controllers\Admin\HistoriqueColisController;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\HoraireController;
 use App\Http\Controllers\Admin\LivraisonColisController;
@@ -25,6 +27,7 @@ use App\Http\Controllers\Admin\PlaceLimiteController;
 use App\Http\Controllers\Admin\ProgrammationCarController;
 use App\Http\Controllers\Admin\ProgrammationVoyageController;
 use App\Http\Controllers\Admin\ProgrammeController;
+use App\Http\Controllers\Admin\ReclamationColisController;
 use App\Http\Controllers\Admin\TransfertGareController;
 use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Auth;
@@ -140,6 +143,10 @@ Route::middleware(['auth:staff', 'permission:Programme_programmation_voyage'])->
 });
 
 Route::middleware('auth:staff')->prefix('admin')->group(function () {
+    Route::get('/Flotte', [FlotteController::class, 'index'])->name('admin.flotte.index');
+});
+
+Route::middleware('auth:staff')->prefix('admin')->group(function () {
     Route::get('/Transferts_gares/candidats/{idProgrammation}', [TransfertGareController::class, 'candidats'])->name('admin.transfert-gare.candidats');
     Route::post('/Transferts_gares/executer', [TransfertGareController::class, 'executer'])->name('admin.transfert-gare.executer');
 });
@@ -174,6 +181,17 @@ Route::middleware('auth:staff')->prefix('admin')->group(function () {
     Route::middleware('permission:colis_livraison')->group(function () {
         Route::get('/Livraison_colis', [LivraisonColisController::class, 'index'])->name('admin.colis.livraison.index');
         Route::post('/Livraison_colis', [LivraisonColisController::class, 'store'])->name('admin.colis.livraison.store');
+    });
+
+    Route::middleware('permission:colis_reclamation')->group(function () {
+        Route::get('/Reclamations', [ReclamationColisController::class, 'index'])->name('admin.colis.reclamation.index');
+        Route::get('/Reclamations/rechercher', [ReclamationColisController::class, 'rechercher'])->name('admin.colis.reclamation.rechercher');
+        Route::post('/Reclamations', [ReclamationColisController::class, 'store'])->name('admin.colis.reclamation.store');
+        Route::post('/Reclamations/statut', [ReclamationColisController::class, 'updateStatus'])->name('admin.colis.reclamation.statut');
+    });
+
+    Route::middleware('permission:colis_historique')->group(function () {
+        Route::get('/Historiques/historique_colis_enregistrer', [HistoriqueColisController::class, 'index'])->name('admin.colis.historique.index');
     });
 });
 

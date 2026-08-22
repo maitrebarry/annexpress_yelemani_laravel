@@ -279,10 +279,77 @@ par l'annulation) a aussi été trouvée et corrigée — capturée uniquement p
 vérification allait jusqu'à inspecter la table `depense` et pas seulement le message flash
 (les deux branches success/warning partagent la sous-chaîne "Billet annulé avec succès").
 
+### État de la flotte, ajouté 2026-08-22
+
+Port de `Projets_licence/app/controllers/admin/Flotte.php` +
+`Programmation_voyage::getEtatFlotte()`. Écran de supervision globale (Admin/super_admin/
+PDG) listant **tous** les cars de la compagnie — disponibles ou non — contrairement au
+dashboard "Trajets programmés" qui ne montre qu'un sous-ensemble filtré (cars en transit
+décollés, cars bloqués) pour le suivi opérationnel du jour. Ce lien sidebar existait dans le
+legacy mais n'avait jamais été porté ni relié dans cette app.
+
+`Admin\FlotteController` (index, lecture seule) + `ProgrammationVoyage::etatFlotte()`
+(nouvelle méthode statique sur le modèle, LEFT JOIN `car`/`programmation_voyage`/`agence`
+pour renvoyer une ligne par car même sans transit en cours) — `admin/flotte/index.blade.php`.
+Route `/admin/Flotte`, gardée par un contrôle de rôle explicite dans le contrôleur (pas un
+`permission:` de catalogue) car ce garde-fou n'a jamais eu de permission dédiée côté legacy
+non plus. Badges d'état : Disponible / Position inconnue / Embarquement en cours / En route
+(avec durée écoulée depuis le décollage) / Anomalie (transit sans programmation active
+correspondante, renvoie vers "Cars bloqués").
+
+Vérifié en HTTP réel (`php artisan serve` + `curl`) : les 5 états de badge s'affichent
+correctement (Position inconnue par défaut, En route avec durée/gare, Embarquement en cours,
+Anomalie), et l'accès est bien refusé à un chef_d_escale (redirigé vers l'accueil). Fixtures
+temporaires (`programmation_voyage`, `car.status_car`, utilisateur chef jetable) nettoyées/
+réinitialisées à l'identique après vérification.
+
+### Réclamation + Historique des colis, ajoutés 2026-08-22
+
+Port de `Projets_licence/app/controllers/admin/{Reclamations,Historiques}.php`. Écran
+Réclamation entièrement repensé en modales (recherche d'un colis par code + soumission,
+gestion du statut/remboursement) au lieu du formulaire deux colonnes + rechargement de page
+du legacy — même direction UI que Location des cars/Embarquement de billets. Historique
+consolide les deux pages legacy (`historique_colis_enregistrer`/`historique_colis_livre`) en
+une seule page à deux onglets DataTables (même traitement que Cars & Chauffeurs et Billets
+Liste/Historique), filtrage par simple rechargement GET plutôt que le va-et-vient jQuery AJAX
+manuel du legacy.
+
+`Admin\ReclamationColisController` (index/rechercher/store/updateStatus) —
+`admin/colis/reclamation/index.blade.php`. `Admin\HistoriqueColisController` (index) —
+`admin/colis/historique/index.blade.php`.
+
+**Écart avec le legacy (même classe déjà appliquée à Billets/Dépôt en banque/Dépense) :** le
+remboursement d'une réclamation visait l'ancienne table `caisse` (morte dans cette app,
+colonne `montant_rembourse`). Substitué par une `Depense` (nouvelle catégorie "Remboursement
+colis", ENUM `depense.categorie` étendu par une migration dédiée) contre la caisse
+individuelle actuellement ouverte (`caisse_utilisateur`) de la gare concernée — Admin choisit
+la caisse (départ ou destination du colis, même filtre que legacy), chef_d_escale utilise
+automatiquement sa propre caisse ouverte du jour.
+
+**IDOR corrigé, pas une décision de conception (même classe de bug déjà trouvée sur
+Billets) :** le legacy ne vérifiait aucune portée sur `update_status` — n'importe quel
+chef_d_escale pouvait gérer/rembourser une réclamation concernant n'importe quelle gare de la
+compagnie, débitant sa propre caisse pour un colis qui ne la concernait pas. Corrigé : un
+chef_d_escale ne peut gérer que les réclamations dont son agence est le départ ou la
+destination du colis ; l'Admin garde une portée compagnie entière.
+
+Vérifié de bout en bout en HTTP réel (login + requêtes `curl` avec jeton CSRF, `php artisan
+serve`) avec des fixtures temporaires (colis, expéditeur/destinataire, deux
+`caisse_utilisateur` ouvertes départ+destination, un utilisateur chef_d_escale jetable, une
+agence jetable pour tester le cas hors-gare) : recherche par code, soumission de réclamation,
+double-soumission bloquée, remboursement Admin avec sélection de caisse (Depense créée,
+`montant_depense` incrémenté), remboursement chef_d_escale auto-caisse, blocage IDOR pour un
+chef d'une gare tierce. Tout nettoyé par ID exact après vérification. Un bug a été trouvé et
+corrigé pendant cette vérification (pas une décision) : `Depense::CATEGORIES` (liste PHP)
+avait été mise à jour mais pas l'ENUM MySQL réel de `depense.categorie`, qui rejetait
+silencieusement l'insertion — migration `2026_08_22_120000_add_remboursement_colis_to_depense_categorie`
+ajoutée.
+
 ### Autres sections déjà présentes avant ce chantier
 
 - **Colis** : `Admin\ColisPriseEnChargeController`, `EnvoiColisController`,
   `MouvementColisController`, `LivraisonColisController` — `resources/views/admin/colis/**`.
+  Réclamation + Historique : voir ci-dessus.
 - **Accueil / dashboard** : `Admin\HomeController` — `admin/home.blade.php`.
 - **Auth** : `Auth\LoginController`.
 

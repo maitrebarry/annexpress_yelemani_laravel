@@ -24,6 +24,7 @@ class Depense extends Model
         'Loyer',
         'Assurance',
         'Remboursement annulation',
+        'Remboursement colis',
         'Autre',
     ];
 

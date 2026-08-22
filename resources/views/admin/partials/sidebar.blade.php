@@ -259,6 +259,9 @@
                   @if ($authUser->userHasPermission('Programme_hors_programme'))
                     <li> <a href="#"><i class="bi bi-arrow-right-short"></i>Hors programme</a></li>
                   @endif
+                  @if (in_array($droit, ['Admin', 'super_admin', 'PDG'], true))
+                    <li> <a href="{{ url('/admin/Flotte') }}"><i class="bi bi-arrow-right-short"></i>État de la flotte</a></li>
+                  @endif
                 </ul>
                 </li>
               @endif

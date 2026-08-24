@@ -10,25 +10,29 @@ use Illuminate\View\View;
 
 /**
  * Port de Projets_licence/app/controllers/site/Recherche.php — moteur de recherche de
- * trajets, tous compagnies confondues.
+ * trajets.
+ *
+ * Le site public est dédié à une seule compagnie (voir App\Models\Compagnie::site() /
+ * config/site.php, décision du 2026-08-24) : le filtre compagnie n'est donc plus lu depuis
+ * la requête (il n'y a rien d'autre à choisir), il est forcé côté serveur.
  */
 class RechercheController extends Controller
 {
     public function index(Request $request): View
     {
+        $compagnie = Compagnie::site();
+
         $depart = trim((string) $request->query('depart', ''));
         $destination = trim((string) $request->query('destination', ''));
-        $idCompagnie = trim((string) $request->query('compagnie', ''));
         $date = trim((string) $request->query('date', ''));
 
         return view('site.recherche', [
-            'resultats' => Programme::rechercher($depart, $destination, $idCompagnie),
+            'resultats' => Programme::rechercher($depart, $destination, (string) $compagnie->id_compagnie),
             'depart' => $depart,
             'destination' => $destination,
-            'idCompagnie' => $idCompagnie,
             'date' => $date,
-            'compagnies' => Compagnie::orderBy('nom_compagnie')->get(),
-            'villes' => Programme::villesDisponibles(),
+            'compagnie' => $compagnie,
+            'villes' => Programme::villesDisponibles($compagnie->id_compagnie),
         ]);
     }
 }

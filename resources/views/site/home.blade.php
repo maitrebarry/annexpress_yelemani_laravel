@@ -161,49 +161,6 @@
             margin: 0 auto;
         }
 
-        /* ========== COMPANY GRID ========== */
-        .company-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 24px;
-        }
-        .company-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            text-align: center;
-            transition: all 0.3s;
-            box-shadow: var(--shadow);
-            flex: 1 1 250px;
-            max-width: 270px;
-        }
-        .company-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
-        }
-        .company-icon {
-            width: 70px;
-            height: 70px;
-            background: var(--gray-light);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 1.8rem;
-            color: var(--primary);
-        }
-        .company-card h4 {
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-        }
-        .company-card .trajets {
-            font-size: 0.8rem;
-            color: var(--gray);
-            margin-bottom: 16px;
-        }
-
         /* ========== TRACKING SECTION ========== */
         .tracking-section {
             background: var(--gray-light);
@@ -337,91 +294,11 @@
             white-space: nowrap;
         }
 
-        /* ========== TABS COMPAGNIES (Destinations populaires) ========== */
-        .dest-tabs-wrapper {
-            display: flex;
-            gap: 24px;
-            align-items: flex-start;
-        }
-        .dest-tab-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            flex: 0 0 220px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .dest-tab-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-            text-align: left;
-            background: white;
-            border: 1px solid #e2e6ea;
-            border-radius: var(--radius);
-            padding: 12px 16px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--dark);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .dest-tab-btn:hover {
-            border-color: var(--primary-light);
-        }
-        .dest-tab-btn.active {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-        .dest-tab-btn img {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
-            border-radius: 4px;
-            background: white;
-        }
-        .dest-tab-content {
-            flex: 1;
-            min-width: 0;
-        }
-        .dest-tab-panel {
-            display: none;
-        }
-        .dest-tab-panel.active {
-            display: block;
-        }
+        /* ========== DESTINATIONS (vide) ========== */
         .dest-tab-empty {
             text-align: center;
             padding: 40px;
             color: var(--gray);
-        }
-        .dest-panel-empty {
-            text-align: center;
-            padding: 48px 20px;
-            background: white;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow);
-            color: var(--gray);
-        }
-        .dest-panel-empty i {
-            font-size: 2rem;
-            color: var(--gray-light);
-            margin-bottom: 12px;
-            display: block;
-        }
-        @media (max-width: 768px) {
-            .dest-tabs-wrapper {
-                flex-direction: column;
-            }
-            .dest-tab-list {
-                flex-direction: row;
-                flex-wrap: wrap;
-                flex: 1 1 auto;
-                width: 100%;
-            }
         }
 
         /* ========== STATS BAR ========== */
@@ -468,10 +345,6 @@
             .dest-grid, .stats-grid {
                 grid-template-columns: 1fr;
             }
-            .company-card {
-                flex: 1 1 100%;
-                max-width: 320px;
-            }
             .hero h1 {
                 font-size: 2rem;
             }
@@ -512,28 +385,28 @@
 </head>
 <body>
 
-@include('site.partials.nav')
+@include('site.partials.nav', ['compagnie' => $compagnie])
 
 <!-- HERO avec IMAGE EN ARRIÈRE-PLAN -->
 <section class="hero">
     @foreach ($heroSlides as $i => $slide)
-        <img src="{{ $slide }}" alt="TransGest" class="hero-bg{{ $i === 0 ? ' active' : '' }}">
+        <img src="{{ $slide }}" alt="{{ $compagnie->nom_compagnie }}" class="hero-bg{{ $i === 0 ? ' active' : '' }}">
     @endforeach
     <div class="hero-overlay"></div>
     <div class="container">
         <div class="hero-inner">
             <div data-aos="fade-up">
                 <div class="hero-badge">✓ Transport agréé</div>
-                <h1>Trans<span>Gest</span><br>Réservation & suivi de colis</h1>
-                <p>La plateforme qui simplifie vos déplacements et l'envoi de vos colis au Mali. Comparez les compagnies, réservez en ligne et suivez vos colis en temps réel.</p>
+                <h1>{{ $compagnie->nom_compagnie }}<br>Réservation & suivi de colis</h1>
+                <p>{{ $compagnie->slogant ?: "La plateforme qui simplifie vos déplacements et l'envoi de vos colis au Mali." }} Réservez en ligne et suivez vos colis en temps réel.</p>
                 <div class="hero-stats">
                     <div class="hero-stat">
                         <h3>{{ $heroStats['destinations'] }}</h3>
                         <p>Destinations</p>
                     </div>
                     <div class="hero-stat">
-                        <h3>{{ $heroStats['compagnies'] }}</h3>
-                        <p>Compagnies</p>
+                        <h3>{{ $heroStats['trajets'] }}</h3>
+                        <p>Trajets</p>
                     </div>
                     <div class="hero-stat">
                         <h3>{{ $heroStats['clients'] }}</h3>
@@ -569,15 +442,6 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-building"></i> Compagnie</label>
-                    <select name="compagnie" class="form-select">
-                        <option value="">Toutes les compagnies</option>
-                        @foreach ($compagnies as $c)
-                            <option value="{{ $c->id_compagnie }}">{{ $c->nom_compagnie }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
                     <label><i class="fas fa-calendar"></i> Date</label>
                     <input type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}" min="{{ date('Y-m-d') }}">
                 </div>
@@ -606,15 +470,7 @@
                 </div>
                 <div class="tracking-box">
                     <form action="{{ route('site.suivi-colis') }}" method="GET" class="tracking-form">
-                        <div class="form-group">
-                            <label><i class="fas fa-building"></i> Compagnie</label>
-                            <select name="id_compagnie" class="form-select" required>
-                                <option value="">Choisissez la compagnie</option>
-                                @foreach ($compagnies as $c)
-                                    <option value="{{ $c->id_compagnie }}">{{ $c->nom_compagnie }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <input type="hidden" name="id_compagnie" value="{{ $compagnie->id_compagnie }}">
                         <div class="input-group">
                             <input type="text" name="code_colis" placeholder="Ex: BL-2024-001234" required>
                             <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Suivre</button>
@@ -627,92 +483,36 @@
     </div>
 </section>
 
-<!-- COMPAGNIES -->
-<section>
-    <div class="container">
-        <div class="section-header" data-aos="fade-up">
-            <h2>Nos compagnies partenaires</h2>
-            <p>Des transporteurs fiables et agréés pour vos déplacements</p>
-        </div>
-        <div class="company-grid">
-            @forelse ($compagnies as $i => $c)
-                <div class="company-card" data-aos="fade-up" data-aos-delay="{{ ($i + 1) * 100 }}">
-                    <div class="company-icon" style="overflow: hidden;">
-                        @if ($c->logo)
-                            <img src="{{ asset('images/logos/'.$c->logo) }}" alt="{{ $c->nom_compagnie }}" style="width: 100%; height: 100%; object-fit: contain;">
-                        @else
-                            <i class="fas fa-bus"></i>
-                        @endif
-                    </div>
-                    <h4>{{ $c->nom_compagnie }}</h4>
-                    <div class="trajets">{{ $c->slogant ?: 'Voyagez en sécurité' }}</div>
-                    <a href="{{ route('site.compagnie.trajets', $c) }}" class="btn btn-outline btn-block" style="padding: 8px; text-decoration: none;">Voir les trajets</a>
-                </div>
-            @empty
-                <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                    <p style="color: var(--gray);">Aucune compagnie disponible pour le moment.</p>
-                </div>
-            @endforelse
-        </div>
-    </div>
-</section>
-
 <!-- DESTINATIONS -->
 <section style="background: var(--gray-light);">
     <div class="container">
         <div class="section-header" data-aos="fade-up">
             <h2>Destinations populaires</h2>
-            <p>Tous les trajets programmés, par compagnie</p>
+            <p>Tous les trajets programmés par {{ $compagnie->nom_compagnie }}</p>
         </div>
 
-        @if (collect($programmesParCompagnie)->isNotEmpty())
-            <div class="dest-tabs-wrapper" data-aos="fade-up">
-                <ul class="dest-tab-list" role="tablist">
-                    @foreach ($programmesParCompagnie as $idCompagnie => $programmes)
-                        @php $compagnie = $compagnies->firstWhere('id_compagnie', $idCompagnie) @endphp
-                        <li>
-                            <button type="button" class="dest-tab-btn{{ $loop->first ? ' active' : '' }}" data-tab-target="dest-tab-{{ $idCompagnie }}">
-                                @if ($compagnie?->logo)
-                                    <img src="{{ asset('images/logos/'.$compagnie->logo) }}" alt="">
-                                @endif
-                                {{ $compagnie->nom_compagnie ?? 'Compagnie' }}
-                            </button>
-                        </li>
-                    @endforeach
-                </ul>
-
-                <div class="dest-tab-content">
-                    @foreach ($programmesParCompagnie as $idCompagnie => $programmes)
-                        <div class="dest-tab-panel{{ $loop->first ? ' active' : '' }}" id="dest-tab-{{ $idCompagnie }}">
-                            @if (!empty($programmes))
-                                <div class="dest-grid">
-                                    @foreach ($programmes as $i => $p)
-                                        <div class="dest-card" data-aos="fade-up" data-aos-delay="{{ ($i % 4 + 1) * 100 }}">
-                                            <div class="dest-card-top">
-                                                <span class="dest-route-icon"><i class="fas fa-bus"></i></span>
-                                                <span class="dest-price">{{ number_format((float) $p->prix, 0, ',', ' ') }} FCFA</span>
-                                            </div>
-                                            <div class="dest-info">
-                                                <h4>{{ $p->departLocalite }} <i class="fas fa-long-arrow-alt-right"></i> {{ $p->destinationLocalite }}</h4>
-                                                <p class="dest-heures-label"><i class="far fa-clock"></i> Départs</p>
-                                                <div class="dest-heures">
-                                                    @foreach ($p->heures as $h)
-                                                        <span class="heure-badge">{{ substr($h, 0, 5) }}</span>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="dest-panel-empty">
-                                    <i class="fas fa-route"></i>
-                                    Aucun trajet disponible pour le moment.
-                                </div>
-                            @endif
+        @if (! empty($destinations))
+            <div class="dest-grid" data-aos="fade-up">
+                @foreach ($destinations as $i => $p)
+                    <div class="dest-card" data-aos="fade-up" data-aos-delay="{{ ($i % 4 + 1) * 100 }}">
+                        <div class="dest-card-top">
+                            <span class="dest-route-icon"><i class="fas fa-bus"></i></span>
+                            <span class="dest-price">{{ number_format((float) $p->prix, 0, ',', ' ') }} FCFA</span>
                         </div>
-                    @endforeach
-                </div>
+                        <div class="dest-info">
+                            <h4>{{ $p->departLocalite }} <i class="fas fa-long-arrow-alt-right"></i> {{ $p->destinationLocalite }}</h4>
+                            <p class="dest-heures-label"><i class="far fa-clock"></i> Départs</p>
+                            <div class="dest-heures">
+                                @foreach ($p->heures as $h)
+                                    <span class="heure-badge">{{ substr($h, 0, 5) }}</span>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            <div style="text-align: center; margin-top: 32px;" data-aos="fade-up">
+                <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="btn btn-primary">Voir tous nos trajets <i class="fas fa-arrow-right"></i></a>
             </div>
         @else
             <div class="dest-tab-empty">Aucun trajet programmé pour le moment.</div>
@@ -729,8 +529,8 @@
                 <p>Destinations</p>
             </div>
             <div data-aos="zoom-in" data-aos-delay="100">
-                <h3>{{ $heroStats['compagnies'] }}</h3>
-                <p>Compagnies</p>
+                <h3>{{ $heroStats['clients'] }}</h3>
+                <p>Clients satisfaits</p>
             </div>
             <div data-aos="zoom-in" data-aos-delay="200">
                 <h3>{{ $heroStats['trajets'] }}</h3>
@@ -807,16 +607,6 @@
 <script src="{{ asset('assets_site/js/aos.js') }}"></script>
 <script>
     AOS.init({ duration: 600, once: true, offset: 50 });
-
-    // Onglets "Destinations populaires" par compagnie
-    document.querySelectorAll('.dest-tab-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.dest-tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.dest-tab-panel').forEach(p => p.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(btn.getAttribute('data-tab-target')).classList.add('active');
-        });
-    });
 
     // Slider du hero : fondu enchaîné entre les images de public/assets_site/img/hero-slides/.
     // Ne fait rien s'il n'y a qu'une seule image (ou aucune).

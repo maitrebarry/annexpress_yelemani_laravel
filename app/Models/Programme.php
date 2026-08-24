@@ -116,14 +116,35 @@ class Programme extends Model
             ]);
     }
 
+    // Port de Projets_licence/app/models/Programme.php::findById() — un seul trajet, avec
+    // escales/tarifs et numéros de gare, pour préremplir le formulaire de réservation en
+    // ligne (Site\ReservationController).
+    public static function trouverAvecEscales(int $id): ?self
+    {
+        return self::query()
+            ->join('agence as a1', 'programmer.idDepart', '=', 'a1.idAgence')
+            ->join('agence as a2', 'programmer.idDestination', '=', 'a2.idAgence')
+            ->where('programmer.idProgrammer', $id)
+            ->first([
+                'programmer.*',
+                'a1.localite as departLocalite', 'a1.numeroGare as numeroGare1', 'a1.code as codeDepart',
+                'a2.localite as destinationLocalite', 'a2.numeroGare as numeroGare2',
+                DB::raw("(SELECT GROUP_CONCAT(CONCAT(e.escales, ' (', lt.prix_escale, ' FCFA)') ORDER BY e.id_escale SEPARATOR ', ')
+                          FROM ligneTrajet lt JOIN escale e ON e.id_escale = lt.id_escales
+                          WHERE lt.id_trajets = programmer.idProgrammer AND lt.type_trajet = 'programmer') as escales_avec_frais"),
+            ]);
+    }
+
     // Port de Projets_licence/app/models/Programme.php::getVillesDisponibles() : toutes
     // compagnies confondues, pour le sélecteur départ/destination de la recherche publique.
-    public static function villesDisponibles()
+    public static function villesDisponibles(?int $idCompagnie = null)
     {
         return Agence::query()
-            ->where(function ($q) {
-                $q->whereIn('idAgence', fn ($sub) => $sub->select('idDepart')->from('programmer'))
-                    ->orWhereIn('idAgence', fn ($sub) => $sub->select('idDestination')->from('programmer'));
+            ->where(function ($q) use ($idCompagnie) {
+                $q->whereIn('idAgence', fn ($sub) => $sub->select('idDepart')->from('programmer')
+                        ->when($idCompagnie, fn ($s) => $s->where('id_compagnie', $idCompagnie)))
+                    ->orWhereIn('idAgence', fn ($sub) => $sub->select('idDestination')->from('programmer')
+                        ->when($idCompagnie, fn ($s) => $s->where('id_compagnie', $idCompagnie)));
             })
             ->distinct()->orderBy('localite')->pluck('localite');
     }

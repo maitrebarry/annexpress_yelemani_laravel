@@ -11,49 +11,50 @@ use Illuminate\View\View;
 
 /**
  * Port de Projets_licence/app/controllers/site/Suivis_colis.php — suivi public d'un
- * colis par code + compagnie (les deux sont requis : le code seul ne suffit pas à
- * retrouver un colis, pour éviter qu'un visiteur énumère les colis d'une compagnie qu'il
- * n'a pas choisie).
+ * colis par code.
+ *
+ * Le site public est dédié à une seule compagnie (voir App\Models\Compagnie::site() /
+ * config/site.php, décision du 2026-08-24) : la sélection de compagnie a disparu du
+ * formulaire (il n'y en a plus qu'une), `id_compagnie` est forcé côté serveur plutôt que
+ * lu depuis la requête — même garde-fou qu'avant (le lookup vérifie toujours code + compagnie,
+ * jamais le code seul), juste avec une seule compagnie possible désormais.
  */
 class SuiviColisController extends Controller
 {
     public function index(Request $request): View|RedirectResponse
     {
-        $compagnies = Compagnie::orderBy('nom_compagnie')->get();
+        $idCompagnie = Compagnie::site()->id_compagnie;
         $colis = null;
         $erreur = null;
 
         // Étape 1 (soumission du formulaire) : vérifie l'appartenance puis redirige vers
-        // ?show_code=...&id_compagnie=... (PRG — évite le renvoi de formulaire au rechargement
-        // et donne une URL de résultat propre/partageable).
-        if ($request->filled('code_colis') && $request->filled('id_compagnie')) {
+        // ?show_code=... (PRG — évite le renvoi de formulaire au rechargement et donne une
+        // URL de résultat propre/partageable).
+        if ($request->filled('code_colis')) {
             $codeColis = trim((string) $request->query('code_colis'));
-            $idCompagnie = (int) $request->query('id_compagnie');
 
             $existe = Colis::where('code_colis', $codeColis)->where('id_compagnie', $idCompagnie)->exists();
 
             if ($existe) {
-                return redirect()->route('site.suivi-colis', ['show_code' => $codeColis, 'id_compagnie' => $idCompagnie]);
+                return redirect()->route('site.suivi-colis', ['show_code' => $codeColis]);
             }
 
-            $erreur = "Ce colis n'appartient pas à la compagnie sélectionnée.";
+            $erreur = "Ce colis n'existe pas.";
         }
 
         // Étape 2 (URL de résultat) : revérifie l'appartenance à la compagnie (jamais un
         // simple lookup par code seul) avant d'afficher les détails.
-        if ($request->filled('show_code') && $request->filled('id_compagnie')) {
+        if ($request->filled('show_code')) {
             $colis = Colis::query()
                 ->avecDetails()
                 ->where('colis.code_colis', trim((string) $request->query('show_code')))
-                ->where('colis.id_compagnie', (int) $request->query('id_compagnie'))
+                ->where('colis.id_compagnie', $idCompagnie)
                 ->first();
         }
 
         return view('site.suivi-colis', [
-            'compagnies' => $compagnies,
             'colis' => $colis,
             'erreur' => $erreur,
-            'idCompagnieSelectionnee' => $request->query('id_compagnie'),
             'codeColisSaisi' => $request->query('code_colis'),
         ]);
     }

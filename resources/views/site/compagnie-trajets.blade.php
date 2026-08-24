@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>{{ $compagnie->nom_compagnie }} - TransGest</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/all.min.css') }}" rel="stylesheet">
@@ -100,6 +101,41 @@
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
         .section-header h2 { font-size: 1.6rem; font-weight: 700; }
         .result-count { color: var(--gray); font-size: 0.9rem; }
+        .section-toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .sort-select {
+            padding: 9px 14px; border: 2px solid #e2e8f0; border-radius: var(--radius); font-size: 0.82rem;
+            font-weight: 600; color: var(--dark); background: white; cursor: pointer; transition: border-color .2s;
+        }
+        .sort-select:hover, .sort-select:focus { outline: none; border-color: var(--secondary); }
+        .view-toggle { display: flex; background: #eef1f5; border-radius: 50px; padding: 3px; gap: 2px; }
+        .view-toggle button {
+            border: none; background: transparent; padding: 7px 13px; border-radius: 50px; cursor: pointer;
+            color: var(--gray); font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: all .2s;
+        }
+        .view-toggle button.active { background: white; color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,.08); font-weight: 700; }
+
+        /* Groupes repliables (<details>/<summary>) */
+        .depart-group { margin-bottom: 28px; }
+        .depart-group-header {
+            list-style: none; cursor: pointer; user-select: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white;
+            padding: 14px 20px; border-radius: var(--radius); margin-bottom: 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            font-weight: 700; font-size: 1rem; transition: border-radius .2s ease;
+        }
+        .depart-group-header::-webkit-details-marker { display: none; }
+        .depart-group-header .count-chip {
+            display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600; opacity: 0.9;
+        }
+        .depart-group-header .chevron { transition: transform 0.3s ease; }
+        .depart-group[open] > .depart-group-header { margin-bottom: 20px; }
+        .depart-group:not([open]) > .depart-group-header { margin-bottom: 0; border-radius: var(--radius); }
+        .depart-group[open] > .depart-group-header .chevron { transform: rotate(180deg); }
+
+        /* Transition douce quand un filtre masque une carte */
+        .trip-card { transition: transform 0.35s cubic-bezier(.22,1,.36,1), box-shadow 0.35s ease, opacity .25s ease; }
+        .trip-card.is-filtered-out { opacity: 0; transform: scale(.92); pointer-events: none; }
+
         .trips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; }
         .trip-card {
             background: white; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow);
@@ -107,21 +143,21 @@
             position: relative; border: 1px solid transparent; display: flex; flex-direction: column;
         }
         .trip-card:hover { transform: translateY(-8px) scale(1.01); box-shadow: var(--shadow-lg); border-color: rgba(230, 126, 34, 0.25); }
-        .trip-badge {
-            position: absolute; top: 12px; right: 16px; background: var(--secondary); color: white;
-            padding: 5px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 600; z-index: 2;
-            display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(230, 126, 34, 0.35);
-        }
-        .trip-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: white; animation: pulseDot 1.5s ease-in-out infinite; }
-        @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
         .trip-banner {
             background: linear-gradient(120deg, var(--primary) 0%, var(--primary-light) 100%);
-            padding: 34px 24px 22px; position: relative; overflow: hidden;
+            padding: 26px 24px 20px; position: relative; overflow: hidden;
         }
         .trip-banner::before {
             content: ''; position: absolute; top: -30%; right: -10%; width: 140px; height: 140px;
             background: rgba(255, 255, 255, 0.06); border-radius: 50%;
         }
+        .banner-top-row { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; margin-bottom: 14px; }
+        .banner-time {
+            display: flex; align-items: center; gap: 7px; color: white; font-weight: 700; font-size: 1.05rem;
+        }
+        .banner-time .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: pulseDot 1.5s ease-in-out infinite; box-shadow: 0 0 0 3px rgba(74,222,128,.25); }
+        @keyframes pulseDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }
+        .banner-gare { color: rgba(255,255,255,.7); font-size: 0.72rem; display: flex; align-items: center; gap: 5px; }
         .route-path { display: flex; align-items: center; gap: 0; position: relative; margin-bottom: 12px; }
         .route-dot { width: 10px; height: 10px; border-radius: 50%; background: white; flex-shrink: 0; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2); }
         .route-dot.end { background: var(--secondary); }
@@ -133,7 +169,7 @@
         .route-bus-icon { color: white; font-size: 0.95rem; margin: 0 10px; transition: transform 0.35s ease; }
         .trip-card:hover .route-bus-icon { transform: translateX(4px); }
         .trip-card:hover .route-line { animation-duration: 0.4s; }
-        .banner-cities { display: flex; justify-content: space-between; color: white; font-size: 0.72rem; opacity: 0.85; position: relative; z-index: 1; }
+        .banner-cities { display: flex; justify-content: space-between; color: white; font-size: 0.78rem; font-weight: 600; position: relative; z-index: 1; }
         .trip-company { display: flex; align-items: center; gap: 12px; padding: 16px 20px 0 20px; }
         .company-avatar {
             width: 40px; height: 40px; background: var(--gray-light); border-radius: 50%; display: flex;
@@ -142,17 +178,17 @@
         }
         .trip-card:hover .company-avatar { transform: rotate(-8deg) scale(1.08); background: #dfeaf3; }
         .company-name { font-weight: 700; font-size: 1rem; }
-        .trip-details { padding: 16px 20px 20px; display: flex; flex-direction: column; flex: 1; }
-        .trip-route { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-        .route-point { flex: 1; }
-        .route-city { font-weight: 700; font-size: 1.1rem; }
-        .route-time { font-size: 0.75rem; color: var(--gray); }
-        .route-arrow { color: var(--secondary); font-size: 1.2rem; }
-        .trip-info { display: flex; justify-content: space-between; margin-bottom: 16px; padding-top: 12px; border-top: 1px solid #eef2f6; }
+        .trip-details { padding: 16px 20px 0; display: flex; flex-direction: column; flex: 1; }
+        .trip-info { display: flex; justify-content: space-between; margin-bottom: 16px; padding-top: 4px; }
         .info-item { text-align: center; }
         .info-label { font-size: 0.7rem; color: var(--gray); }
         .info-value { font-weight: 700; font-size: 0.9rem; }
-        .trip-price { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px solid #eef2f6; }
+        .trip-price {
+            display: flex; justify-content: space-between; align-items: center; margin-top: auto;
+            padding: 14px 20px; border-top: 1px dashed #e2e8f0; background: linear-gradient(180deg, #fbfcfe, #f4f7fb);
+        }
+        .price-wrap { display: flex; flex-direction: column; line-height: 1.15; }
+        .price-wrap .price-label { font-size: 0.65rem; color: var(--gray); text-transform: uppercase; letter-spacing: .4px; }
         .price { font-size: 1.4rem; font-weight: 800; color: var(--secondary); }
         .btn-book {
             background: var(--primary); color: white; border: none; padding: 8px 20px; border-radius: 50px;
@@ -164,6 +200,21 @@
         .btn-book:hover i { transform: translateX(4px); }
         .trip-card:hover .price { animation: priceBounce 0.4s ease; }
         @keyframes priceBounce { 0% { transform: scale(1); } 40% { transform: scale(1.08); } 100% { transform: scale(1); } }
+
+        /* ========== VUE LISTE (bascule) ========== */
+        .trips-section.view-list .trips-grid { grid-template-columns: 1fr; gap: 12px; }
+        .trips-section.view-list .trip-card { flex-direction: row; align-items: stretch; }
+        .trips-section.view-list .trip-banner { flex: 0 0 210px; padding: 18px; display: flex; flex-direction: column; justify-content: center; }
+        .trips-section.view-list .trip-company { display: none; }
+        .trips-section.view-list .trip-details { flex-direction: row; align-items: center; padding: 14px 22px; gap: 24px; }
+        .trips-section.view-list .trip-info { margin-bottom: 0; flex: 1; }
+        .trips-section.view-list .escales-block { display: none; }
+        .trips-section.view-list .trip-price { border-top: none; background: none; padding: 0; flex-shrink: 0; }
+        @media (max-width: 768px) {
+            .trips-section.view-list .trip-card { flex-direction: column; }
+            .trips-section.view-list .trip-banner { flex: none; }
+            .trips-section.view-list .trip-details { flex-direction: column; align-items: stretch; }
+        }
 
         /* ========== RESPONSIVE ========== */
         @media (max-width: 992px) {
@@ -178,7 +229,7 @@
 </head>
 <body>
 
-@include('site.partials.nav')
+@include('site.partials.nav', ['compagnie' => $compagnie])
 
 <!-- PAGE HEADER -->
 <section class="page-header">
@@ -241,14 +292,30 @@
 <section class="trips-section">
     <div class="container">
         <div class="section-header" data-aos="fade-up">
-            <h2>Programmes disponibles</h2>
-            <span class="result-count">
-                @if ($programmes->isNotEmpty())
-                    <span class="count-number" data-count="{{ $programmes->count() }}">0</span> voyage(s) trouvé(s)
-                @else
-                    Aucun voyage disponible
-                @endif
-            </span>
+            <div>
+                <h2>Programmes disponibles</h2>
+                <span class="result-count">
+                    @if ($programmes->isNotEmpty())
+                        <span class="count-number" data-count="{{ $programmes->count() }}">0</span> voyage(s) trouvé(s)
+                    @else
+                        Aucun voyage disponible
+                    @endif
+                </span>
+            </div>
+
+            @if ($programmes->isNotEmpty())
+                <div class="section-toolbar">
+                    <select class="sort-select" id="sortTrips">
+                        <option value="heure">Trier par heure</option>
+                        <option value="prix-asc">Prix croissant</option>
+                        <option value="prix-desc">Prix décroissant</option>
+                    </select>
+                    <div class="view-toggle" id="viewToggle">
+                        <button type="button" class="active" data-view="grid"><i class="fas fa-th-large"></i> Grille</button>
+                        <button type="button" data-view="list"><i class="fas fa-list"></i> Liste</button>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <div id="noResultsFilter" style="display:none;text-align:center;padding:60px 20px;">
@@ -258,21 +325,26 @@
         </div>
 
         @forelse ($programmesParDepart as $depart => $programmesDepart)
-            <div class="depart-group" style="margin-bottom:40px;">
-                <div style="background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;padding:12px 20px;border-radius:var(--radius);margin-bottom:20px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:1rem;" data-aos="fade-right">
-                    <i class="fas fa-map-marker-alt"></i>
-                    Départ depuis : {{ $depart }}
-                </div>
+            <details class="depart-group" open>
+                <summary class="depart-group-header" data-aos="fade-right">
+                    <span><i class="fas fa-map-marker-alt"></i> Départ depuis : {{ $depart }}</span>
+                    <span class="count-chip">{{ $programmesDepart->count() }} trajet(s) <i class="fas fa-chevron-down chevron"></i></span>
+                </summary>
 
                 <div class="trips-grid">
                     @foreach ($programmesDepart as $index => $programme)
                         <div class="trip-card" data-aos="fade-up" data-aos-delay="{{ ($index % 3) * 100 }}"
                              data-depart="{{ trim($programme->departLocalite ?? '') }}"
-                             data-destination="{{ trim($programme->destinationLocalite ?? '') }}">
-                            <div class="trip-badge">
-                                <span class="dot"></span> <i class="fas fa-clock"></i> {{ $programme->heureDepart ?? '--' }}
-                            </div>
+                             data-destination="{{ trim($programme->destinationLocalite ?? '') }}"
+                             data-prix="{{ (float) $programme->prix }}"
+                             data-heure="{{ $programme->heureDepart ?? '' }}">
                             <div class="trip-banner">
+                                <div class="banner-top-row">
+                                    <span class="banner-time"><span class="dot"></span> {{ $programme->heureDepart ?? '--' }}</span>
+                                    @if ($programme->rdv)
+                                        <span class="banner-gare"><i class="fas fa-map-pin"></i> RDV {{ $programme->rdv }}</span>
+                                    @endif
+                                </div>
                                 <div class="route-path">
                                     <span class="route-dot start"></span>
                                     <span class="route-line"></span>
@@ -285,58 +357,57 @@
                                     <span>{{ $programme->destinationLocalite ?? 'Destination' }}</span>
                                 </div>
                             </div>
-                            <div class="trip-company" style="padding:20px 20px 0;">
+                            <div class="trip-company">
                                 <div class="company-avatar"><i class="fas fa-bus"></i></div>
-                                <div>
-                                    <div class="company-name">{{ $compagnie->nom_compagnie }}</div>
-                                    @if ($programme->rdv)
-                                        <div style="font-size:0.75rem;color:var(--gray);">RDV : {{ $programme->rdv }}</div>
-                                    @endif
-                                </div>
+                                <div class="company-name">{{ $compagnie->nom_compagnie }}</div>
                             </div>
                             <div class="trip-details">
-                                <div class="trip-route">
-                                    <div class="route-point">
-                                        <div class="route-city">{{ $programme->departLocalite ?? 'Départ' }}</div>
-                                        <div class="route-time">{{ $programme->heureDepart ?? '--' }}</div>
+                                <div class="trip-info">
+                                    <div class="info-item">
+                                        <div class="info-label">Gare départ</div>
+                                        <div class="info-value">{{ $programme->numeroGare1 ?: '-' }}</div>
                                     </div>
-                                    <div class="route-arrow"><i class="fas fa-arrow-right"></i></div>
-                                    <div class="route-point">
-                                        <div class="route-city">{{ $programme->destinationLocalite ?? 'Destination' }}</div>
-                                        <div class="route-time">{{ $programme->numeroGare2 ? 'Gare : '.$programme->numeroGare2 : '' }}</div>
+                                    <div class="info-item">
+                                        <div class="info-label">Gare arrivée</div>
+                                        <div class="info-value">{{ $programme->numeroGare2 ?: '-' }}</div>
                                     </div>
                                 </div>
 
                                 @if ($programme->escales_avec_frais)
-                                    <div style="padding:10px 0;border-top:1px solid #eef2f6;margin-top:10px;">
+                                    <div class="escales-block" style="padding-bottom:10px;">
                                         <div style="font-size:0.75rem;color:var(--gray);margin-bottom:6px;"><i class="fas fa-code-branch"></i> Escales disponibles</div>
                                         @foreach (explode(', ', $programme->escales_avec_frais) as $escale)
                                             <span style="display:inline-block;background:#e8f4fd;color:var(--primary);padding:3px 10px;border-radius:50px;font-size:0.72rem;font-weight:600;margin:2px;">{{ $escale }}</span>
                                         @endforeach
                                     </div>
                                 @endif
+                            </div>
 
-                                <div class="trip-price">
+                            <div class="trip-price">
+                                <div class="price-wrap">
+                                    <span class="price-label">Prix du billet</span>
                                     <span class="price">{{ number_format((float) $programme->prix, 0, ',', ' ') }} FCFA</span>
-                                    <a href="#" onclick="tgBientot(event)" class="btn-book">
-                                        Réserver <i class="fas fa-arrow-right" style="margin-left:5px;"></i>
-                                    </a>
                                 </div>
+                                <a href="#" onclick="openReservationModal({{ $programme->idProgrammer }}); return false;" class="btn-book">
+                                    Réserver <i class="fas fa-arrow-right" style="margin-left:5px;"></i>
+                                </a>
                             </div>
                         </div>
                     @endforeach
                 </div>
-            </div>
+            </details>
         @empty
             <div style="text-align:center;padding:80px 20px;">
                 <i class="fas fa-bus" style="font-size:4rem;color:#ddd;margin-bottom:20px;"></i>
                 <h3 style="color:var(--gray);margin-bottom:10px;">Aucun programme disponible</h3>
                 <p style="color:#aaa;">Cette compagnie n'a pas encore de trajets programmés.</p>
-                <a href="{{ route('site.compagnies') }}" style="display:inline-block;margin-top:20px;padding:12px 24px;background:var(--secondary);color:white;border-radius:var(--radius);text-decoration:none;font-weight:600;">Voir d'autres compagnies</a>
+                <a href="{{ route('site.home') }}" style="display:inline-block;margin-top:20px;padding:12px 24px;background:var(--secondary);color:white;border-radius:var(--radius);text-decoration:none;font-weight:600;">Retour à l'accueil</a>
             </div>
         @endforelse
     </div>
 </section>
+
+@include('site.partials.reservation-modal')
 
 <!-- FOOTER -->
 <footer class="footer">
@@ -376,7 +447,8 @@
         animateCount(el, parseInt(el.dataset.count, 10) || 0);
     });
 
-    // Filtre départ / destination sur les vraies données des programmes
+    // Filtre départ / destination sur les vraies données des programmes (transition en
+    // fondu avant le masquage réel, plutôt qu'un display:none instantané)
     (function () {
         const departSelect = document.getElementById('filterDepart');
         const destSelect = document.getElementById('filterDestination');
@@ -398,13 +470,20 @@
                 const matchDep = !dep || normalize(card.dataset.depart) === dep;
                 const matchDest = !dest || normalize(card.dataset.destination) === dest;
                 const visible = matchDep && matchDest;
-                card.style.display = visible ? '' : 'none';
-                if (visible) visibleCount++;
+
+                if (visible) {
+                    card.classList.remove('is-filtered-out');
+                    card.style.display = '';
+                    visibleCount++;
+                } else if (!card.classList.contains('is-filtered-out')) {
+                    card.classList.add('is-filtered-out');
+                    setTimeout(function () { if (card.classList.contains('is-filtered-out')) card.style.display = 'none'; }, 250);
+                }
             });
 
             document.querySelectorAll('.depart-group').forEach(function (group) {
                 const anyVisible = Array.from(group.querySelectorAll('.trip-card')).some(function (c) {
-                    return c.style.display !== 'none';
+                    return !c.classList.contains('is-filtered-out');
                 });
                 group.style.display = anyVisible ? '' : 'none';
             });
@@ -416,6 +495,47 @@
         departSelect.addEventListener('change', applyFilters);
         destSelect.addEventListener('change', applyFilters);
         if (searchBtn) searchBtn.addEventListener('click', applyFilters);
+    })();
+
+    // Tri des cartes (par heure ou par prix) à l'intérieur de chaque groupe de départ
+    (function () {
+        const sortSelect = document.getElementById('sortTrips');
+        if (!sortSelect) return;
+
+        sortSelect.addEventListener('change', function () {
+            const mode = this.value;
+            document.querySelectorAll('.trips-grid').forEach(function (grid) {
+                const cards = Array.from(grid.querySelectorAll('.trip-card'));
+                cards.sort(function (a, b) {
+                    if (mode === 'prix-asc') return parseFloat(a.dataset.prix) - parseFloat(b.dataset.prix);
+                    if (mode === 'prix-desc') return parseFloat(b.dataset.prix) - parseFloat(a.dataset.prix);
+                    return (a.dataset.heure || '').localeCompare(b.dataset.heure || '');
+                });
+                cards.forEach(function (card) { grid.appendChild(card); });
+            });
+        });
+    })();
+
+    // Bascule vue grille / liste, mémorisée pour la prochaine visite
+    (function () {
+        const toggle = document.getElementById('viewToggle');
+        const tripsSection = document.querySelector('.trips-section');
+        if (!toggle || !tripsSection) return;
+
+        function setView(view) {
+            tripsSection.classList.toggle('view-list', view === 'list');
+            toggle.querySelectorAll('button').forEach(function (btn) {
+                btn.classList.toggle('active', btn.dataset.view === view);
+            });
+            localStorage.setItem('trajetsView', view);
+        }
+
+        toggle.querySelectorAll('button').forEach(function (btn) {
+            btn.addEventListener('click', function () { setView(btn.dataset.view); });
+        });
+
+        const saved = localStorage.getItem('trajetsView');
+        if (saved === 'list') setView('list');
     })();
 
     // Effet ripple sur les boutons

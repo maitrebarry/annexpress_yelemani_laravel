@@ -17,6 +17,16 @@ class Compagnie extends Model
         'logo',
     ];
 
+    protected static ?self $siteCompagnie = null;
+
+    // La compagnie à laquelle le site public (resources/views/site/**) est dédié — voir
+    // config/site.php. Memoïsée pour la durée de la requête : ce helper est appelé depuis
+    // le nav partial sur chaque page en plus des contrôleurs eux-mêmes.
+    public static function site(): self
+    {
+        return self::$siteCompagnie ??= self::findOrFail(config('site.compagnie_id'));
+    }
+
     public function agences()
     {
         return $this->hasMany(Agence::class, 'id_compagnie', 'id_compagnie');

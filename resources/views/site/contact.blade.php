@@ -248,7 +248,7 @@
 </head>
 <body>
 
-@include('site.partials.nav')
+@include('site.partials.nav', ['compagnie' => $compagnie])
 
 <!-- PAGE HEADER -->
 <section class="page-header">
@@ -264,16 +264,16 @@
         <div class="about-grid">
             <div class="about-content" data-aos="fade-right">
                 <h2>Votre partenaire de voyage au Mali</h2>
-                <p>TransGest est la première plateforme digitale de réservation de billets de bus et de suivi de colis au Mali. Créée en 2020, notre mission est de simplifier les déplacements des Maliens en offrant une solution fiable, rapide et sécurisée.</p>
-                <p>Nous collaborons avec les meilleures compagnies de transport pour vous garantir confort, ponctualité et sécurité. Grâce à notre technologie, réservez vos trajets en quelques clics et suivez vos colis en temps réel.</p>
+                <p>{{ $compagnie->nom_compagnie }} {{ $compagnie->slogant ? '— '.$compagnie->slogant : '' }} vous accompagne dans vos déplacements et l'envoi de vos colis au Mali, avec une solution de réservation en ligne fiable, rapide et sécurisée.</p>
+                <p>Confort, ponctualité et sécurité à chaque trajet. Réservez en quelques clics et suivez vos colis en temps réel.</p>
                 <div class="about-stats">
                     <div class="stat">
                         <div class="stat-number">{{ $stats['destinations'] }}</div>
                         <div class="stat-label">Destinations</div>
                     </div>
                     <div class="stat">
-                        <div class="stat-number">{{ $stats['compagnies'] }}</div>
-                        <div class="stat-label">Compagnies</div>
+                        <div class="stat-number">{{ $stats['trajets'] }}</div>
+                        <div class="stat-label">Trajets</div>
                     </div>
                     <div class="stat">
                         <div class="stat-number">{{ $stats['clients'] }}</div>

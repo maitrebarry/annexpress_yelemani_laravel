@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\GaresController;
 use App\Http\Controllers\Admin\HistoriqueColisController;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\HoraireController;
+use App\Http\Controllers\Admin\ListeEntenteController;
 use App\Http\Controllers\Admin\LivraisonColisController;
 use App\Http\Controllers\Admin\LocationCarController;
 use App\Http\Controllers\Admin\MouvementColisController;
@@ -36,6 +37,7 @@ use App\Http\Controllers\Site\ContactController as SiteContactController;
 use App\Http\Controllers\Site\HomeController as SiteHomeController;
 use App\Http\Controllers\Site\PartenaireController as SitePartenaireController;
 use App\Http\Controllers\Site\RechercheController as SiteRechercheController;
+use App\Http\Controllers\Site\ReservationController as SiteReservationController;
 use App\Http\Controllers\Site\SuiviColisController as SiteSuiviColisController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,9 +46,15 @@ use Illuminate\Support\Facades\Route;
 Route::name('site.')->group(function () {
     Route::get('/', [SiteHomeController::class, 'index'])->name('home');
     Route::get('/compagnies', [SiteCompagnieController::class, 'index'])->name('compagnies');
-    Route::get('/compagnies/{compagnie}/trajets', [SiteCompagnieController::class, 'show'])->name('compagnie.trajets');
+    // Pas de suffixe /trajets : cette page joue le rôle de "mini-site" propre à la
+    // compagnie (voir site/partials/nav.blade.php) plutôt qu'une simple sous-page listant
+    // ses trajets — l'URL doit ressembler à sa propre page, pas à un détail imbriqué.
+    Route::get('/compagnies/{compagnie}', [SiteCompagnieController::class, 'show'])->name('compagnie.trajets');
     Route::get('/recherche', [SiteRechercheController::class, 'index'])->name('recherche');
     Route::get('/suivi-colis', [SiteSuiviColisController::class, 'index'])->name('suivi-colis');
+    Route::get('/reservation/{id}/donnees', [SiteReservationController::class, 'donnees'])->name('reservation.donnees');
+    Route::post('/reservation', [SiteReservationController::class, 'store'])->name('reservation.store');
+    Route::get('/billet/{numeroBillets}', [SiteReservationController::class, 'billet'])->name('billet');
     Route::get('/contact', [SiteContactController::class, 'index'])->name('contact');
 
     // Espace partenaire (guard `partenaire`, voir config/auth.php).
@@ -330,4 +338,9 @@ Route::middleware(['auth:staff', 'permission:Billets_annulation'])->prefix('admi
 Route::middleware(['auth:staff', 'permission:Billets_rapport'])->prefix('admin')->group(function () {
     Route::get('/Rapport_billets/rapport_billets', [RapportBilletController::class, 'mensuel'])->name('admin.rapport-billet.mensuel');
     Route::get('/Rapport_billets/rapport_annuel', [RapportBilletController::class, 'annuel'])->name('admin.rapport-billet.annuel');
+});
+
+Route::middleware(['auth:staff', 'permission:Billets_validation'])->prefix('admin')->group(function () {
+    Route::get('/Liste_ententes', [ListeEntenteController::class, 'index'])->name('admin.entente.index');
+    Route::post('/Liste_ententes/{id}/valider', [ListeEntenteController::class, 'valider'])->name('admin.entente.valider');
 });

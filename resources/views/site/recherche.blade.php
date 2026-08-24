@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Résultats de recherche - TransGest</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets_site/css/all.min.css') }}">
@@ -21,7 +22,7 @@
         }
         .search-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 16px;
             align-items: end;
         }
@@ -98,7 +99,7 @@
 </head>
 <body>
 
-@include('site.partials.nav')
+@include('site.partials.nav', ['compagnie' => $compagnie])
 
 <section class="page-header" style="padding: 40px 0;">
     <div class="container">
@@ -134,15 +135,6 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Compagnie</label>
-                    <select name="compagnie" class="form-select">
-                        <option value="">Toutes les compagnies</option>
-                        @foreach ($compagnies as $c)
-                            <option value="{{ $c->id_compagnie }}" @selected((string) $idCompagnie === (string) $c->id_compagnie)>{{ $c->nom_compagnie }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
                     <label>Date</label>
                     <input type="date" name="date" class="form-control" value="{{ $date }}" min="{{ date('Y-m-d') }}">
                 </div>
@@ -171,7 +163,7 @@
                             {{ $r->departLocalite }} <i class="fas fa-long-arrow-alt-right"></i> {{ $r->destinationLocalite }}
                         </div>
                         <p class="result-heure"><i class="far fa-clock"></i> Départ à {{ substr($r->heureDepart, 0, 5) }}</p>
-                        <a href="#" onclick="tgBientot(event)" class="result-book">Réserver <i class="fas fa-arrow-right"></i></a>
+                        <a href="#" onclick="openReservationModal({{ $r->idProgrammer }}); return false;" class="result-book">Réserver <i class="fas fa-arrow-right"></i></a>
                     </div>
                 @endforeach
             </div>
@@ -183,6 +175,8 @@
         @endif
     </div>
 </section>
+
+@include('site.partials.reservation-modal')
 
 <footer class="footer">
     <div class="container">

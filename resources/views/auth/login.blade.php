@@ -136,6 +136,40 @@
             margin-bottom: 40px;
         }
 
+        /* Affiche qui défile (carousel) à côté du formulaire */
+        .photo-carousel {
+            position: relative; width: 100%; height: 220px;
+            border-radius: 18px; overflow: hidden; margin-bottom: 26px;
+            border: 1px solid rgba(255,255,255,.18);
+            box-shadow: 0 18px 34px -16px rgba(0,0,0,.6);
+        }
+        .carousel-slide {
+            position: absolute; inset: 0; opacity: 0;
+            transition: opacity 1s ease;
+        }
+        .carousel-slide.active { opacity: 1; z-index: 1; }
+        .carousel-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .carousel-slide .overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(6,15,34,0) 40%, rgba(6,15,34,.92) 100%);
+            display: flex; align-items: flex-end; padding: 16px 18px;
+        }
+        .carousel-slide .overlay span {
+            color: #fff; font-size: .95rem; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .carousel-slide .overlay i { color: var(--primary); font-size: 1.05rem; }
+        .carousel-dots {
+            position: absolute; bottom: 12px; right: 16px; z-index: 2;
+            display: flex; gap: 6px;
+        }
+        .carousel-dots .dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: rgba(255,255,255,.4); cursor: pointer;
+            transition: background .2s ease, transform .2s ease;
+        }
+        .carousel-dots .dot.active { background: var(--primary); transform: scale(1.25); }
+
         .feature-list { display: flex; flex-direction: column; gap: 14px; }
         .feature-item { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,.85); font-size: .92rem; }
         .feature-item .dot {
@@ -278,6 +312,31 @@
             <h2>Pilotez vos <em>compagnies</em><br>de transport en un clin d'œil</h2>
             <p>Un espace unique pour administrer plusieurs compagnies : trajets, billets, colis et caisses, en temps réel.</p>
 
+            <div class="photo-carousel" id="loginCarousel">
+                <div class="carousel-slide active">
+                    <img src="{{ asset('assets_site/img/hero-bg.jpg') }}" alt="Trajets et flotte">
+                    <div class="overlay"><span><i class="bi bi-bus-front-fill"></i> Trajets &amp; flotte</span></div>
+                </div>
+                <div class="carousel-slide">
+                    <img src="{{ asset('assets_site/img/reservation.png') }}" alt="Billets en ligne">
+                    <div class="overlay"><span><i class="bi bi-ticket-perforated-fill"></i> Billets en ligne</span></div>
+                </div>
+                <div class="carousel-slide">
+                    <img src="{{ asset('assets_site/img/colis.png') }}" alt="Colis et livraison">
+                    <div class="overlay"><span><i class="bi bi-box-seam-fill"></i> Colis &amp; livraison</span></div>
+                </div>
+                <div class="carousel-slide">
+                    <img src="{{ asset('assets_site/img/Suividecolis.png') }}" alt="Suivi des colis">
+                    <div class="overlay"><span><i class="bi bi-geo-alt-fill"></i> Suivi en temps réel</span></div>
+                </div>
+                <div class="carousel-dots">
+                    <span class="dot active" data-slide="0"></span>
+                    <span class="dot" data-slide="1"></span>
+                    <span class="dot" data-slide="2"></span>
+                    <span class="dot" data-slide="3"></span>
+                </div>
+            </div>
+
             <div class="feature-list">
                 <div class="feature-item"><span class="dot"><i class="bi bi-shield-lock-fill"></i></span> Connexion sécurisée et chiffrée</div>
                 <div class="feature-item"><span class="dot"><i class="bi bi-diagram-3-fill"></i></span> Gestion multi-compagnie centralisée</div>
@@ -357,6 +416,41 @@
 </div>
 
 <script>
+    (function () {
+        const carousel = document.getElementById('loginCarousel');
+        if (!carousel) return;
+        const slides = carousel.querySelectorAll('.carousel-slide');
+        const dots = carousel.querySelectorAll('.carousel-dots .dot');
+        let current = 0;
+        let timer;
+
+        function goTo(index) {
+            slides[current].classList.remove('active');
+            dots[current].classList.remove('active');
+            current = index;
+            slides[current].classList.add('active');
+            dots[current].classList.add('active');
+        }
+
+        function next() {
+            goTo((current + 1) % slides.length);
+        }
+
+        function start() {
+            timer = setInterval(next, 4000);
+        }
+
+        dots.forEach(function (dot, index) {
+            dot.addEventListener('click', function () {
+                clearInterval(timer);
+                goTo(index);
+                start();
+            });
+        });
+
+        start();
+    })();
+
     document.getElementById('togglePwd').addEventListener('click', function () {
         const pwd = document.getElementById('pwd');
         const isText = pwd.type === 'text';

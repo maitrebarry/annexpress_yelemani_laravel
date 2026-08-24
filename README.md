@@ -201,17 +201,15 @@ résoudre/imprimer que les employés de sa propre compagnie) — vérifié avec 
 un utilisateur factices temporaires (aucune fuite, ni dans `buildListe()` ni dans
 `resolveEmploye()`), supprimés après coup.
 
-### Section "Billets" (menu G-réservation) — 🚧 en cours (commencée 2026-08-20)
+### Section "Billets" (menu G-réservation) — ✅ terminée (2026-08-24)
 
 Le module legacy "Billets" est en réalité 4 contrôleurs/modèles distincts (~2 850 lignes) :
 création (`Add_billets`), cycle de vie (`Liste_du_jours`, 682+1338 lignes — historique,
 annulation en 2 temps, report en 2 temps, embarquement), validation "en entente"
 (`Liste_ententes`, 706 lignes) et rapports (`Rapport_billets`). Comme pour G-programme,
-livré en plusieurs fois plutôt qu'en un seul chantier : **ce chantier couvre Achat de
-billet + Liste des tickets/Historique + Annulation + Report (direct et en 2 temps) +
-Embarquement + Rapports (mensuel/annuel)** ; seule la validation "en entente"
-(`Liste_ententes`) reste à porter (lien sidebar déjà en place, non encore fonctionnel —
-permission `Billets_validation` déjà dans le catalogue).
+livré en plusieurs fois plutôt qu'en un seul chantier : Achat de billet + Liste des
+tickets/Historique + Annulation + Report (direct et en 2 temps) + Embarquement + Rapports
+(mensuel/annuel) + **validation "en entente" (`Liste_ententes`, terminée 2026-08-24)**.
 
 **Report : le legacy a deux mécanismes distincts, les deux sont construits :**
 1. `reporter()` — report **direct**, immédiat, gate uniquement par la permission
@@ -243,6 +241,7 @@ PDF. Acceptable pour l'instant, à corriger quand le PDF sera porté.
 | Embarquement | `Admin\BilletController` (embarquement/decollerCar/marquerEmbarque/annulerEmbarquement/marquerEmbarqueLot/demanderReport) | `admin/billet/embarquement.blade.php` | ✅ terminé. Bannière "cars complets", cartes par car du jour avec bouton "Faire décoller" (désactivé tant que des passagers restent non traités), embarquement individuel + en masse (case à cocher), "Reporter" ouvre la demande de report en 2 temps. Toutes les actions passent par `fetch()` + rechargement (pas de patch DOM manuel côté JS, pour éviter de dupliquer le rendu des lignes en JS — voir la leçon XSS/robustesse déjà tirée pour la Banque) ; nécessite le `<meta name="csrf-token">` ajouté à `admin/partials/header.blade.php` (nouveau pour cette app — jusqu'ici l'AJAX ne servait qu'à des lectures). |
 | Demandes de report | `Admin\BilletController` (demandesReport/transmettreReport/confirmerReportDemande/rejeterReportDemande) | `admin/billet/demandes-report.blade.php` | ✅ terminé. Même écran pour les 2 étapes, contenu différent selon le rôle (chef d'escale : Transmettre/Rejeter sa gare ; Admin : Confirmer/Rejeter, compagnie entière) — même traitement que `demandes-annulation.blade.php`. |
 | Rapport mensuel / annuel | `Admin\RapportBilletController` (mensuel/annuel) | `admin/rapport_billet/{mensuel,annuel}.blade.php` | ✅ terminé. Contrôleur/service dédiés (`RapportBilletService`), fidèle au découpage du legacy (fichiers `Rapport_billets`/`Rapport_billet` séparés de `Liste_du_jours`). Totaux par type (présentiel/en ligne/reporté) + répartition mensuelle/annuelle + ventilation par localité/gare (Admin/PDG voient tout, chef d'escale seulement sa gare). Liens sidebar déjà présents mais mal gatés (permissions placeholder `Billets_creation`/`Billets_apercue`/`Billets_validation`) — corrigés vers `Billets_rapport`. Bug d'affichage du legacy corrigé au passage (le rapport annuel étiquetait un simple décompte de billets comme un montant "FCFA"). |
+| Ticket en entente (validation réservations en ligne) | `Admin\ListeEntenteController` | `admin/liste-entente/index.blade.php` | ✅ terminé (2026-08-24). Port de `Liste_ententes`/`Liste_entente` (contrôleur/modèle legacy séparés, comme Rapports — nouveau service dédié `ListeEntenteService`, pas une extension de `BilletService`). Liste les billets `status_reservation='en_ligne'`/`validation_billets='en_attente'` de la gare de départ de l'agent (Admin/PDG voient toute la compagnie). "Valider" ouvre une **modale** (le legacy avait une page dédiée) avec récap en lecture seule + confirmation du n° de paiement (comparaison insensible aux espaces — amélioration délibérée, le legacy comparait la chaîne brute). Transaction : bascule `validation_billets='valider'` (garde-fou anti double-validation) puis crédite la **caisse individuelle ouverte de l'agent qui valide** (`CaisseUtilisateurService::crediterBillet()`, même mécanisme qu'une vente au guichet) — pas la caisse de gare morte du legacy. Envoie un email "✅ Billet validé" (`App\Mail\BilletValide`) si le client a fourni une adresse ; **pas de PDF+QR joint** (Dompdf non installé, même écart que `ReservationConfirmee`) — le mail renvoie vers `site.billet` (fiche imprimable) à la place. Vérifié de bout en bout via HTTP réel (login `chef.bamako@transhub.test`) + appel direct du service : rejet correct sans caisse ouverte (transaction entièrement annulée, billet resté `en_attente`), succès complet une fois une caisse ouverte (billet validé, caisse créditée, journal créé, email loggé avec le bon lien), email absent proprement géré quand aucune adresse n'est fournie. Tous les billets/clients/caisse de test supprimés après coup. |
 
 Modèles ajoutés : `Billet` (table `billets`), `Client` (table `client`, un client recréé
 à chaque réservation — pas de recherche/réutilisation, fidèle au legacy), `Suivis` (table
@@ -374,15 +373,41 @@ Nouveau chantier séparé de l'admin : le site public destiné aux visiteurs/cli
 cette session (ni contrôleur, ni vue, ni route hors `/admin`). Pas de guard d'auth dédié
 pour le moment (les 3 pages ci-dessous sont en lecture seule, sans espace client/partenaire).
 
+**Site dédié à une seule compagnie (décision du 2026-08-24, `SITE_COMPAGNIE_ID` dans `.env`,
+`ANN EXPRESS` par défaut) :** le site public a été construit initialement comme une vitrine
+multi-compagnies (catalogue, recherche/suivi de colis tous transporteurs confondus), pendant
+que l'admin reste volontairement multi-tenant. L'utilisateur gère en réalité une seule
+compagnie et a demandé que le site public donne l'impression d'être **son** site propre, pas
+un catalogue — "pour l'instant" (le réactiver reste un simple changement de config, pas une
+réécriture). Point de bascule unique : `App\Models\Compagnie::site()` (memoïsé, lit
+`config('site.compagnie_id')`), utilisé par tous les contrôleurs et par
+`site/partials/nav.blade.php` (branding — logo/nom de cette compagnie sur **toutes** les
+pages, plus de logo TransGest générique en usage normal ; lien "Nos trajets" au lieu de
+l'ancien lien mal libellé qui menait au catalogue). `Site\CompagnieController::index()`
+(`/compagnies`) redirige désormais vers la page de cette compagnie plutôt que de lister un
+catalogue ; `show()` renvoie 404 pour toute autre compagnie (`site/compagnies.blade.php`
+supprimée, devenue inatteignable). Les sélecteurs de compagnie ont disparu des formulaires de
+Recherche/Suivi de colis (Accueil et pages dédiées) — la compagnie est forcée côté serveur, la
+liste des villes/résultats est scopée à elle (`Programme::villesDisponibles($idCompagnie)`
+prend désormais un paramètre optionnel). Défense en profondeur côté réservation en ligne :
+`Site\ReservationController::donnees()` et `ReservationEnLigneService::creerReservation()`
+rejettent tout trajet n'appartenant pas à la compagnie du site, même via une requête forgée à
+la main. Autres compagnies (ex. `Air-niono`, `id_compagnie = 2`) toujours en base pour l'admin,
+juste ignorées par le site public. Vérifié via `php artisan serve` + `curl` : toutes les pages
+publiques rendent le bon branding, `/compagnies` redirige (302), `/compagnies/2` 404,
+formulaires sans sélecteur de compagnie, flux de réservation en ligne toujours fonctionnel de
+bout en bout.
+
 | Écran | Contrôleur(s) | Vue | Notes |
 |---|---|---|---|
-| Accueil | `Site\HomeController` | `site/home.blade.php` | ✅ terminé. Hero (slider `public/assets_site/img/hero-slides/*`), recherche (branchée sur `site.recherche`), suivi colis (branché sur `site.suivi-colis`), compagnies partenaires, "Destinations populaires" par compagnie (onglets), stats réelles (destinations/compagnies/clients/trajets, plus de valeurs fictives). |
-| Compagnies | `Site\CompagnieController@index` | `site/compagnies.blade.php` | ✅ terminé. Catalogue avec vrais chiffres par compagnie (trajets/destinations) au lieu des `rand()` du legacy. Recherche en direct côté client (JS). |
-| Détails trajets d'une compagnie | `Site\CompagnieController@show` | `site/compagnie-trajets.blade.php` | ✅ terminé (port de l'écran legacy "Programmer"). Trajets groupés par gare de départ, filtrables en direct (JS), escales/tarifs affichés par trajet. Route `/compagnies/{compagnie}/trajets` avec binding Eloquent standard — le legacy encodait l'id en base64 dans l'URL, inutile ici (pas une donnée sensible). |
-| Recherche | `Site\RechercheController` | `site/recherche.blade.php` | ✅ terminé. Filtre départ/destination/compagnie (tous optionnels) tous compagnies confondues, trié par prix. Le champ "date" est affiché/conservé dans l'URL mais ne filtre rien, fidèle au legacy : `programmer` décrit des trajets récurrents quotidiens, pas des instances datées (celles-ci vivent côté admin dans `programmation_voyage`, jamais exposées ici). |
-| Suivi de colis public | `Site\SuiviColisController` | `site/suivi-colis.blade.php` | ✅ terminé. Sélection visuelle de la compagnie puis code de suivi (les deux sont obligatoires : le code seul ne suffit pas, pour empêcher l'énumération des colis d'une compagnie). PRG (redirection vers `?show_code=...&id_compagnie=...` après une recherche réussie) pour avoir une URL de résultat propre/partageable et éviter le renvoi de formulaire au rechargement. Réutilise le scope `Colis::avecDetails()` déjà existant côté admin plutôt que dupliquer les jointures expéditeur/destinataire/agence. Timeline de statut animée (enregistré → en_cours → reçu → livré). |
-| Contact | `Site\ContactController` | `site/contact.blade.php` | ✅ terminé. Stats réelles + formulaire décoratif (le legacy ne le traitait pas non plus côté serveur). |
+| Accueil | `Site\HomeController` | `site/home.blade.php` | ✅ terminé. Hero (slider `public/assets_site/img/hero-slides/*`, titre/slogan de la compagnie du site), recherche (branchée sur `site.recherche`), suivi colis (branché sur `site.suivi-colis`), "Destinations populaires" de cette compagnie (plus d'onglets par compagnie ni de grille "compagnies partenaires" depuis le 2026-08-24), stats réelles (destinations/trajets/clients de cette compagnie). |
+| Compagnies | `Site\CompagnieController@index` | — | ✅ terminé, **redirige** depuis le 2026-08-24 vers la page de la compagnie du site (voir note ci-dessus) — n'affiche plus de catalogue. |
+| Détails trajets d'une compagnie | `Site\CompagnieController@show` | `site/compagnie-trajets.blade.php` | ✅ terminé (port de l'écran legacy "Programmer"), restreint à la compagnie du site depuis le 2026-08-24 (404 sinon). Trajets groupés par gare de départ (groupes repliables `<details>`), triables (prix/heure), vue grille/liste, escales/tarifs affichés par trajet. Route `/compagnies/{compagnie}` (sans suffixe `/trajets` depuis le 2026-08-24, pour ressembler à la page propre de la compagnie) avec binding Eloquent standard. |
+| Recherche | `Site\RechercheController` | `site/recherche.blade.php` | ✅ terminé. Filtre départ/destination (optionnels), trié par prix, scopé à la compagnie du site depuis le 2026-08-24 (plus de sélecteur de compagnie). Le champ "date" est affiché/conservé dans l'URL mais ne filtre rien, fidèle au legacy : `programmer` décrit des trajets récurrents quotidiens, pas des instances datées (celles-ci vivent côté admin dans `programmation_voyage`, jamais exposées ici). |
+| Suivi de colis public | `Site\SuiviColisController` | `site/suivi-colis.blade.php` | ✅ terminé. Code de suivi uniquement depuis le 2026-08-24 (l'étape de sélection de compagnie a disparu, la compagnie du site est forcée côté serveur — le lookup vérifie toujours code + compagnie, jamais le code seul). PRG (redirection vers `?show_code=...` après une recherche réussie) pour avoir une URL de résultat propre/partageable. Réutilise le scope `Colis::avecDetails()` déjà existant côté admin. Timeline de statut animée (enregistré → en_cours → reçu → livré). |
+| Contact | `Site\ContactController` | `site/contact.blade.php` | ✅ terminé. Stats réelles scopées à la compagnie du site depuis le 2026-08-24 (destinations/trajets/clients) + formulaire décoratif (le legacy ne le traitait pas non plus côté serveur). |
 | Espace partenaire | `Site\PartenaireController` | `site/partenaire/{login,discussion}.blade.php` | ✅ terminé. Connexion/inscription (guard Laravel `partenaire`, voir stratégie d'auth ci-dessous) + messagerie avec l'admin. **Contrepartie admin construite dans la foulée** : `Admin\PartenariatController` (`/admin/Partenariats`, super_admin) — sans elle, un partenaire pourrait écrire mais personne ne pourrait lui répondre depuis l'interface (le lien sidebar existait déjà avant ce chantier, jamais implémenté, menait à un 404). |
+| Réservation en ligne | `Site\ReservationController` | `site/partials/reservation-modal.blade.php` (+ `site/billet.blade.php`) | ✅ terminé (2026-08-24). Port de `Reservation_formulaire` — **formulaire en modal** (pas une page dédiée, à la demande explicite de l'utilisateur "pour que ce soit rapide"), ouvert depuis les boutons "Réserver" de Recherche et Détails trajets, alimenté en AJAX (`GET /reservation/{id}/donnees`) et soumis en AJAX (`POST /reservation`, réponse JSON, pas de redirection PRG). Transaction + verrou anti-surbooking (`App\Services\ReservationEnLigneService`, même structure que `BilletService` côté admin), email de confirmation (`App\Mail\ReservationConfirmee`), redirection vers `site/billet.blade.php` (fiche imprimable) en cas de succès. **Pas de PDF/QR** (legacy générait un PDF Dompdf+QR — même écart assumé qu'ailleurs dans l'app, non installé ici) : `window.print()` sur une page HTML à la place. Le billet créé reste `validation_billets = 'en_attente'` jusqu'à validation manuelle par un agent de la gare de départ (`Admin\ListeEntenteController`, voir section Billets ci-dessus — terminé le même jour). |
 
 #### Stratégie d'authentification client/partenaire
 
@@ -405,8 +430,9 @@ en avaient besoin) :
   `requireClientLogin()` du legacy sans le forcer dans le système de Guard.
 
 Route `/` (page d'accueil du site, plus de redirection auto vers `/admin` ou `/login` selon
-l'auth staff — l'admin y accède désormais via le lien "Espace pro" du menu, qui mène à
-`/login`). Nouvelles routes `site.home`/`site.compagnies`/`site.compagnie.trajets`/
+l'auth staff). Le menu public n'a pas de lien "Espace pro" (connexion staff) — retiré à la
+demande de l'utilisateur 2026-08-24, `/login` reste accessible directement par son URL mais
+n'est plus mis en avant aux visiteurs. Nouvelles routes `site.home`/`site.compagnies`/`site.compagnie.trajets`/
 `site.recherche`/`site.suivi-colis`/`site.contact` dans `routes/web.php`, sans middleware
 (public). Nouveau `resources/views/site/partials/nav.blade.php` (en-tête + menu mobile
 partagé par toutes les pages) et `public/assets_site/css/site-common.css` (styles communs —
@@ -425,20 +451,20 @@ doc MySQL laisse penser. Contourné avec une sous-requête corrélée (`(SELECT 
 sur la requête principale — à réutiliser si un futur écran a besoin d'un `GROUP_CONCAT`
 similaire.
 
-**Liens/formulaires volontairement inertes pour l'instant** (seule fonctionnalité restante :
-la réservation elle-même) : ils affichent un message "Cette fonctionnalité arrive bientôt !"
-au clic/submit (fonction JS `tgBientot()` dans le nav partial) plutôt que de mener à un 404 —
+**Liens/formulaires volontairement inertes pour l'instant** (les boutons "Réserver" sont
+maintenant réels — voir ligne "Réservation en ligne" ci-dessus) : seuls les liens de pied de
+page FAQ/CGU/Politique de confidentialité (sur toutes les pages du site) et le formulaire de
+contact restent décoratifs — ils affichent "Cette fonctionnalité arrive bientôt !" au
+clic/submit (fonction JS `tgBientot()` dans le nav partial) plutôt que de mener à un 404 —
 même logique que les liens `href="#"` déjà utilisés côté admin pour les écrans pas encore
-construits (ex. "Hors programme"). Concrètement tous les boutons "Réserver" (recherche +
-détails trajets) sont encore inertes : la réservation elle-même (`Reservation_formulaire`)
-reste à porter. Un bug legacy a été corrigé au passage : `nav.view.php` et chaque page
-avaient chacun leur propre `<div id="mobileNav">` (id dupliqué), rendant le lien "Espace pro"
-du panneau mobile de page totalement inatteignable au clic ; il n'y a maintenant qu'un seul
-panneau mobile (dans le nav partagé), avec un vrai lien "Espace pro" vers `/login`.
+construits (ex. "Hors programme"). Un bug legacy a été corrigé au passage : `nav.view.php` et
+chaque page avaient chacun leur propre `<div id="mobileNav">` (id dupliqué), rendant le lien
+"Espace pro" du panneau mobile de page totalement inatteignable au clic à l'époque — il n'y a
+maintenant qu'un seul panneau mobile (dans le nav partagé) ; le lien "Espace pro" lui-même a
+depuis été retiré (voir plus haut).
 
-**Pas encore portées** (prochaines étapes de ce chantier, voir
-`Projets_licence/app/controllers/site/`) : Reservation_formulaire (réservation en ligne — le
-plus complexe : transaction, PDF+QR, email), EspaceClient (login par n° billet+tél, dashboard,
+**Pas encore portée** (prochaine étape de ce chantier, voir
+`Projets_licence/app/controllers/site/`) : EspaceClient (login par n° billet+tél, dashboard,
 épargne, paiements — nécessite le middleware de session léger décrit ci-dessus, pas encore
 créé). Modèle Eloquent manquant : `Epargne`. La table `demande_partenariat` (migration déjà
 là) n'est en fait référencée nulle part dans le legacy — dead table, aucun modèle à créer. La
@@ -450,10 +476,10 @@ table `reservation` (migration déjà là) a aussi un rôle encore à clarifier 
 Programmation des voyages : voir "G-programme" ci-dessus (tout fait sauf Hors programme).
 Caisse : voir ci-dessus (système individuel fait, caisse de gare hors scope).
 Dépenses/Banque : voir ci-dessus (terminées).
-Billets : voir ci-dessus (Achat + Liste/Historique + Annulation + Report + Embarquement +
-Rapports faits ; seule la validation "en entente" (`Liste_ententes`) reste à porter).
+Billets : voir ci-dessus — **terminé** (Achat + Liste/Historique + Annulation + Report +
+Embarquement + Rapports + validation "en entente").
 Site public : voir "Section Site public" ci-dessus (vitrine + Recherche + détails trajets +
-Suivi colis public + Espace partenaire faits ; réservation en ligne et Espace client restent
-à porter).
+Suivi colis public + Espace partenaire + Réservation en ligne faits ; seul l'Espace client
+reste à porter).
 Vérifier `Projets_licence/app/controllers/admin/` et `Projets_licence/app/controllers/site/`
 pour la liste complète avant de commencer.

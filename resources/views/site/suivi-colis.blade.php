@@ -88,155 +88,6 @@
             font-size: 0.95rem;
         }
 
-        /* ---- Etapes ---- */
-        .step-label {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 20px;
-            font-size: 1.05rem;
-        }
-        .step-num {
-            width: 30px;
-            height: 30px;
-            flex-shrink: 0;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.85rem;
-        }
-
-        /* ---- Etape 1 : cartes compagnies ---- */
-        .company-picker-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 26px;
-        }
-        .company-pick-card {
-            position: relative;
-            background: white;
-            border-radius: var(--radius-xl);
-            overflow: hidden;
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            border: 3px solid transparent;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .company-pick-card:hover {
-            transform: translateY(-8px);
-            box-shadow: var(--shadow-lg);
-        }
-        .company-pick-card.selected {
-            border-color: var(--secondary);
-            box-shadow: 0 12px 30px rgba(230, 126, 34, 0.25);
-        }
-        .company-pick-cover {
-            height: 90px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            position: relative;
-        }
-        .company-pick-card.selected .company-pick-cover {
-            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
-        }
-        .company-pick-logo {
-            width: 84px;
-            height: 84px;
-            background: white;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: -42px auto 0;
-            position: relative;
-            z-index: 2;
-            box-shadow: var(--shadow-md);
-            overflow: hidden;
-        }
-        .company-pick-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        .company-pick-logo i {
-            font-size: 2.2rem;
-            color: var(--primary);
-        }
-        .company-pick-content {
-            padding: 16px 18px 22px;
-            text-align: center;
-        }
-        .company-pick-name {
-            font-size: 1.05rem;
-            font-weight: 800;
-            color: var(--dark);
-        }
-        .company-pick-check {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: white;
-            color: var(--secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            opacity: 0;
-            transform: scale(0.4);
-            transition: all 0.25s ease;
-            z-index: 3;
-            box-shadow: var(--shadow);
-        }
-        .company-pick-card.selected .company-pick-check {
-            opacity: 1;
-            transform: scale(1);
-        }
-        .empty-companies {
-            grid-column: 1 / -1;
-            text-align: center;
-            color: var(--gray);
-            padding: 20px;
-        }
-
-        /* ---- Etape 2 : code de suivi ---- */
-        .step-code {
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            margin-top: 0;
-            transition: max-height 0.5s ease, opacity 0.4s ease, margin 0.4s ease;
-        }
-        .step-code.is-open {
-            max-height: 400px;
-            opacity: 1;
-            margin-top: 36px;
-            padding-top: 32px;
-            border-top: 1px dashed #e2e8f0;
-        }
-        .selected-company-hint {
-            font-size: 0.85rem;
-            color: var(--gray);
-            margin-bottom: 16px;
-        }
-        .selected-company-hint strong {
-            color: var(--primary);
-        }
-        .selected-company-hint a {
-            color: var(--secondary);
-            font-weight: 600;
-            text-decoration: none;
-            margin-left: 8px;
-        }
-        .selected-company-hint a:hover {
-            text-decoration: underline;
-        }
         .code-search-row {
             display: flex;
             gap: 14px;
@@ -455,7 +306,7 @@
 </head>
 <body>
 
-@include('site.partials.nav')
+@include('site.partials.nav', ['compagnie' => \App\Models\Compagnie::site()])
 
 <!-- PAGE HEADER -->
 <section class="page-header">
@@ -474,56 +325,17 @@
             <div class="intro">
                 <i class="fas fa-box-open"></i>
                 <h2>Où est mon colis ?</h2>
-                <p>Choisissez la compagnie qui a pris en charge votre envoi, puis entrez le code de suivi reçu au dépôt.</p>
+                <p>Entrez le code de suivi reçu au dépôt de votre colis.</p>
             </div>
 
             <form action="{{ route('site.suivi-colis') }}" method="GET" id="trackingForm">
-                <input type="hidden" name="id_compagnie" id="idCompagnieInput" value="{{ $idCompagnieSelectionnee }}">
-
-                <!-- ETAPE 1 : Compagnie -->
-                <div class="step-1">
-                    <div class="step-label"><span class="step-num">1</span> Choisissez votre compagnie</div>
-                    <div class="company-picker-grid">
-                        @forelse ($compagnies as $i => $compagnie)
-                            <div class="company-pick-card{{ (string) $idCompagnieSelectionnee === (string) $compagnie->id_compagnie ? ' selected' : '' }}"
-                                 data-id="{{ $compagnie->id_compagnie }}"
-                                 data-nom="{{ $compagnie->nom_compagnie }}"
-                                 data-aos="zoom-in" data-aos-delay="{{ $i * 80 }}">
-                                <div class="company-pick-check"><i class="fas fa-check"></i></div>
-                                <div class="company-pick-cover"></div>
-                                <div class="company-pick-logo">
-                                    @if ($compagnie->logo)
-                                        <img src="{{ asset('images/logos/'.$compagnie->logo) }}" alt="{{ $compagnie->nom_compagnie }}">
-                                    @else
-                                        <i class="fas fa-bus"></i>
-                                    @endif
-                                </div>
-                                <div class="company-pick-content">
-                                    <div class="company-pick-name">{{ $compagnie->nom_compagnie }}</div>
-                                </div>
-                            </div>
-                        @empty
-                            <p class="empty-companies">Aucune compagnie disponible pour le moment.</p>
-                        @endforelse
-                    </div>
-                </div>
-
-                <!-- ETAPE 2 : Code de suivi -->
-                <div class="step-code{{ $idCompagnieSelectionnee ? ' is-open' : '' }}" id="stepCode">
-                    <div class="step-label"><span class="step-num">2</span> Entrez le code de suivi</div>
-                    <p class="selected-company-hint">
-                        Compagnie choisie : <strong id="selectedCompanyName">{{ $compagnies->firstWhere('id_compagnie', $idCompagnieSelectionnee)?->nom_compagnie }}</strong>
-                        <a href="#" id="changeCompanyLink"><i class="fas fa-rotate-left"></i> changer</a>
-                    </p>
-                    <div class="code-search-row">
-                        <input type="text" name="code_colis" id="code" class="form-control"
-                            placeholder="Ex : COLIS123456"
-                            value="{{ $codeColisSaisi }}"
-                            {{ $idCompagnieSelectionnee ? '' : 'disabled' }}>
-                        <button type="submit" class="btn btn-primary" id="submitBtn" {{ $idCompagnieSelectionnee ? '' : 'disabled' }}>
-                            <i class="fas fa-search"></i> Rechercher
-                        </button>
-                    </div>
+                <div class="code-search-row">
+                    <input type="text" name="code_colis" id="code" class="form-control"
+                        placeholder="Ex : COLIS123456"
+                        value="{{ $codeColisSaisi }}">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-search"></i> Rechercher
+                    </button>
                 </div>
             </form>
         </div>
@@ -664,44 +476,6 @@
 <script src="{{ asset('assets_site/js/aos.js') }}"></script>
 <script>
     AOS.init({ duration: 600, once: true, offset: 50 });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const cards = document.querySelectorAll('.company-pick-card');
-        const idInput = document.getElementById('idCompagnieInput');
-        const stepCode = document.getElementById('stepCode');
-        const nameSpan = document.getElementById('selectedCompanyName');
-        const codeInput = document.getElementById('code');
-        const submitBtn = document.getElementById('submitBtn');
-        const changeLink = document.getElementById('changeCompanyLink');
-
-        cards.forEach(function(card) {
-            card.addEventListener('click', function() {
-                cards.forEach(function(c) { c.classList.remove('selected'); });
-                card.classList.add('selected');
-                idInput.value = card.dataset.id;
-                nameSpan.textContent = card.dataset.nom;
-                stepCode.classList.add('is-open');
-                codeInput.removeAttribute('disabled');
-                submitBtn.removeAttribute('disabled');
-                setTimeout(function() {
-                    stepCode.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    codeInput.focus();
-                }, 200);
-            });
-        });
-
-        if (changeLink) {
-            changeLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                cards.forEach(function(c) { c.classList.remove('selected'); });
-                idInput.value = '';
-                codeInput.value = '';
-                stepCode.classList.remove('is-open');
-                codeInput.setAttribute('disabled', true);
-                submitBtn.setAttribute('disabled', true);
-            });
-        }
-    });
 </script>
 </body>
 </html>

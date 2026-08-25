@@ -105,71 +105,6 @@
                                         </div>
                                     </td>
                                 </tr>
-
-                                <!-- Modal Activation/Désactivation -->
-                                <div class="modal fade" id="modalStatut{{ $u->idUser }}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content">
-                                            <form method="post" action="{{ route('admin.configuration.status') }}">
-                                                @csrf
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title fw-bold text-primary">
-                                                        Confirmation de {{ $u->status == 1 ? 'désactivation' : 'réactivation' }}
-                                                    </h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body text-center">
-                                                    <i class="bx bx-error-circle text-danger" style="font-size: 60px;"></i>
-                                                    <p class="mt-3">
-                                                        Voulez-vous vraiment
-                                                        <strong class="text-danger">{{ $u->status == 1 ? 'désactiver' : 'activer' }}</strong>
-                                                        le compte <br><strong>{{ $u->utilisateurs }}</strong> ?
-                                                    </p>
-                                                    <input type="hidden" name="idUser" value="{{ $u->idUser }}">
-                                                    <input type="hidden" name="newStatut" value="{{ $u->status == 1 ? 0 : 1 }}">
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                    <button type="submit" class="btn btn-primary">Oui, {{ $u->status == 1 ? 'désactiver' : 'activer' }}</button>
-                                                </div>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                @if ($authUser->isSuperAdmin())
-                                    <!-- Modal Suppression définitive -->
-                                    <div class="modal fade" id="modalSuppression{{ $u->idUser }}" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <form method="post" action="{{ route('admin.configuration.destroy') }}">
-                                                    @csrf
-                                                    <div class="modal-header bg-danger">
-                                                        <h5 class="modal-title text-white">Supprimer définitivement ce compte</h5>
-                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <p>
-                                                            Cette action est <strong class="text-danger">irréversible</strong>. Le compte
-                                                            <strong>{{ $u->utilisateurs }}</strong> sera supprimé ainsi que ses données
-                                                            propres (permissions, historique de connexion). Ses billets/colis/dépenses déjà
-                                                            enregistrés sont conservés mais détachés de son compte.
-                                                        </p>
-                                                        <p class="mb-1">Pour confirmer, saisissez l'email exact de ce compte :</p>
-                                                        <p class="fw-bold mb-2">{{ $u->emailUser }}</p>
-                                                        <input type="text" class="form-control confirm-delete-input" name="confirmation"
-                                                            data-expected="{{ $u->emailUser }}" autocomplete="off" placeholder="Saisir l'email pour confirmer">
-                                                        <input type="hidden" name="idUser" value="{{ $u->idUser }}">
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                        <button type="submit" class="btn btn-danger delete-submit-btn" disabled>Supprimer définitivement</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
                             @endforeach
                         </tbody>
                     </table>
@@ -339,6 +274,76 @@
             </div>
         </div>
     </div>
+
+    <!-- Modals par utilisateur (statut, suppression) : rendues ici, hors du tableau, sinon
+         un modal Bootstrap (position: fixed) imbriqué dans .table-responsive (overflow-x: auto)
+         se retrouve piégé/mal positionné dans la card au lieu de s'afficher par-dessus la page. -->
+    @foreach ($liste as $u)
+        <!-- Modal Activation/Désactivation -->
+        <div class="modal fade" id="modalStatut{{ $u->idUser }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form method="post" action="{{ route('admin.configuration.status') }}">
+                        @csrf
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-bold text-primary">
+                                Confirmation de {{ $u->status == 1 ? 'désactivation' : 'réactivation' }}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <i class="bx bx-error-circle text-danger" style="font-size: 60px;"></i>
+                            <p class="mt-3">
+                                Voulez-vous vraiment
+                                <strong class="text-danger">{{ $u->status == 1 ? 'désactiver' : 'activer' }}</strong>
+                                le compte <br><strong>{{ $u->utilisateurs }}</strong> ?
+                            </p>
+                            <input type="hidden" name="idUser" value="{{ $u->idUser }}">
+                            <input type="hidden" name="newStatut" value="{{ $u->status == 1 ? 0 : 1 }}">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <button type="submit" class="btn btn-primary">Oui, {{ $u->status == 1 ? 'désactiver' : 'activer' }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        @if ($authUser->isSuperAdmin())
+            <!-- Modal Suppression définitive -->
+            <div class="modal fade" id="modalSuppression{{ $u->idUser }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form method="post" action="{{ route('admin.configuration.destroy') }}">
+                            @csrf
+                            <div class="modal-header bg-danger">
+                                <h5 class="modal-title text-white">Supprimer définitivement ce compte</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>
+                                    Cette action est <strong class="text-danger">irréversible</strong>. Le compte
+                                    <strong>{{ $u->utilisateurs }}</strong> sera supprimé ainsi que ses données
+                                    propres (permissions, historique de connexion). Ses billets/colis/dépenses déjà
+                                    enregistrés sont conservés mais détachés de son compte.
+                                </p>
+                                <p class="mb-1">Pour confirmer, saisissez l'email exact de ce compte :</p>
+                                <p class="fw-bold mb-2">{{ $u->emailUser }}</p>
+                                <input type="text" class="form-control confirm-delete-input" name="confirmation"
+                                    data-expected="{{ $u->emailUser }}" autocomplete="off" placeholder="Saisir l'email pour confirmer">
+                                <input type="hidden" name="idUser" value="{{ $u->idUser }}">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-danger delete-submit-btn" disabled>Supprimer définitivement</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 @endsection
 
 @section('scripts')

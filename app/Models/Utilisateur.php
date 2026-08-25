@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class Utilisateur extends Authenticatable
 {
@@ -76,5 +78,49 @@ class Utilisateur extends Authenticatable
     public function agence()
     {
         return $this->belongsTo(Agence::class, 'id_agence', 'idAgence');
+    }
+
+    // Comptes super_admin garantis présents en base (mêmes 3 comptes que Projets_licence,
+    // catalogue et mots de passe dans config/super_admins.php, lus depuis .env) : on vérifie
+    // individuellement chacun par email, et on ne (re)crée que ceux qui manquent, plutôt que
+    // d'attendre que la table utilisateur entière soit vide. Ça couvre aussi bien une base
+    // neuve qu'un vidage partiel (un seul compte supprimé par erreur).
+    //
+    // Appelée à chaque affichage de la page de connexion (LoginController::create()).
+    // Idempotente : firstOrCreate() par email, insertOrIgnore() pour les permissions.
+    public static function seedSuperAdminsParDefaut(): void
+    {
+        Permission::seedPermissionsParDefautSiVide();
+        $toutesLesPermissions = Permission::pluck('id_permision');
+
+        foreach (config('super_admins') as $admin) {
+            // Mot de passe absent de .env sur cet environnement : on ne crée pas le compte
+            // plutôt que de le créer avec un mot de passe vide/prévisible.
+            if (empty($admin['motPasse'])) {
+                continue;
+            }
+
+            $utilisateur = static::firstOrCreate(
+                ['emailUser' => $admin['email']],
+                [
+                    'utilisateurs' => $admin['nom'],
+                    'droit' => 'super_admin',
+                    'motPasse' => Hash::make($admin['motPasse']),
+                    'status' => 1,
+                ]
+            );
+
+            // Un super_admin a toutes les permissions par conception (voir userHasPermission()),
+            // pas seulement à la création : si le catalogue permision était incomplet au moment
+            // où ce compte a été créé, on rattrape ici les permissions manquantes.
+            $rows = $toutesLesPermissions->map(fn ($idPermission) => [
+                'user_id' => $utilisateur->idUser,
+                'permission_id' => $idPermission,
+            ])->all();
+
+            if (! empty($rows)) {
+                DB::table('user_permission')->insertOrIgnore($rows);
+            }
+        }
     }
 }

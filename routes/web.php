@@ -71,8 +71,8 @@ Route::name('site.')->group(function () {
 });
 
 Route::middleware('guest:staff')->group(function () {
-    Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+    Route::get('/admin', [LoginController::class, 'create'])->name('login');
+    Route::post('/admin', [LoginController::class, 'store'])->name('login.store');
 });
 
 Route::post('/logout', [LoginController::class, 'destroy'])

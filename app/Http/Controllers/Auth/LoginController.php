@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Utilisateur;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,8 @@ class LoginController extends Controller
 {
     public function create(): \Illuminate\View\View
     {
+        Utilisateur::seedSuperAdminsParDefaut();
+
         return view('auth.login');
     }
 

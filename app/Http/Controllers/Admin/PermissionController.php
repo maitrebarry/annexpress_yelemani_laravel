@@ -16,6 +16,10 @@ class PermissionController extends Controller
     // au système. Accessible via l'onglet "Permission" du menu Configuration.
     public function catalogue()
     {
+        // Complète le catalogue avec les permissions par défaut manquantes (ex: table
+        // partiellement peuplée après une migration depuis l'ancienne base) avant affichage.
+        Permission::seedPermissionsParDefautSiVide();
+
         $liste = Permission::orderBy('nom_permission')->get();
 
         return view('admin.permission.catalogue', ['liste' => $liste]);
@@ -63,6 +67,8 @@ class PermissionController extends Controller
 
             return redirect()->route('admin.configuration.index');
         }
+
+        Permission::seedPermissionsParDefautSiVide();
 
         $allPermissions = Permission::orderBy('nom_permission')->get();
         $userPermissions = Permission::getUserPermissionIds($idUtilisateur);

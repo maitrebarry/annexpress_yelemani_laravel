@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Billet {{ $billet->numeroBillets }} - TransGest</title>
+    <title>Billet {{ $billet->numeroBillets }} - TransHub</title>
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/all.min.css') }}" rel="stylesheet">
@@ -146,38 +146,7 @@
     </div>
 </section>
 
-<footer class="footer">
-    <div class="container">
-        <div class="footer-grid">
-            <div>
-                <h4>TransGest</h4>
-                <p style="font-size: 0.85rem;">La plateforme N°1 de réservation de billets de bus et suivi de colis au Mali.</p>
-            </div>
-            <div>
-                <h4>Liens rapides</h4>
-                <a href="{{ route('site.home') }}">Accueil</a>
-                <a href="{{ route('site.compagnies') }}">Compagnies</a>
-                <a href="{{ route('site.suivi-colis') }}">Suivis de colis</a>
-                <a href="{{ route('site.contact') }}">Contact</a>
-            </div>
-            <div>
-                <h4>Support</h4>
-                <a href="#" onclick="tgBientot(event)">FAQ</a>
-                <a href="#" onclick="tgBientot(event)">Conditions générales</a>
-                <a href="#" onclick="tgBientot(event)">Politique de confidentialité</a>
-            </div>
-            <div>
-                <h4>Contact</h4>
-                <a href="tel:+22390259438"><i class="fas fa-phone"></i> +223 90 25 94 38</a>
-                <a href="mailto:transgest@gmail.com"><i class="fas fa-envelope"></i> transgest@gmail.com</a>
-                <a href="#"><i class="fas fa-map-marker-alt"></i> Pelegana, Segou, Mali</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>Copyright &copy; 2026 Computer Service Barry. All rights reserved.</p>
-        </div>
-    </div>
-</footer>
+@include('site.partials.footer')
 
 <script src="{{ asset('assets_site/js/aos.js') }}"></script>
 <script>AOS.init({ duration: 600, once: true, offset: 50 });</script>

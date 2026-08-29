@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Résultats de recherche - TransGest</title>
+    <title>Résultats de recherche - TransHub</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
@@ -102,6 +102,8 @@
 @include('site.partials.nav', ['compagnie' => $compagnie])
 
 <section class="page-header" style="padding: 40px 0;">
+    <span class="deco-blob blob-1"></span>
+    <span class="deco-blob blob-2"></span>
     <div class="container">
         <h1 style="font-size: 1.8rem; margin-bottom: 8px;">Résultats de recherche</h1>
         <p style="opacity: 0.85; font-size: 0.9rem;">
@@ -178,33 +180,7 @@
 
 @include('site.partials.reservation-modal')
 
-<footer class="footer">
-    <div class="container">
-        <div class="footer-grid">
-            <div>
-                <h4>TransGest</h4>
-                <p style="font-size: 0.85rem;">La plateforme N°1 de réservation de billets de bus et suivi de colis au Mali.</p>
-            </div>
-            <div>
-                <h4>Liens rapides</h4>
-                <a href="{{ route('site.home') }}">Accueil</a>
-                <a href="{{ route('site.compagnies') }}">Compagnies</a>
-                <a href="{{ route('site.contact') }}">Contact</a>
-            </div>
-            <div>
-                <h4>Support</h4>
-                <a href="{{ route('site.contact') }}">Contact</a>
-            </div>
-            <div>
-                <h4>Contact</h4>
-                <a href="#"><i class="fas fa-map-marker-alt"></i> Pelegana, Segou, Mali</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>Copyright &copy; 2026 Computer Service Barry. All rights reserved.</p>
-        </div>
-    </div>
-</footer>
+@include('site.partials.footer', ['compagnie' => $compagnie])
 
 <script src="{{ asset('assets_site/js/aos.js') }}"></script>
 <script>AOS.init({ duration: 600, once: true, offset: 50 });</script>

@@ -31,7 +31,7 @@
   <div class="sidebar-header">
     <div>
       <a href="{{ url('/admin/Homes/home') }}" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">
-        <img src="{{ asset('images/logos/transgest_logo.png') }}" alt="TransGest" style="height:60px; width:auto; object-fit:contain;">
+        <img src="{{ asset('images/logos/transhub_logo.png') }}" alt="TransHub" style="height:60px; width:auto; object-fit:contain;">
       </a>
     </div>
     <div class="toggle-icon ms-auto"><i class="bi bi-chevron-double-left"></i>

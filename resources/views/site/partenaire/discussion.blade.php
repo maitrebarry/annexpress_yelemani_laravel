@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Espace partenaire - TransGest</title>
+    <title>Espace partenaire - TransHub</title>
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets_site/css/all.min.css') }}">
@@ -59,6 +59,8 @@
         </div>
     </div>
 </section>
+
+@include('site.partials.footer')
 
 <script>
     const box = document.getElementById('discussionMessages');

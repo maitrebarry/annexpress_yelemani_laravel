@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Espace partenaire - TransGest</title>
+    <title>Espace partenaire - TransHub</title>
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets_site/css/all.min.css') }}">
+    <link href="{{ asset('assets_site/css/aos.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/site-common.css') }}" rel="stylesheet">
     <style>
         .auth-card { max-width: 460px; margin: 0 auto; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 36px; }
@@ -19,20 +20,26 @@
         .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: var(--dark); }
         .form-control { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: var(--radius); font-size: 0.9rem; font-family: inherit; }
         .form-control:focus { outline: none; border-color: var(--secondary); }
-        h1 { text-align: center; margin-bottom: 8px; font-size: 1.6rem; }
-        .auth-subtitle { text-align: center; color: var(--gray); font-size: 0.85rem; margin-bottom: 28px; }
+        .auth-section { padding: 60px 0 70px; }
+        .auth-card { margin-top: -40px; position: relative; z-index: 5; }
     </style>
 </head>
 <body>
 
 @include('site.partials.nav')
 
-<section>
+<section class="page-header" style="padding: 56px 0 96px;">
+    <span class="deco-blob blob-1"></span>
+    <span class="deco-blob blob-2"></span>
     <div class="container">
-        <h1>Espace partenaire</h1>
-        <p class="auth-subtitle">Discutez directement avec notre équipe pour rejoindre TransGest</p>
+        <h1 data-aos="fade-up" style="font-size: 2rem;">Espace partenaire</h1>
+        <p data-aos="fade-up" data-aos-delay="100">Discutez directement avec notre équipe pour rejoindre TransHub</p>
+    </div>
+</section>
 
-        <div class="auth-card">
+<section class="auth-section">
+    <div class="container">
+        <div class="auth-card" data-aos="fade-up">
             <div class="auth-tabs">
                 <div class="auth-tab active" data-tab="connexion">Se connecter</div>
                 <div class="auth-tab" data-tab="inscription">Créer un compte</div>
@@ -79,7 +86,12 @@
     </div>
 </section>
 
+@include('site.partials.footer')
+
+<script src="{{ asset('assets_site/js/aos.js') }}"></script>
 <script>
+    AOS.init({ duration: 600, once: true, offset: 50 });
+
     document.querySelectorAll('.auth-tab').forEach(function(tab) {
         tab.addEventListener('click', function() {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));

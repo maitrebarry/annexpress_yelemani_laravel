@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Suivi de colis - TransGest</title>
+    <title>Suivi de colis - TransHub</title>
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/all.min.css') }}" rel="stylesheet">
@@ -13,49 +13,6 @@
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-        }
-
-        /* ========== PAGE HEADER avec IMAGE DE FOND ========== */
-        .page-header {
-            position: relative;
-            color: white;
-            padding: 90px 0;
-            text-align: center;
-            overflow: hidden;
-            min-height: 320px;
-            display: flex;
-            align-items: center;
-        }
-        .page-header-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 0;
-        }
-        .page-header-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(15, 59, 94, 0.75) 0%, rgba(10, 42, 68, 0.65) 100%);
-            z-index: 1;
-        }
-        .page-header .container {
-            position: relative;
-            z-index: 2;
-        }
-        .page-header h1 {
-            font-size: 2.8rem;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        .page-header p {
-            font-size: 1.05rem;
-            opacity: 0.95;
-            text-shadow: 0 1px 5px rgba(0,0,0,0.3);
         }
 
         /* ========== SECTION SUIVI ========== */
@@ -72,6 +29,12 @@
             text-align: center;
             max-width: 640px;
             margin: 0 auto 40px;
+        }
+        .tracking-card > .intro img {
+            width: 150px;
+            height: auto;
+            margin: 0 auto 16px;
+            display: block;
         }
         .tracking-card > .intro i {
             font-size: 2.2rem;
@@ -295,9 +258,6 @@
         /* ========== RESPONSIVE ========== */
         @media (max-width: 768px) {
             .tracking-card { padding: 28px 20px; }
-            .page-header h1 { font-size: 2rem; }
-            .page-header { padding: 60px 0; min-height: 260px; }
-            .page-header p { font-size: 0.9rem; }
             .code-search-row { flex-direction: column; }
             .timeline-label { max-width: 70px; font-size: 0.65rem; }
             .timeline-dot { width: 32px; height: 32px; font-size: 0.85rem; }
@@ -310,8 +270,8 @@
 
 <!-- PAGE HEADER -->
 <section class="page-header">
-    <img src="{{ asset('assets_site/img/Suividecolis.png') }}" alt="Suivi de colis" class="page-header-bg">
-    <div class="page-header-overlay"></div>
+    <span class="deco-blob blob-1"></span>
+    <span class="deco-blob blob-2"></span>
     <div class="container">
         <h1 data-aos="fade-up">Suivi de colis</h1>
         <p data-aos="fade-up" data-aos-delay="100">Suivez en temps réel l'état de votre envoi en entrant le code de suivi</p>
@@ -323,7 +283,7 @@
     <div class="container">
         <div class="tracking-card" data-aos="fade-up">
             <div class="intro">
-                <i class="fas fa-box-open"></i>
+                <img src="{{ asset('assets_site/img/Suividecolis.png') }}" alt="Suivi de colis">
                 <h2>Où est mon colis ?</h2>
                 <p>Entrez le code de suivi reçu au dépôt de votre colis.</p>
             </div>
@@ -439,39 +399,7 @@
     </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="footer">
-    <div class="container">
-        <div class="footer-grid">
-            <div>
-                <h4>TransGest</h4>
-                <p style="font-size: 0.85rem;">La plateforme N°1 de réservation de billets de bus et suivi de colis au Mali.</p>
-            </div>
-            <div>
-                <h4>Liens rapides</h4>
-                <a href="{{ route('site.home') }}">Accueil</a>
-                <a href="{{ route('site.compagnies') }}">Compagnies</a>
-                <a href="{{ route('site.suivi-colis') }}">Suivis de colis</a>
-                <a href="{{ route('site.contact') }}">Contact</a>
-            </div>
-            <div>
-                <h4>Support</h4>
-                <a href="#" onclick="tgBientot(event)">FAQ</a>
-                <a href="#" onclick="tgBientot(event)">Conditions générales</a>
-                <a href="#" onclick="tgBientot(event)">Politique de confidentialité</a>
-            </div>
-            <div>
-                <h4>Contact</h4>
-                <a href="tel:+22390259438"><i class="fas fa-phone"></i> +223 90 25 94 38</a>
-                <a href="mailto:transgest@gmail.com"><i class="fas fa-envelope"></i> transgest@gmail.com</a>
-                <a href="#"><i class="fas fa-map-marker-alt"></i> Pelegana, Segou, Mali</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>Copyright &copy; 2026 Computer Service Barry. All rights reserved.</p>
-        </div>
-    </div>
-</footer>
+@include('site.partials.footer')
 
 <script src="{{ asset('assets_site/js/aos.js') }}"></script>
 <script>

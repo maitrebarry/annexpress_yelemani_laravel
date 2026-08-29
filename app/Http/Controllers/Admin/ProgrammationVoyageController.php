@@ -310,6 +310,16 @@ class ProgrammationVoyageController extends Controller
             return redirect()->route('admin.programmation-voyage.liste-journaliere');
         }
 
+        $appartientALaCompagnie = ProgrammationVoyage::where('id_programmation', $idProgrammation)
+            ->where('id_compagnie', $user->id_compagnie)
+            ->exists();
+
+        if (! $appartientALaCompagnie) {
+            Flash::set('Programmation introuvable.', 'danger');
+
+            return redirect()->route('admin.programmation-voyage.liste-journaliere');
+        }
+
         $resultat = $this->updateProgrammation($idProgrammation, $idHoraire, $idDestination, $action, $idCarRemplacement);
 
         if (is_array($resultat) && ! empty($resultat['needs_choice'])) {

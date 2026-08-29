@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>À propos & Contact - TransGest</title>
+    <title>À propos & Contact - TransHub</title>
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/all.min.css') }}" rel="stylesheet">
@@ -47,11 +47,29 @@
             font-size: 0.8rem;
             color: var(--gray);
         }
+        .about-image { position: relative; }
         .about-image img {
             width: 100%;
+            height: 380px;
+            object-fit: cover;
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow-lg);
         }
+        .about-image-badge {
+            position: absolute;
+            bottom: -20px;
+            left: -20px;
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 16px 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .about-image-badge i { font-size: 1.6rem; color: var(--secondary); }
+        .about-image-badge strong { display: block; font-size: 1.1rem; color: var(--primary); }
+        .about-image-badge span { font-size: 0.75rem; color: var(--gray); }
 
         /* ========== NOS VALEURS ========== */
         .values-section {
@@ -252,9 +270,11 @@
 
 <!-- PAGE HEADER -->
 <section class="page-header">
+    <span class="deco-blob blob-1"></span>
+    <span class="deco-blob blob-2"></span>
     <div class="container">
-        <h1 data-aos="fade-up">À propos de TransGest</h1>
-        <p data-aos="fade-up" data-aos-delay="100">Découvrez qui nous sommes et comment nous révolutionnons le transport au Mali</p>
+        <h1 data-aos="fade-up">À propos de {{ $compagnie->nom_compagnie }}</h1>
+        <p data-aos="fade-up" data-aos-delay="100">Découvrez qui nous sommes et comment nous simplifions vos déplacements au Mali</p>
     </div>
 </section>
 
@@ -282,7 +302,11 @@
                 </div>
             </div>
             <div class="about-image" data-aos="fade-left">
-                <img src="{{ asset('assets_site/img/about/about-1.jpg') }}" alt="Équipe TransGest">
+                <img src="{{ asset('assets_site/img/hero-slides/slide-1.jpg') }}" alt="Un de nos bus">
+                <div class="about-image-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <div><strong>Transport agréé</strong><span>Sécurité & ponctualité</span></div>
+                </div>
             </div>
         </div>
     </div>
@@ -338,7 +362,7 @@
                         <div class="contact-icon"><i class="fas fa-envelope"></i></div>
                         <div class="contact-text">
                             <h4>Email</h4>
-                            <p>transgest@gmail.com</p>
+                            <p>annexpress@gmail.com</p>
                         </div>
                     </div>
                     <div class="contact-item">
@@ -391,22 +415,7 @@
     </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="footer">
-    <div class="container">
-        <div class="footer-grid">
-            <div><h4>TransGest</h4><p style="font-size: 0.85rem;">La plateforme N°1 de réservation de billets de bus et suivi de colis au Mali.</p></div>
-            <div><h4>Liens rapides</h4>
-                <a href="{{ route('site.home') }}">Accueil</a>
-                <a href="{{ route('site.compagnies') }}">Compagnies</a>
-                <a href="{{ route('site.contact') }}">Contact</a>
-            </div>
-            <div><h4>Support</h4><a href="#" onclick="tgBientot(event)">FAQ</a><a href="#" onclick="tgBientot(event)">Conditions générales</a><a href="#" onclick="tgBientot(event)">Politique de confidentialité</a></div>
-            <div><h4>Contact</h4><a href="tel:+22390259438"><i class="fas fa-phone"></i> +223 90 25 94 38</a><a href="mailto:transgest@gmail.com"><i class="fas fa-envelope"></i> transgest@gmail.com</a><a href="#"><i class="fas fa-map-marker-alt"></i> Pelegana, Segou, Mali</a></div>
-        </div>
-        <div class="footer-bottom"><p>Copyright &copy; 2026 Computer Service Barry. All rights reserved.</p></div>
-    </div>
-</footer>
+@include('site.partials.footer', ['compagnie' => $compagnie])
 
 <script src="{{ asset('assets_site/js/aos.js') }}"></script>
 <script>

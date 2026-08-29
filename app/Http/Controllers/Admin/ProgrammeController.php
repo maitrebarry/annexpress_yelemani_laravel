@@ -235,7 +235,7 @@ class ProgrammeController extends Controller
         $prix = $request->input('prix');
 
         $programme = Programme::find($idProgrammer);
-        if (! $programme) {
+        if (! $programme || ($user->id_compagnie && (string) $programme->id_compagnie !== (string) $user->id_compagnie)) {
             Flash::set('Programme introuvable.', 'danger');
 
             return redirect()->route('admin.programme.index');
@@ -286,6 +286,13 @@ class ProgrammeController extends Controller
 
         if ($user->estLectureSeule()) {
             Flash::set('Votre rôle est en lecture seule.', 'danger');
+
+            return redirect()->route('admin.programme.index');
+        }
+
+        $programme = Programme::find($idProgrammer);
+        if (! $programme || ($user->id_compagnie && (string) $programme->id_compagnie !== (string) $user->id_compagnie)) {
+            Flash::set('Programme introuvable.', 'danger');
 
             return redirect()->route('admin.programme.index');
         }

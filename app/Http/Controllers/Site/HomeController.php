@@ -54,19 +54,11 @@ class HomeController extends Controller
             'trajets' => Programme::where('id_compagnie', $compagnie->id_compagnie)->count(),
         ];
 
-        // Slider du hero : toutes les images de public/assets_site/img/hero-slides/,
-        // dans l'ordre alphabétique. Déposer un nouveau fichier suffit à l'ajouter.
-        $heroSlides = collect(glob(public_path('assets_site/img/hero-slides/*.{jpg,jpeg,png,webp}'), GLOB_BRACE))
-            ->sort()
-            ->map(fn (string $path) => asset('assets_site/img/hero-slides/'.basename($path)))
-            ->values();
-
         return view('site.home', [
             'compagnie' => $compagnie,
             'destinations' => array_values($destinationsUniques),
             'heroStats' => $heroStats,
             'villes' => Programme::villesDisponibles($compagnie->id_compagnie),
-            'heroSlides' => $heroSlides,
         ]);
     }
 }

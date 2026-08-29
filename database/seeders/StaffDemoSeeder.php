@@ -17,6 +17,14 @@ class StaffDemoSeeder extends Seeder
      */
     public function run(): void
     {
+        // Sécurité : ce seeder crée des comptes avec des mots de passe triviaux
+        // ("password"). Il est réservé au développement local — ne JAMAIS l'exécuter
+        // en production.
+        if (app()->isProduction()) {
+            $this->command->error('❌ StaffDemoSeeder refusé en production (mots de passe non sécurisés).');
+            return;
+        }
+
         $superAdmin = Utilisateur::updateOrCreate(
             ['emailUser' => 'superadmin@transhub.test'],
             [

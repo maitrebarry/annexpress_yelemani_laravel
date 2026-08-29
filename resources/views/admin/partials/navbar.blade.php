@@ -151,7 +151,7 @@
         <li class="nav-item dropdown dropdown-large">
           <a class="nav-link " href="#" data-bs-toggle="dropdown">
             <div class="user-setting d-flex align-items-center gap-1">
-              <img src="{{ asset('assets_site/img/reservation.png') }}" class="user-img" alt="">
+              <img src="{{ $authUser->photo ? asset('storage/profiles/' . $authUser->photo) : asset('assets_site/img/reservation.png') }}" class="user-img" alt="">
               <div class="user-name">{{ $authUser->utilisateurs }} <small style="font-size: 0.75rem; color: #f59e0b; display: block; line-height: 1;">{{ $identiteAffichee }}</small></div>
             </div>
           </a>

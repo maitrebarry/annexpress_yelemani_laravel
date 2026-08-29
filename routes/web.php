@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\ProgrammeController;
 use App\Http\Controllers\Admin\RapportBilletController;
 use App\Http\Controllers\Admin\ReclamationColisController;
 use App\Http\Controllers\Admin\TransfertGareController;
+use App\Http\Controllers\Admin\ProfilController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Site\CompagnieController as SiteCompagnieController;
 use App\Http\Controllers\Site\ContactController as SiteContactController;
@@ -72,7 +73,7 @@ Route::name('site.')->group(function () {
 
 Route::middleware('guest:staff')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+    Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:6,1')->name('login.store');
 });
 
 Route::post('/logout', [LoginController::class, 'destroy'])
@@ -178,6 +179,8 @@ Route::middleware(['auth:staff', 'permission:Programme_programmation_voyage'])->
 
 Route::middleware('auth:staff')->prefix('admin')->group(function () {
     Route::get('/Flotte', [FlotteController::class, 'index'])->name('admin.flotte.index');
+    Route::get('/Profils', [ProfilController::class, 'edit'])->name('admin.profil.edit');
+    Route::post('/Profils', [ProfilController::class, 'update'])->name('admin.profil.update');
 });
 
 Route::middleware('auth:staff')->prefix('admin')->group(function () {

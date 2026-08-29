@@ -56,6 +56,7 @@
 @endsection
 
 @section('scripts')
+    <script src="{{ asset('mon_js/thermal-print.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Deux tables sur la même page (onglets) : id="example" (init globale via

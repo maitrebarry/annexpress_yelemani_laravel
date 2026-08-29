@@ -201,6 +201,12 @@ Route::middleware('auth:staff')->prefix('admin')->group(function () {
         Route::post('/Colis_prise_en_charges/ajouter_colis', [ColisPriseEnChargeController::class, 'store'])->name('admin.colis.store');
     });
 
+    // Impression du reçu colis (PDF thermique 80mm) — URLs figées car thermal-print.js les appelle en dur.
+    Route::middleware('permission:colis_apercue')->group(function () {
+        Route::get('/Colis_prise_en_charges/imprimer_recu/{id}', [ColisPriseEnChargeController::class, 'imprimerRecu'])->name('admin.colis.imprimer-recu');
+        Route::get('/Colis_prise_en_charges/donneesRecuThermique/{id}', [ColisPriseEnChargeController::class, 'donneesRecuThermique'])->name('admin.colis.donnees-recu-thermique');
+    });
+
     Route::middleware('permission:colis_envoi')->group(function () {
         Route::get('/Envoi_colis/envoi_colis', [EnvoiColisController::class, 'create'])->name('admin.colis.envoi.create');
         Route::post('/Envoi_colis/envoi_colis', [EnvoiColisController::class, 'store'])->name('admin.colis.envoi.store');
@@ -309,6 +315,7 @@ Route::middleware(['auth:staff', 'permission:Billets_impression'])->prefix('admi
     // Chemin figé : public/mon_js/thermal-print.js (déjà présent, réutilisé tel quel) appelle
     // cette URL en dur.
     Route::get('/Liste_du_jours/donneesTicketThermique/{id}', [BilletController::class, 'donneesTicketThermique'])->name('admin.billet.ticket-thermique');
+    Route::get('/Liste_du_jours/recu/{id}', [BilletController::class, 'recu'])->name('admin.billet.recu');
 });
 
 Route::middleware(['auth:staff', 'permission:Billets_annulation'])->prefix('admin')->group(function () {

@@ -2,11 +2,9 @@
     $isAdmin = in_array($authUser->droit, ['Admin', 'PDG'], true);
     $peutAnnuler = in_array($authUser->droit, ['Admin', 'chef_d_escale'], true) && $authUser->userHasPermission('Billets_annulation');
     $peutReporter = ! $authUser->estLectureSeule() && $authUser->userHasPermission('Billets_reporte');
+    $peutImprimer = $authUser->userHasPermission('Billets_impression');
     $aujourdhuiStr = now()->toDateString();
     $demainStr = now()->addDay()->toDateString();
-    // Plusieurs tables sur une même page (onglets Aujourd'hui/Demain) doivent avoir un id
-    // unique : id="example" (convention DataTables globale de cette app, cf.
-    // table-datatable.js) n'est utilisable que quand la page n'affiche qu'une seule table.
     $tableId = $tableId ?? 'example';
 @endphp
 
@@ -49,8 +47,8 @@
                     <th class="border-0">Heure</th>
                     <th class="border-0 text-end">Montant</th>
                     <th class="border-0">Statut</th>
-                    @if ($peutAnnuler || $peutReporter)
-                        <th class="border-0">Action</th>
+                    @if ($peutAnnuler || $peutReporter || $peutImprimer)
+                        <th class="border-0">Actions</th>
                     @endif
                 </tr>
             </thead>
@@ -75,9 +73,9 @@
                                 <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-2">Actif</span>
                             @endif
                         </td>
-                        @if ($peutAnnuler || $peutReporter)
+                        @if ($peutAnnuler || $peutReporter || $peutImprimer)
                             <td>
-                                @if (in_array($b->status_billets, ['annule', 'annulation_demandee'], true))
+                                @if (in_array($b->status_billets, ['annule', 'annulation_demandee'], true) && ! $peutImprimer)
                                     <span class="text-muted small">—</span>
                                 @else
                                     <div class="dropdown">
@@ -85,19 +83,33 @@
                                             <i class="bx bx-dots-vertical-rounded"></i>
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                            @if ($peutReporter)
+                                            @if ($peutImprimer)
                                                 <li>
-                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalReporter{{ $b->idBillets }}">
-                                                        <i class="bx bx-calendar-edit me-2"></i>Reporter
+                                                    <a class="dropdown-item thermal-print-btn" href="#" data-id="{{ $b->idBillets }}">
+                                                        <i class="bx bx-printer me-2"></i>Imprimer (thermique)
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ url('/admin/Liste_du_jours/recu/' . $b->idBillets) }}" target="_blank">
+                                                        <i class="bx bx-file-pdf me-2"></i>Ouvrir PDF
                                                     </a>
                                                 </li>
                                             @endif
-                                            @if ($peutAnnuler)
-                                                <li>
-                                                    <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#modalAnnuler{{ $b->idBillets }}">
-                                                        <i class="bx bx-x-circle me-2"></i>{{ $authUser->droit === 'chef_d_escale' ? "Demander l'annulation" : 'Annuler le billet' }}
-                                                    </a>
-                                                </li>
+                                            @if (! in_array($b->status_billets, ['annule', 'annulation_demandee'], true))
+                                                @if ($peutReporter)
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalReporter{{ $b->idBillets }}">
+                                                            <i class="bx bx-calendar-edit me-2"></i>Reporter
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                                @if ($peutAnnuler)
+                                                    <li>
+                                                        <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#modalAnnuler{{ $b->idBillets }}">
+                                                            <i class="bx bx-x-circle me-2"></i>{{ $authUser->droit === 'chef_d_escale' ? "Demander l'annulation" : 'Annuler le billet' }}
+                                                        </a>
+                                                    </li>
+                                                @endif
                                             @endif
                                         </ul>
                                     </div>

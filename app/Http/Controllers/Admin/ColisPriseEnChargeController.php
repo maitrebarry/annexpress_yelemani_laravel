@@ -5,10 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Agence;
 use App\Models\Colis;
+use App\Models\Compagnie;
 use App\Models\Destinataire;
 use App\Models\Expediteur;
 use App\Services\CaisseUtilisateurService;
 use App\Support\Flash;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -284,5 +288,99 @@ class ColisPriseEnChargeController extends Controller
         }
 
         return $code;
+    }
+
+    // ─── Impression du reçu colis (PDF thermique 80mm) ───────────────────────────
+    // Port de Projets_licence/app/controllers/admin/Colis_prise_en_charges.php::imprimer_recu()
+    // Les URLs sont figées car thermal-print.js les appelle en dur :
+    //   GET /admin/Colis_prise_en_charges/imprimer_recu/{id}   → PDF de repli
+    //   GET /admin/Colis_prise_en_charges/donneesRecuThermique/{id} → JSON pour ESC/POS
+    public function imprimerRecu(int $id)
+    {
+        $user = Auth::guard('staff')->user();
+
+        $colis = Colis::query()
+            ->avecDetails()
+            ->where('colis.id_colis', $id)
+            ->where('colis.id_compagnie', $user->id_compagnie)
+            ->first();
+
+        $compagnie = Compagnie::find($user->id_compagnie);
+
+        if (! $colis || ! $compagnie) {
+            Flash::set('Colis ou compagnie introuvable.', 'danger');
+
+            return redirect()->route('admin.colis.index');
+        }
+
+        $logoPath = null;
+        if ($compagnie->logo) {
+            $logoPath = public_path('images/logos/' . $compagnie->logo);
+            if (! is_file($logoPath)) {
+                $logoPath = null;
+            }
+        }
+
+        // Génération du QR Code en base64
+        $qrData = "Nom : {$colis->nom_colis}\nCode : {$colis->code_colis}\n"
+            . "Départ : {$colis->provient_de}\nDestination : {$colis->destination}\n"
+            . "Expéditeur : {$colis->expediteur}\nDestinataire : {$colis->destinataire}";
+
+        $qrCode = new QrCode(data: $qrData, size: 200, margin: 6);
+        $qrResult = (new PngWriter())->write($qrCode);
+        $qrPath = 'data:image/png;base64,' . base64_encode($qrResult->getString());
+
+        $html = view('admin.pdf.recu_colis', compact('colis', 'compagnie', 'logoPath', 'qrPath'))->render();
+
+        $this->streamThermalPdf($html, "recu_colis_{$id}.pdf");
+    }
+
+    // Renvoie les données JSON du colis pour impression thermique ESC/POS via le pont local.
+    // Port de Projets_licence/app/controllers/admin/Colis_prise_en_charges.php::donneesRecuThermique()
+    public function donneesRecuThermique(int $id): JsonResponse
+    {
+        $user = Auth::guard('staff')->user();
+
+        $colis = Colis::query()
+            ->avecDetails()
+            ->where('colis.id_colis', $id)
+            ->where('colis.id_compagnie', $user->id_compagnie)
+            ->first();
+
+        $compagnie = Compagnie::find($user->id_compagnie);
+
+        if (! $colis || ! $compagnie) {
+            return response()->json(['error' => 'Colis ou compagnie introuvable.']);
+        }
+
+        $logoBase64 = null;
+        if ($compagnie->logo) {
+            $logoPath = public_path('images/logos/' . $compagnie->logo);
+            if (is_file($logoPath)) {
+                $logoBase64 = base64_encode(file_get_contents($logoPath));
+            }
+        }
+
+        $qrData = "Nom : {$colis->nom_colis}\nCode : {$colis->code_colis}\n"
+            . "Départ : {$colis->provient_de}\nDestination : {$colis->destination}\n"
+            . "Expéditeur : {$colis->expediteur}\nDestinataire : {$colis->destinataire}";
+
+        return response()->json([
+            'type'         => 'colis',
+            'compagnie'    => $compagnie->nom_compagnie ?? 'Compagnie',
+            'slogan'       => $compagnie->slogant ?? '',
+            'logo'         => $logoBase64,
+            'code'         => $colis->code_colis ?? '-',
+            'nom_colis'    => $colis->nom_colis ?? '-',
+            'nature'       => $colis->nature ?? '-',
+            'expediteur'   => $colis->expediteur ?? '-',
+            'tel_exp'      => $colis->numero_exp ?? '-',
+            'destinataire' => $colis->destinataire ?? '-',
+            'tel_dest'     => $colis->numero_dest ?? '-',
+            'depart'       => $colis->provient_de ?? '-',
+            'destination'  => $colis->destination ?? '-',
+            'agent'        => $colis->agent_nom ?? '-',
+            'qr_data'      => $qrData,
+        ]);
     }
 }

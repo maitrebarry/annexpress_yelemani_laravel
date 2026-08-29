@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\BilletService;
 use App\Services\CaisseUtilisateurService;
+use App\Models\Billet;
+use App\Models\Compagnie;
 use App\Support\Flash;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -290,5 +292,37 @@ class BilletController extends Controller
         Flash::set($resultat['message'], $resultat['type']);
 
         return redirect()->route('admin.billet.demandes-report');
+    }
+
+    public function recu(int $id)
+    {
+        $user = Auth::guard('staff')->user();
+
+        $billet = Billet::query()
+            ->join('client', 'billets.id_client', '=', 'client.idClient')
+            ->leftJoin('utilisateur', 'utilisateur.idUser', '=', 'billets.idUser')
+            ->where('billets.idBillets', $id)
+            ->where('billets.id_compagnie', $user->id_compagnie)
+            ->first(['billets.*', 'client.Client', 'client.montant_payer', 'utilisateur.utilisateurs']);
+
+        $compagnie = Compagnie::find($user->id_compagnie);
+
+        if (! $billet || ! $compagnie) {
+            Flash::set('Billet ou compagnie introuvable.', 'danger');
+
+            return redirect()->route('admin.billet.index');
+        }
+
+        $logoPath = null;
+        if ($compagnie->logo) {
+            $logoPath = public_path('images/logos/' . $compagnie->logo);
+            if (! is_file($logoPath)) {
+                $logoPath = null;
+            }
+        }
+
+        $html = view('admin.pdf.ticket', compact('billet', 'compagnie', 'logoPath'))->render();
+
+        $this->streamThermalPdf($html, "ticket_{$id}.pdf");
     }
 }

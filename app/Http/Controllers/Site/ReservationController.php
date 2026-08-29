@@ -61,7 +61,8 @@ class ReservationController extends Controller
 
     public function store(Request $request, ReservationEnLigneService $service): JsonResponse
     {
-        $resultat = $service->creerReservation([
+        try {
+            $resultat = $service->creerReservation([
             'id_programme' => $request->input('id_programme'),
             'departId' => $request->input('departId'),
             'destinationId' => $request->input('destinationId'),
@@ -79,6 +80,22 @@ class ReservationController extends Controller
 
         if (! $resultat['ok']) {
             return response()->json(['ok' => false, 'message' => $resultat['message']], 422);
+        }
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            if ($msg === 'AUCUN_CAR_PROGRAMME') {
+                $erreur = "Aucun car n'est encore programmé pour ce trajet aujourd'hui à cette heure. Veuillez choisir un autre trajet ou essayer plus tard.";
+            } elseif (str_starts_with($msg, 'PLACES_INSUFFISANTES')) {
+                $erreur = "Il n'y a plus assez de places disponibles pour ce trajet.";
+            } elseif ($msg === 'CAR_INTROUVABLE') {
+                $erreur = "Le car affecté à ce trajet est introuvable.";
+            } elseif ($msg === 'PLACE_MINIMALE_NON_DEFINIE') {
+                $erreur = "La configuration des places (quota en ligne) n'est pas définie pour cette compagnie.";
+            } else {
+                // Pour le débogage (ex: SQL errors) si besoin, on le retourne
+                $erreur = "Une erreur est survenue : " . $msg;
+            }
+            return response()->json(['ok' => false, 'message' => $erreur], 422);
         }
 
         $message = match ($resultat['email_envoye']) {

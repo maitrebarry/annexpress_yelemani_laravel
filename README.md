@@ -1,4 +1,4 @@
-# TransHub Admin (transgest-laravel)
+# TransGest Admin (transgest-laravel)
 
 Portage Laravel de l'application legacy PHP `Projets_licence` (gestion de compagnies de
 transport : billets, colis, caisse, configuration). Beaucoup de fichiers Laravel portent un
@@ -7,10 +7,28 @@ retrouver la logique métier legacy en cas de doute.
 
 ## Stack
 
-- Laravel, PHP 8.4, MySQL (base `transgest_db`)
+- Laravel, PHP 8.4, MySQL (base `db_annexpress_laravel` — `transgest_db` appartient à un
+  autre projet, `transgest-laravel`, ne pas confondre malgré le nom proche)
 - Auth admin/staff sur le guard **`auth:staff`** (pas le guard `web` par défaut), backé par
   `App\Models\Utilisateur` (table `utilisateur`, PK `idUser`)
 - Bootstrap 5 + jQuery + SweetAlert2 (déjà chargés globalement, cf. `resources/views/admin/partials/foot.blade.php`)
+
+## Template admin (2026-09-02)
+
+L'admin (`resources/views/admin/**`, `layouts/admin.blade.php`,
+`admin/partials/{header,navbar,sidebar,foot,theme}.blade.php`) a été rethémé sur le modèle
+visuel de `DojoManager_laravel` (navbar/sidebar marine foncé, sélecteur de couleur de thème,
+mode sombre, icônes Font Awesome à la place de Boxicons) — copié depuis le vrai rendu de ce
+projet, pas reconstruit de mémoire. `admin/partials/theme.blade.php` porte toutes les
+variables CSS (`--primary-color`, `--secondary-color`, etc.) et les surcharges dark-mode ;
+`assets/css/transgest-theme.css` (habillage marine/orange déjà existant, antérieur à ce
+chantier) reste chargé et suit désormais le thème choisi via ces mêmes variables (`--tg-navy`,
+`--tg-orange` y sont pilotées par `--primary-color`/`--secondary-color`). Ossature Skodash
+(`assets/css/style.css`, MetisMenu, DataTables...) conservée telle quelle pour la mécanique de
+mise en page — seul l'habillage change, aucune vue de contenu n'a eu besoin d'être retouchée
+pour ça. Marque : **TransGest** (pas TransHub, corrigé après coup — voir logo
+`public/images/logos/transgest_icon.png`/`transgest_logo.png`, recadrés depuis l'image source
+fournie par l'utilisateur).
 
 ## Démarrer en local
 
@@ -277,6 +295,56 @@ Complété. Une deuxième régression similaire (montant de remboursement toujou
 par l'annulation) a aussi été trouvée et corrigée — capturée uniquement parce que la
 vérification allait jusqu'à inspecter la table `depense` et pas seulement le message flash
 (les deux branches success/warning partagent la sous-chaîne "Billet annulé avec succès").
+
+### Fenêtre de réservation élargie à J+6, et rôle "Secrétaire Général", ajoutés 2026-09-02
+
+**Réservation à l'avance.** Le port Laravel avait repris la version **legacy la plus
+ancienne** de la règle de date (`Add_billet.php`, bloc aujourd'hui commenté/mort côté
+legacy) : `[$aujourdhui, $demain]` uniquement. La version **actuellement live** côté
+legacy (`Add_billet::saveBillets()`, `Reservations_ligne::saveBilletsEnligne()`,
+`Reservation_formulaire.php`) autorise en réalité **aujourd'hui → J+6** (une semaine),
+dupliquée en dur à 4 endroits faute de constante commune. Corrigé côté Laravel avec une
+vraie constante centrale, `config('billets.jours_reservation_avance')` (défaut `6`, env
+`BILLETS_JOURS_RESERVATION_AVANCE`), appliquée dans `BilletService::creerReservation()`
+(vente guichet), `ReservationEnLigneService::creerReservation()` (site public) et les deux
+sélecteurs de date (`admin/billet/create.blade.php`,
+`site/partials/reservation-modal.blade.php`). Le branchement `jourVoyage === $aujourdhui`
+(nécessite un `programmation_voyage` déjà affecté) vs. tout autre jour de la fenêtre
+(quota `place_minumale` + suivi `suivis`, aucune affectation de car requise à l'avance)
+existait déjà côté Laravel et est resté inchangé — il était déjà écrit génériquement
+(`else`), pas limité à "demain" en dur, donc valide tel quel pour J+1..J+6.
+
+L'écran `admin/billet/index.blade.php` (onglets Aujourd'hui/Demain) ne permettait de
+consulter que 2 des 7 jours désormais réservables. L'onglet "Demain" est devenu **"Autre
+jour"** : un sélecteur de date (`min`=demain, `max`=J+`jours_reservation_avance`) recharge
+la liste via `?date=YYYY-MM-DD` (`BilletController::index()`), toujours sur
+`BilletService::getListeParDate()` (déjà générique, aucun changement de service).
+
+**Volontairement laissé de côté** : le **report** d'un billet déjà créé
+(`BilletService::reporter()`/`appliquerReport()`) a sa propre règle, différente et non
+touchée — limité à `[aujourd'hui, demain]` par rapport à *la date actuelle*, alors que le
+legacy borne le report à `date_expiration` du billet (`jourVoyage + 1 semaine`), une
+notion distincte de la fenêtre d'achat. Les branches de libération/réservation de place
+(`appliquerReport()`) sont câblées en dur sur `=== $aujourdhui`/`=== $demain` (pas un
+`else` générique comme pour l'achat) — les élargir sans adapter ces branches créerait un
+bug silencieux de comptage de places pour un report vers J+2 et au-delà. À reprendre
+séparément si le report doit lui aussi couvrir toute la semaine.
+
+**Rôle "Secrétaire Général"** (`droit = 'secretaire'`, existe côté legacy — table
+`utilisateur.droit`, simple `varchar`, pas d'enum SQL). Périmètre identique au legacy :
+même portée **compagnie entière** que Admin/PDG (pas restreint à une gare) sur ~20
+fichiers (`in_array($droit, ['Admin', 'PDG', ...])` → `'secretaire'` ajouté partout où
+Admin+PDG apparaissaient ensemble — contrôleurs, services, sidebar, dashboard), mais
+**zéro permission par défaut à la création** (`Permission::assignPermissionsParDefautPourRole()`
+n'avait déjà aucun cas pour `'secretaire'` → reste un no-op, comme le legacy : c'est
+volontairement l'Admin qui attribue chaque permission à la main via l'écran
+"Assigner les permissions"). Ajouté à `ConfigurationController::droitsAutorisesPour()`
+(assignable par super_admin et par Admin, comme Utilisateur/chef d'escale — jamais par
+lui-même), au formulaire (`admin/configuration/index.blade.php`, affiche le champ
+Compagnie plutôt que Gare, comme Admin/PDG) et aux libellés (navbar, dropdown de rôle) —
+"Secrétaire Général" à l'affichage, `secretaire` en base. `estLectureSeule()` (PDG
+uniquement) ne le concerne pas, comme le legacy. Vérifié en HTTP réel : le rôle apparaît
+dans le sélecteur, la modale bascule bien vers le champ Compagnie une fois sélectionné.
 
 ### État de la flotte, ajouté 2026-08-22
 

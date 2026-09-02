@@ -5,10 +5,10 @@
     $autresCars = array_filter($listeCars, fn ($car) => $car['id_car_programmer'] != $idCar);
 @endphp
 
-@section('title', 'Détails de l\'envoi · TransHub Admin')
+@section('title', 'Détails de l\'envoi · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-package me-1"></i> G-colis</span>
+    <span class="text-primary"><i class="fas fa-box-open me-1"></i> G-colis</span>
 @endsection
 @section('breadcrumb-active')
     Colis envoyés pour le car N° {{ $idCar }} le {{ \Illuminate\Support\Carbon::parse($dateEnvoi)->format('d/m/Y à H:i') }}
@@ -44,7 +44,7 @@
                                             data-bs-toggle="modal" data-bs-target="#modalChangerCar"
                                             data-id-colis="{{ $colis->id_colis }}"
                                             data-nom-colis="{{ $colis->nom_colis }}">
-                                            <i class="bx bx-transfer-alt me-1"></i> Changer de car
+                                            <i class="fas fa-arrow-right-arrow-left me-1"></i> Changer de car
                                         </button>
                                     @endif
                                 </td>
@@ -78,7 +78,7 @@
 
                         @if (empty($autresCars))
                             <div class="alert alert-warning mb-0">
-                                <i class="bx bx-error me-1"></i>
+                                <i class="fas fa-triangle-exclamation me-1"></i>
                                 Aucun autre car programmé aujourd'hui. Activez et programmez un autre car
                                 (menus <em>Cars &amp; chauffeurs</em> et <em>Trajets programmés</em>)
                                 pour pouvoir réaffecter ce colis.

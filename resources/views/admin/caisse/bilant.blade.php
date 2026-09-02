@@ -5,35 +5,34 @@
     $labelActuel = $isBillets ? 'Billets' : 'Colis';
 @endphp
 
-@section('title', 'Bilan de caisse · TransHub Admin')
+@section('title', 'Bilan de caisse · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-wallet me-1"></i> Caisse</span>
+    <span class="text-primary"><i class="fas fa-wallet me-1"></i> Caisse</span>
 @endsection
 @section('breadcrumb-active', 'Bilan de caisse')
 
 @section('breadcrumb-actions')
     <div class="btn-group shadow-sm" role="group">
         <a href="{{ route('admin.caisse.bilant-billets') }}" class="btn btn-sm {{ $isBillets ? 'btn-primary' : 'btn-outline-primary' }}">
-            <i class="bx bx-ticket me-1"></i> Billets
+            <i class="fas fa-ticket me-1"></i> Billets
         </a>
         <a href="{{ route('admin.caisse.bilant-colis') }}" class="btn btn-sm {{ ! $isBillets ? 'btn-primary' : 'btn-outline-primary' }}">
-            <i class="bx bx-package me-1"></i> Colis
+            <i class="fas fa-box-open me-1"></i> Colis
         </a>
     </div>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
         <div class="text-muted small">
-            <i class="bx bx-info-circle me-1"></i>
+            <i class="fas fa-circle-info me-1"></i>
             Cliquez sur une carte pour voir le détail des mouvements de la caisse.
         </div>
         <div class="input-group" style="max-width:280px;">
-            <span class="input-group-text bg-white"><i class="bx bx-search"></i></span>
+            <span class="input-group-text bg-white"><i class="fas fa-magnifying-glass"></i></span>
             <input type="text" id="filtreBilan" class="form-control" placeholder="Filtrer par gare, référence...">
         </div>
     </div>
@@ -76,7 +75,7 @@
                         </div>
                     </div>
                     <div class="card-footer bg-white border-0 pt-0">
-                        <span class="btn btn-sm btn-outline-primary w-100"><i class="bx bx-show me-1"></i> Voir les mouvements</span>
+                        <span class="btn btn-sm btn-outline-primary w-100"><i class="fas fa-eye me-1"></i> Voir les mouvements</span>
                     </div>
                 </div>
             </div>
@@ -84,7 +83,7 @@
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center py-5">
-                        <i class="bx bx-wallet fs-1 text-muted"></i>
+                        <i class="fas fa-wallet fs-1 text-muted"></i>
                         <p class="text-muted mt-2 mb-0">Aucune caisse de gare pour le moment.</p>
                     </div>
                 </div>
@@ -103,7 +102,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary">
                     <h5 class="modal-title text-white mb-0">
-                        <i class="bx bx-list-ul me-1"></i> Mouvements — <span id="mvtGareNom"></span>
+                        <i class="fas fa-list-ul me-1"></i> Mouvements — <span id="mvtGareNom"></span>
                         <div class="small opacity-75" id="mvtPeriodeLabel"></div>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -138,7 +137,7 @@
 
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <h6 class="text-success"><i class="bx bx-log-in-circle me-1"></i> Entrées</h6>
+                                <h6 class="text-success"><i class="fas fa-right-to-bracket me-1"></i> Entrées</h6>
                                 <div class="table-responsive" style="max-height:320px; overflow-y:auto;">
                                     <table class="table table-sm">
                                         <tbody id="mvtEntrees"></tbody>
@@ -146,7 +145,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <h6 class="text-danger"><i class="bx bx-log-out-circle me-1"></i> Sorties</h6>
+                                <h6 class="text-danger"><i class="fas fa-right-from-bracket me-1"></i> Sorties</h6>
                                 <div class="table-responsive" style="max-height:320px; overflow-y:auto;">
                                     <table class="table table-sm">
                                         <tbody id="mvtSorties"></tbody>

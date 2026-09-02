@@ -2,22 +2,21 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Ajouter des colis à envoyer · TransHub Admin')
+@section('title', 'Ajouter des colis à envoyer · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-package me-1"></i> G-colis</span>
+    <span class="text-primary"><i class="fas fa-box-open me-1"></i> G-colis</span>
 @endsection
 @section('breadcrumb-active', 'Ajouter des colis à envoyer')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.colis.envoi.index') }}" class="btn btn-sm btn-success rounded-pill shadow-sm">
-        <i class="bx bx-list-ul me-1"></i> Voir la liste
+        <i class="fas fa-list-ul me-1"></i> Voir la liste
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-sm rounded-3">
         <form action="{{ route('admin.colis.envoi.store') }}" method="post">
@@ -40,7 +39,7 @@
                     </select>
                     @if ($carSelectionne)
                         <div class="form-text text-success">
-                            <i class="bx bx-check-circle"></i> Car N°{{ $carSelectionne->id_car_programmer }} présélectionné (départ {{ $carSelectionne->id_horaire }} vers {{ $carSelectionne->id_trajet }}).
+                            <i class="fas fa-circle-check"></i> Car N°{{ $carSelectionne->id_car_programmer }} présélectionné (départ {{ $carSelectionne->id_horaire }} vers {{ $carSelectionne->id_trajet }}).
                         </div>
                     @endif
                 </div>
@@ -75,7 +74,7 @@
                 @if ($authUser->droit !== 'PDG')
                     <div class="mt-4 text-end">
                         <button class="btn btn-success rounded-pill shadow-sm px-4" type="submit" name="submit">
-                            <i class="bx bx-save me-1"></i> Enregistrer
+                            <i class="fas fa-floppy-disk me-1"></i> Enregistrer
                         </button>
                     </div>
                 @endif

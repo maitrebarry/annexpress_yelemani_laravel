@@ -2,27 +2,26 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Historique des dépôts · TransHub Admin')
+@section('title', 'Historique des dépôts · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-buildings me-1"></i> Banque</span>
+    <span class="text-primary"><i class="fas fa-building-columns me-1"></i> Banque</span>
 @endsection
 @section('breadcrumb-active', 'Historique des dépôts')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.depot-banque.index') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-left-arrow-alt me-1"></i> Retour
+        <i class="fas fa-arrow-left me-1"></i> Retour
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <i class="bx bx-history fs-5"></i>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <i class="fas fa-clock-rotate-left fs-5"></i>
             <span class="fw-semibold">Historique des demandes de dépôt</span>
         </div>
         <div class="table-responsive p-2">

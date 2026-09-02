@@ -1,39 +1,42 @@
 
-  <footer class="text-center py-3" style="border-top:1px solid #e9ecef; background:#fff; margin-top:auto;">
-    <p class="mb-0 text-muted small">Copyright © 2026 Computer Service Barry. All rights reserved.</p>
+  <footer class="text-center py-3 border-top" style="font-size: 13px;">
+    <div class="container-fluid">
+        <p class="text-muted mb-1">
+            &copy; {{ date('Y') }} Computer Service BARRY.
+        </p>
+        <small class="text-muted">
+            v1.0.0
+        </small>
+    </div>
   </footer>
 
-  <!-- Bootstrap bundle JS -->
-  <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+  <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+  <!-- Bootstrap 5.3 bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <!--plugins-->
   <script src="{{ asset('assets/js/jquery.min.js') }}"></script>
   <script src="{{ asset('assets/plugins/simplebar/js/simplebar.min.js') }}"></script>
-  <script src="{{ asset('assets/plugins/metismenu/js/metisMenu.min.js') }}"></script>
   <script src="{{ asset('assets/plugins/easyPieChart/jquery.easypiechart.js') }}"></script>
   <script src="{{ asset('assets/plugins/peity/jquery.peity.min.js') }}"></script>
   <script src="{{ asset('assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js') }}"></script>
-  <script src="{{ asset('assets/js/pace.min.js') }}"></script>
   <script src="{{ asset('assets/plugins/vectormap/jquery-jvectormap-2.0.2.min.js') }}"></script>
   <script src="{{ asset('assets/plugins/vectormap/jquery-jvectormap-world-mill-en.js') }}"></script>
   <script src="{{ asset('assets/plugins/apexcharts-bundle/js/apexcharts.min.js') }}"></script>
   <script src="{{ asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
   <script src="{{ asset('assets/plugins/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
   <!--app-->
-  <script src="{{ asset('assets/js/app.js') }}"></script>
-  <script src="{{ asset('assets/js/index.js') }}"></script>
   <script src="{{ asset('assets/js/table-datatable.js') }}"></script>
   <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}"></script>
   <script src="{{ asset('assets/js/form-select2.js') }}"></script>
   <script src="{{ asset('assets/js/js_gare.js') }}"></script>
-
   <script src="{{ asset('assets/plugins/js/bs-stepper.min.js') }}"></script>
-  <script src="{{ asset('assets/plugins/js/main.js') }}"></script>
 
   <script src="{{ asset('mon_js/swt_alert.js') }}"></script>
 
   <script>
-     new PerfectScrollbar(".best-product")
-     new PerfectScrollbar(".top-sellers-list")
+     if (document.querySelector(".best-product")) new PerfectScrollbar(".best-product");
+     if (document.querySelector(".top-sellers-list")) new PerfectScrollbar(".top-sellers-list");
 
     $(document).ready(function() {
         $('#example1').DataTable();
@@ -55,12 +58,6 @@
       });
     });
 
-    // Le survol d'une ligne de tableau (.table-hover-effect) lui applique un transform, ce
-    // qui crée un nouveau contexte d'empilement CSS : dès qu'une ligne suivante était
-    // survolée pendant qu'un menu "..." de la ligne précédente était ouvert, cette ligne
-    // suivante s'affichait PAR-DESSUS le menu ouvert (le rendant illisible/impossible à
-    // cliquer, ex: "Supprimer" sur la liste des compagnies avec 2+ lignes). On relève la
-    // ligne qui contient le menu ouvert au-dessus de toutes les autres le temps qu'il est visible.
     document.addEventListener('show.bs.dropdown', function (event) {
       var row = event.target.closest('tr');
       if (row) {
@@ -140,4 +137,109 @@
         }, 1500);
       }, true);
     })();
+  </script>
+
+  {{-- Mode sombre / sidebar repliable / sélecteur de couleur — copie fidèle du JS de
+       DojoManager (resources/views/layouts/app.blade.php). --}}
+  <script>
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const html = document.documentElement;
+
+    function loadDarkMode() {
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (isDarkMode) {
+            html.classList.add('dark-mode');
+            if (darkModeToggle) darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+    }
+
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', function() {
+            html.classList.toggle('dark-mode');
+            const isDarkMode = html.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode);
+            darkModeToggle.innerHTML = isDarkMode
+                ? '<i class="fas fa-sun"></i>'
+                : '<i class="fas fa-moon"></i>';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDarkMode);
+
+    // Sidebar toggle: slide-in on mobile, collapse to icons on desktop
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const mainContent = document.querySelector('.main-content');
+
+    function setSidebarCollapsed(collapsed) {
+        if (collapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('collapsed-offset');
+            localStorage.setItem('sidebarCollapsed', 'true');
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('collapsed-offset');
+            localStorage.setItem('sidebarCollapsed', 'false');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const persisted = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (window.innerWidth > 768 && persisted) {
+            setSidebarCollapsed(true);
+            if (sidebarCollapseBtn) {
+                sidebarCollapseBtn.querySelector('i')?.classList.remove('fa-chevron-left');
+                sidebarCollapseBtn.querySelector('i')?.classList.add('fa-chevron-right');
+            }
+        }
+    });
+
+    const sidebarCollapseBtn = document.getElementById('sidebarCollapseBtn');
+
+    if (sidebarToggle && sidebar) {
+        sidebarToggle.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+            }
+        });
+    }
+
+    if (sidebarCollapseBtn && sidebar) {
+        sidebarCollapseBtn.addEventListener('click', function() {
+            const collapsed = sidebar.classList.toggle('collapsed');
+            if (collapsed) {
+                mainContent.classList.add('collapsed-offset');
+                sidebarCollapseBtn.querySelector('i').classList.remove('fa-chevron-left');
+                sidebarCollapseBtn.querySelector('i').classList.add('fa-chevron-right');
+                localStorage.setItem('sidebarCollapsed', 'true');
+            } else {
+                mainContent.classList.remove('collapsed-offset');
+                sidebarCollapseBtn.querySelector('i').classList.remove('fa-chevron-right');
+                sidebarCollapseBtn.querySelector('i').classList.add('fa-chevron-left');
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        });
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
+        });
+    }
+
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('selectedTheme', theme);
+        location.reload();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+        if (savedTheme !== 'default') {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+    });
   </script>

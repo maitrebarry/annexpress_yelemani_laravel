@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Livraison des colis · TransHub Admin')
+@section('title', 'Livraison des colis · TransGest Admin')
 
 @section('breadcrumb-title', 'G-colis')
 @section('breadcrumb-active', 'Livraison des colis')
@@ -11,11 +11,9 @@
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card">
         <div class="card-body">
-            @include('admin.partials.set_flash')
             <!-- ========= Formulaire unique ========= -->
             <form method="post" action="{{ route('admin.colis.livraison.store') }}" class="mb-4">
                 @csrf
@@ -122,10 +120,10 @@
                         @endphp
                         <div class="col-12 mt-3">
                             <div class="alert alert-success d-flex flex-wrap align-items-center justify-content-between gap-2 mb-0">
-                                <span><i class="bx bx-check-circle me-1"></i> Colis livré avec succès !</span>
+                                <span><i class="fas fa-circle-check me-1"></i> Colis livré avec succès !</span>
                                 @if ($lienWhatsappLivraison)
                                     <a href="{{ $lienWhatsappLivraison }}" target="_blank" rel="noopener" class="btn btn-success">
-                                        <i class="bx bxl-whatsapp me-1"></i> Confirmer la remise à l'expéditeur par WhatsApp
+                                        <i class="fab fa-whatsapp me-1"></i> Confirmer la remise à l'expéditeur par WhatsApp
                                     </a>
                                 @endif
                             </div>

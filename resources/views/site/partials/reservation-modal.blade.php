@@ -212,10 +212,10 @@
                     document.getElementById('resaHeureDisplay').value = trajet.heureDepart;
 
                     const today = new Date().toISOString().slice(0, 10);
-                    const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+                    const maxDate = new Date(Date.now() + {{ (int) config('billets.jours_reservation_avance', 6) }} * 86400000).toISOString().slice(0, 10);
                     const dateInput = document.getElementById('resaJourVoyage');
                     dateInput.min = today;
-                    dateInput.max = tomorrow;
+                    dateInput.max = maxDate;
                     dateInput.value = today;
 
                     prixUnitaireActuel = parseInt(trajet.prix, 10) || 0;

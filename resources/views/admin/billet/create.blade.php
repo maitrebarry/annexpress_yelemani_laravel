@@ -2,29 +2,28 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Achat de ticket · TransHub Admin')
+@section('title', 'Achat de ticket · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-category me-1"></i> G-réservation</span>
+    <span class="text-primary"><i class="fas fa-list me-1"></i> G-réservation</span>
 @endsection
 @section('breadcrumb-active', 'Achat de ticket')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.billet.index') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-list-ul me-1"></i> Liste des tickets
+        <i class="fas fa-list-ul me-1"></i> Liste des tickets
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="row g-4">
         <div class="col-12 col-xl-8">
             <div class="card border-0 shadow rounded-4 overflow-hidden">
                 <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2"
-                     style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-                    <i class="bx bx-ticket fs-5"></i>
+                     style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+                    <i class="fas fa-ticket fs-5"></i>
                     <span class="fw-semibold">Nouvelle réservation</span>
                 </div>
                 <div class="card-body p-4">
@@ -82,7 +81,7 @@
 
                             <div class="col-12 mt-2">
                                 <button type="submit" class="btn btn-success px-4">
-                                    <i class="bx bx-check-circle me-1"></i> Enregistrer la réservation
+                                    <i class="fas fa-circle-check me-1"></i> Enregistrer la réservation
                                 </button>
                             </div>
                         </div>
@@ -94,7 +93,7 @@
         <div class="col-12 col-xl-4">
             <div class="card border-0 shadow rounded-4 position-sticky" style="top: 1rem;">
                 <div class="card-header bg-white border-0 pt-4 px-4">
-                    <span class="fw-semibold text-muted text-uppercase small"><i class="bx bx-receipt me-1"></i> Résumé</span>
+                    <span class="fw-semibold text-muted text-uppercase small"><i class="fas fa-receipt me-1"></i> Résumé</span>
                 </div>
                 <div class="card-body px-4 pb-4">
                     <div class="d-flex justify-content-between py-2 border-bottom">
@@ -152,11 +151,11 @@
         const dateInput = document.getElementById('jourVoyage');
         (function initDateLimits() {
             const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(today.getDate() + 1);
+            const maxDate = new Date(today);
+            maxDate.setDate(today.getDate() + {{ (int) config('billets.jours_reservation_avance', 6) }});
             const toISO = d => d.toISOString().slice(0, 10);
             dateInput.min = toISO(today);
-            dateInput.max = toISO(tomorrow);
+            dateInput.max = toISO(maxDate);
             dateInput.value = dateInput.min;
         })();
 

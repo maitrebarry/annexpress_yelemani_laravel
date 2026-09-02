@@ -18,29 +18,29 @@
             @if ($b['photo'])
                 <img src="{{ $b['photo'] }}" alt="Photo">
             @else
-                <i class="bi bi-person-fill ph"></i>
+                <i class="fas fa-user ph"></i>
             @endif
         </div>
         <div class="bh-name">{{ $b['nom'] }}</div>
         <div class="bh-role">{{ $b['role'] }}</div>
         <div class="bh-grid">
             <div class="bh-item">
-                <div class="bh-ic"><i class="bi bi-person-badge"></i></div>
+                <div class="bh-ic"><i class="fas fa-id-badge"></i></div>
                 <div class="bh-dt"><span class="bh-lbl">Fonction</span><span class="bh-val">{{ $b['fonction'] }}</span></div>
             </div>
             <div class="bh-item">
-                <div class="bh-ic"><i class="bi bi-telephone-fill"></i></div>
+                <div class="bh-ic"><i class="fas fa-phone"></i></div>
                 <div class="bh-dt"><span class="bh-lbl">Téléphone</span><span class="bh-val">{{ $b['tel'] }}</span></div>
             </div>
             @if ($b['mail'])
                 <div class="bh-item">
-                    <div class="bh-ic"><i class="bi bi-envelope-fill"></i></div>
+                    <div class="bh-ic"><i class="fas fa-envelope"></i></div>
                     <div class="bh-dt"><span class="bh-lbl">Email</span><span class="bh-val">{{ $b['mail'] }}</span></div>
                 </div>
             @endif
             @if ($b['location'])
                 <div class="bh-item">
-                    <div class="bh-ic"><i class="bi bi-geo-alt-fill"></i></div>
+                    <div class="bh-ic"><i class="fas fa-location-dot"></i></div>
                     <div class="bh-dt"><span class="bh-lbl">Affectation</span><span class="bh-val">{{ $b['location'] }}</span></div>
                 </div>
             @endif

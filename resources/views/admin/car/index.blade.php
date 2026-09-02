@@ -2,17 +2,17 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Cars & Chauffeurs · TransHub Admin')
+@section('title', 'Cars & Chauffeurs · TransGest Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Cars & Chauffeurs')
 
 @section('breadcrumb-actions')
     @unless ($authUser->estLectureSeule())
         <button type="button" class="btn btn-success d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjouterCar">
-            <i class="bx bx-plus-circle fs-5"></i> Ajouter un car
+            <i class="fas fa-circle-plus fs-5"></i> Ajouter un car
         </button>
         <button type="button" class="btn btn-success d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjouterChauffeur">
-            <i class="bx bx-plus-circle fs-5"></i> Ajouter un chauffeur
+            <i class="fas fa-circle-plus fs-5"></i> Ajouter un chauffeur
         </button>
     @endunless
 @endsection
@@ -22,18 +22,17 @@
     @include('admin.partials.config-nav', ['active' => 'cars'])
 
     <div class="col-12 col-xxl-9">
-        @include('admin.partials.set_flash')
 
         <div class="card config-card">
             <div class="card-header">
-                <h5 class="mb-0 fw-bold"><i class="bx bx-bus me-2"></i>Cars & Chauffeurs</h5>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-bus me-2"></i>Cars & Chauffeurs</h5>
             </div>
             <div class="card-body p-4">
                 <ul class="nav nav-pills nav-pills-primary mb-3" role="tablist">
                     <li class="nav-item" role="presentation">
                         <a class="nav-link active" data-bs-toggle="tab" href="#tabCars" role="tab" aria-selected="true">
                             <div class="d-flex align-items-center">
-                                <div class="tab-icon"><i class='bx bx-bus font-18 me-1'></i></div>
+                                <div class="tab-icon"><i class='fas fa-bus font-18 me-1'></i></div>
                                 <div class="tab-title">Cars</div>
                             </div>
                         </a>
@@ -41,7 +40,7 @@
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" data-bs-toggle="tab" href="#tabChauffeurs" role="tab" aria-selected="false">
                             <div class="d-flex align-items-center">
-                                <div class="tab-icon"><i class='bx bx-user-pin font-18 me-1'></i></div>
+                                <div class="tab-icon"><i class='fas fa-user-tag font-18 me-1'></i></div>
                                 <div class="tab-title">Chauffeurs</div>
                             </div>
                         </a>
@@ -78,12 +77,12 @@
                                                                     data-numero="{{ $c->numero_car }}"
                                                                     data-matricule="{{ $c->matriculle }}"
                                                                     data-places="{{ $c->nbr_place }}">
-                                                                    <i class="bx bx-edit me-2"></i>Modifier
+                                                                    <i class="fas fa-pen me-2"></i>Modifier
                                                                 </a>
                                                             </li>
                                                             <li>
                                                                 <a class="dropdown-item text-danger delete-button" href="{{ route('admin.car.destroy', $c->id_car) }}">
-                                                                    <i class="bx bx-trash me-2"></i>Supprimer
+                                                                    <i class="fas fa-trash me-2"></i>Supprimer
                                                                 </a>
                                                             </li>
                                                         @endunless
@@ -117,7 +116,7 @@
                                                     <img src="{{ asset('storage/profiles/'.$ch->photo) }}" alt="Photo" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
                                                 @else
                                                     <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                                        <i class="bx bx-user fs-5"></i>
+                                                        <i class="fas fa-user fs-5"></i>
                                                     </div>
                                                 @endif
                                             </td>
@@ -137,12 +136,12 @@
                                                                     data-numero="{{ $ch->numero }}"
                                                                     data-idcar="{{ $ch->id_car }}"
                                                                     data-photo="{{ $ch->photo ? asset('storage/profiles/'.$ch->photo) : '' }}">
-                                                                    <i class="bx bx-edit me-2"></i>Modifier
+                                                                    <i class="fas fa-pen me-2"></i>Modifier
                                                                 </a>
                                                             </li>
                                                             <li>
                                                                 <a class="dropdown-item text-danger delete-button" href="{{ route('admin.chauffeur.destroy', $ch->id_chauffeur) }}">
-                                                                    <i class="bx bx-trash me-2"></i>Supprimer
+                                                                    <i class="fas fa-trash me-2"></i>Supprimer
                                                                 </a>
                                                             </li>
                                                         @endunless

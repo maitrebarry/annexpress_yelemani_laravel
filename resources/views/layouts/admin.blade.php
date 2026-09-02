@@ -1,61 +1,50 @@
 @include('admin.partials.header')
 <body>
-    <!--start wrapper-->
+    @include('admin.partials.navbar')
+
     <div class="wrapper">
-        <!--start top header-->
-        @include('admin.partials.navbar')
-        <!--end top header-->
-
-        <!--start sidebar -->
         @include('admin.partials.sidebar')
-        <!--end sidebar -->
 
-        <!--start content-->
-        <main class="page-content">
+        <main class="main-content">
             @hasSection('hero')
                 @yield('hero')
             @else
-                <!--breadcrumb-->
-                <div class="page-breadcrumb d-flex flex-wrap align-items-center mb-3">
-                    <div class="breadcrumb-title pe-3">@yield('breadcrumb-title', 'Configuration')</div>
-                    <div class="ps-3">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb mb-0 p-0">
-                                <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a>
-                                </li>
-                                <li class="breadcrumb-item active" aria-current="page">@yield('breadcrumb-active')</li>
-                            </ol>
-                        </nav>
-                    </div>
-                    <div class="ms-auto">
+                @php
+                    $pageTitle = trim($__env->yieldContent('breadcrumb-active'));
+                    $sectionTitle = trim($__env->yieldContent('breadcrumb-title'));
+                @endphp
+                <div class="mb-4 page-header">
+                    <nav aria-label="breadcrumb" class="mb-2">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item"><a href="{{ url('/admin/Homes/home') }}">Accueil</a></li>
+                            @if($sectionTitle !== '')
+                                <li class="breadcrumb-item">{!! $sectionTitle !!}</li>
+                            @endif
+                            <li class="breadcrumb-item active" aria-current="page">{{ $pageTitle }}</li>
+                        </ol>
+                    </nav>
+
+                    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                        <h1 class="mb-0">{{ $pageTitle !== '' ? $pageTitle : strip_tags($sectionTitle) }}</h1>
                         <div class="d-flex gap-2">
                             @yield('breadcrumb-actions')
-                            <a href="javascript:history.back()"
-                                class="btn btn-outline-primary d-flex align-items-center gap-2 shadow-sm">
-                                <i class="bx bx-left-arrow-alt fs-5"></i> Retour
+                            <a href="javascript:history.back()" class="btn btn-outline-primary d-flex align-items-center gap-2">
+                                <i class="fas fa-arrow-left"></i> Retour
                             </a>
                         </div>
                     </div>
                 </div>
-                <!--end breadcrumb-->
             @endif
 
             @yield('content')
-
         </main>
-        <!--end page main-->
-
-        <!--start overlay-->
-        <div class="overlay nav-toggle-icon"></div>
-        <!--end overlay-->
-
-        <!--Start Back To Top Button-->
-        <a href="javaScript:;" class="back-to-top"><i class='bx bxs-up-arrow-alt'></i></a>
-        <!--End Back To Top Button-->
     </div>
-    <!--end wrapper-->
 
     @yield('modals')
+
+    {{-- Toast de notification (session('notification')) : centralisé ici pour s'appliquer
+         à toutes les pages admin, plutôt que d'exiger un @include par vue. --}}
+    @include('admin.partials.set_flash')
 
     @include('admin.partials.foot')
     @yield('scripts')

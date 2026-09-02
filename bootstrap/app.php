@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'super_admin' => \App\Http\Middleware\EnsureIsSuperAdmin::class,
             'permission' => \App\Http\Middleware\EnsureHasPermission::class,
+            'site.compagnie.configured' => \App\Http\Middleware\EnsureSiteCompagnieConfigured::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -150,9 +150,16 @@ class CaisseController extends Controller
         ]));
     }
 
-    public function rapportProprietaire(Request $request, CaisseUtilisateurService $service): View
+    public function rapportProprietaire(Request $request, CaisseUtilisateurService $service): View|RedirectResponse
     {
         $user = Auth::guard('staff')->user();
+
+        if ($user->id_compagnie === null) {
+            Flash::set("Ce rapport n'est disponible que pour un compte rattaché à une compagnie.", 'warning');
+
+            return redirect()->route('admin.home');
+        }
+
         $date = $request->input('date', now()->toDateString());
 
         $rapport = $service->getRapportProprietaire($user->id_compagnie, $date);

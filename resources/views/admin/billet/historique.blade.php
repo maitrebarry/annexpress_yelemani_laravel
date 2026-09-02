@@ -5,22 +5,21 @@
     $montantTotal = $listeHistorique->sum(fn ($b) => (float) preg_replace('/[^\d.]/', '', (string) $b->montant_payer));
 @endphp
 
-@section('title', 'Historique des billets · TransHub Admin')
+@section('title', 'Historique des billets · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-category me-1"></i> G-réservation</span>
+    <span class="text-primary"><i class="fas fa-list me-1"></i> G-réservation</span>
 @endsection
 @section('breadcrumb-active', 'Historique des billets')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.billet.index') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-left-arrow-alt me-1"></i> Retour
+        <i class="fas fa-arrow-left me-1"></i> Retour
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
@@ -43,7 +42,7 @@
                     <input type="time" class="form-control" name="heure" value="{{ $heureSelectionnee }}">
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary w-100"><i class="bx bx-filter-alt me-1"></i> Filtrer</button>
+                    <button type="submit" class="btn btn-outline-primary w-100"><i class="fas fa-filter me-1"></i> Filtrer</button>
                 </div>
             </form>
         </div>
@@ -70,8 +69,8 @@
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <i class="bx bx-list-ul fs-5"></i>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <i class="fas fa-list-ul fs-5"></i>
             <span class="fw-semibold">Billets du {{ \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') }}</span>
         </div>
         <div class="table-responsive p-2">

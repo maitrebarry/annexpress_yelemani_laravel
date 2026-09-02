@@ -44,7 +44,7 @@ use Illuminate\Support\Facades\Route;
 
 // Site public (vitrine) : pas de guard, accessible à tous. L'admin (staff) y accède via
 // le lien "Espace pro" du menu, qui mène à /login.
-Route::name('site.')->group(function () {
+Route::name('site.')->middleware('site.compagnie.configured')->group(function () {
     Route::get('/', [SiteHomeController::class, 'index'])->name('home');
     Route::get('/compagnies', [SiteCompagnieController::class, 'index'])->name('compagnies');
     // Pas de suffixe /trajets : cette page joue le rôle de "mini-site" propre à la
@@ -97,6 +97,8 @@ Route::middleware(['auth:staff', 'super_admin'])->prefix('admin')->group(functio
     Route::post('/Compagnies/store', [CompagnieController::class, 'store'])->name('admin.compagnie.store');
     Route::post('/Compagnies/edit', [CompagnieController::class, 'update'])->name('admin.compagnie.update');
     Route::get('/Compagnies/delete/{idCompagnie}', [CompagnieController::class, 'destroy'])->name('admin.compagnie.destroy');
+    Route::post('/Compagnies/photos/store', [CompagnieController::class, 'storePhotos'])->name('admin.compagnie.photos.store');
+    Route::get('/Compagnies/photos/delete/{idPhoto}', [CompagnieController::class, 'destroyPhoto'])->name('admin.compagnie.photos.destroy');
 });
 
 Route::middleware(['auth:staff', 'super_admin'])->prefix('admin')->group(function () {

@@ -27,7 +27,7 @@ class FlotteController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (! in_array($user->droit, ['Admin', 'super_admin', 'PDG'], true)) {
+        if (! in_array($user->droit, ['Admin', 'super_admin', 'PDG', 'secretaire'], true)) {
             Flash::set('Accès refusé.', 'danger');
 
             return redirect()->route('admin.home');

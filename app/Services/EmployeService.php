@@ -42,10 +42,10 @@ class EmployeService
                 // compagnie via utilisateur.id_compagnie.
                 $query->where(function ($q) use ($user) {
                     $q->where(function ($q2) use ($user) {
-                        $q2->whereIn('utilisateur.droit', ['Admin', 'PDG'])
+                        $q2->whereIn('utilisateur.droit', ['Admin', 'PDG', 'secretaire'])
                             ->where('utilisateur.id_compagnie', $user->id_compagnie);
                     })->orWhere(function ($q2) use ($user) {
-                        $q2->whereNotIn('utilisateur.droit', ['Admin', 'PDG'])
+                        $q2->whereNotIn('utilisateur.droit', ['Admin', 'PDG', 'secretaire'])
                             ->where('agence.id_compagnie', $user->id_compagnie);
                     });
                 });
@@ -145,7 +145,7 @@ class EmployeService
 
         // Admin/PDG sont rattachés directement à la compagnie via utilisateur.id_compagnie
         // (pas d'agence assignée), cf. buildListe().
-        if (in_array($u->droit, ['Admin', 'PDG'], true)) {
+        if (in_array($u->droit, ['Admin', 'PDG', 'secretaire'], true)) {
             $employeCompagnie = $u->id_compagnie;
         } else {
             $employeCompagnie = null;

@@ -2,28 +2,27 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', "Demandes d'annulation · TransHub Admin")
+@section('title', "Demandes d'annulation · TransGest Admin")
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-category me-1"></i> G-réservation</span>
+    <span class="text-primary"><i class="fas fa-list me-1"></i> G-réservation</span>
 @endsection
 @section('breadcrumb-active', "Demandes d'annulation")
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.billet.index') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-left-arrow-alt me-1"></i> Retour
+        <i class="fas fa-arrow-left me-1"></i> Retour
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-4">
             <div class="card border-0 shadow-sm border-start border-4 border-warning h-100">
                 <div class="card-body">
-                    <div class="text-muted small"><i class="bx bx-time me-1"></i> Demandes en attente</div>
+                    <div class="text-muted small"><i class="fas fa-clock me-1"></i> Demandes en attente</div>
                     <div class="fs-4 fw-bold">{{ $listeDemandes->count() }}</div>
                 </div>
             </div>
@@ -32,8 +31,8 @@
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <i class="bx bx-time fs-5"></i>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <i class="fas fa-clock fs-5"></i>
             <span class="fw-semibold">À valider</span>
         </div>
         <div class="table-responsive p-2">
@@ -68,14 +67,14 @@
                                         @csrf
                                         <button type="button" class="btn btn-sm btn-success btn-confirmer-annulation-demande"
                                             data-id="{{ $d->idBillets }}" data-numero="{{ $d->numeroBillets }}">
-                                            <i class="bx bx-check"></i> Confirmer
+                                            <i class="fas fa-check"></i> Confirmer
                                         </button>
                                     </form>
                                     <form method="post" action="{{ route('admin.billet.rejeter-annulation', $d->idBillets) }}" id="form-rejeter-{{ $d->idBillets }}">
                                         @csrf
                                         <button type="button" class="btn btn-sm btn-outline-danger btn-rejeter-annulation-demande"
                                             data-id="{{ $d->idBillets }}" data-numero="{{ $d->numeroBillets }}">
-                                            <i class="bx bx-x"></i> Rejeter
+                                            <i class="fas fa-xmark"></i> Rejeter
                                         </button>
                                     </form>
                                 @endif

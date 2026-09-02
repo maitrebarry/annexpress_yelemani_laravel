@@ -2,28 +2,27 @@
 
 @php $authUser = auth('staff')->user(); $totalEnAttente = $listeDemandes->sum('montant'); @endphp
 
-@section('title', 'Demandes de dépôt en attente · TransHub Admin')
+@section('title', 'Demandes de dépôt en attente · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-buildings me-1"></i> Banque</span>
+    <span class="text-primary"><i class="fas fa-building-columns me-1"></i> Banque</span>
 @endsection
 @section('breadcrumb-active', 'Demandes en attente')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.depot-banque.historique') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-history me-1"></i> Historique complet
+        <i class="fas fa-clock-rotate-left me-1"></i> Historique complet
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-3">
             <div class="card border-0 shadow-sm border-start border-4 border-warning h-100">
                 <div class="card-body">
-                    <div class="text-muted small"><i class="bx bx-time me-1"></i> Demandes en attente</div>
+                    <div class="text-muted small"><i class="fas fa-clock me-1"></i> Demandes en attente</div>
                     <div class="fs-4 fw-bold">{{ $listeDemandes->count() }}</div>
                 </div>
             </div>
@@ -31,7 +30,7 @@
         <div class="col-6 col-xl-3">
             <div class="card bg-primary text-white border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <div class="small opacity-75"><i class="bx bx-money me-1"></i> Montant total</div>
+                    <div class="small opacity-75"><i class="fas fa-money-bill-wave me-1"></i> Montant total</div>
                     <div class="fs-4 fw-bold">{{ number_format($totalEnAttente, 0, ',', ' ') }} F</div>
                 </div>
             </div>
@@ -40,8 +39,8 @@
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <i class="bx bx-time fs-5"></i>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <i class="fas fa-clock fs-5"></i>
             <span class="fw-semibold">À valider</span>
         </div>
         <div class="table-responsive p-2">
@@ -74,11 +73,11 @@
                                         @csrf
                                         <button type="button" class="btn btn-sm btn-success btn-confirmer-depot"
                                             data-id="{{ $d->id_depot }}" data-montant="{{ (float) $d->montant }}" data-gare="{{ $d->localite }} ({{ $d->numeroGare }})">
-                                            <i class="bx bx-check"></i> Confirmer
+                                            <i class="fas fa-check"></i> Confirmer
                                         </button>
                                     </form>
                                     <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalRejet{{ $d->id_depot }}">
-                                        <i class="bx bx-x"></i> Rejeter
+                                        <i class="fas fa-xmark"></i> Rejeter
                                     </button>
                                 @endif
                             </td>

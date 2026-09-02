@@ -2,28 +2,27 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Trajets programmés · TransHub Admin')
+@section('title', 'Trajets programmés · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-calendar-check me-1"></i> G-programme</span>
+    <span class="text-primary"><i class="fas fa-calendar-check me-1"></i> G-programme</span>
 @endsection
 @section('breadcrumb-active', 'Trajets programmés')
 
 @section('breadcrumb-actions')
     @unless ($authUser->estLectureSeule())
         <a href="{{ route('admin.programmation-voyage.dashboard') }}" class="btn btn-sm btn-success rounded-pill shadow-sm">
-            <i class="bx bx-plus-circle me-1"></i> Ajouter
+            <i class="fas fa-circle-plus me-1"></i> Ajouter
         </a>
     @endunless
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-sm border-0">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-bus me-1"></i> Liste des programmations du jour
+            <i class="fas fa-bus me-1"></i> Liste des programmations du jour
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -61,13 +60,13 @@
                                             <a href="#" class="text-dark text-decoration-none fs-4" data-bs-toggle="dropdown" aria-expanded="false">&#8943;</a>
                                             <div class="dropdown-menu dropdown-menu-end">
                                                 <a class="dropdown-item" href="{{ route('admin.programmation-voyage.edit', $p->id_programmation) }}">
-                                                    <i class="bx bx-edit me-2"></i>Modifier
+                                                    <i class="fas fa-pen me-2"></i>Modifier
                                                 </a>
                                                 @if ((int) $p->place_disponible > 0)
                                                     <a class="dropdown-item transfer-btn" href="javascript:;"
                                                         data-bs-toggle="modal" data-bs-target="#modalTransfert"
                                                         data-id-programmation="{{ $p->id_programmation }}">
-                                                        <i class="bx bx-transfer me-2"></i>Transférer les passagers
+                                                        <i class="fas fa-right-left me-2"></i>Transférer les passagers
                                                     </a>
                                                 @endif
                                             </div>

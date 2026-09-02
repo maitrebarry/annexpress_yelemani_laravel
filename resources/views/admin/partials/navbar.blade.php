@@ -21,7 +21,7 @@
         $params = [$idCompagnie];
     }
 
-    $billetsEnAttente = in_array($droit, ['chef_d_escale', 'Utilisateur', 'Admin'], true) || $droit === 'super_admin' || $droit === 'PDG'
+    $billetsEnAttente = in_array($droit, ['chef_d_escale', 'Utilisateur', 'Admin'], true) || $droit === 'super_admin' || $droit === 'PDG' || $droit === 'secretaire'
         ? collect(DB::select($sql, $params))
         : collect();
 
@@ -52,6 +52,7 @@
         'Admin'         => 'Admin',
         'super_admin'   => 'Super Admin',
         'PDG'           => 'PDG',
+        'secretaire'    => 'Secrétaire Général',
     ];
     $libellesService = ['billet' => 'Billetterie', 'colis' => 'Colis / Courrier'];
 
@@ -63,128 +64,166 @@
     $gareAffichee = trim(($ville ?? '') . (!empty($numeroGare) ? ' (' . $numeroGare . ')' : ''));
     $identiteAffichee = $roleAffiche . ($gareAffichee !== '' ? ' — ' . $gareAffichee : '');
 @endphp
-<header class="top-header">
-  <nav class="navbar navbar-expand">
-    <div class="mobile-toggle-icon d-xl-none">
-      <i class="bi bi-list"></i>
-    </div>
-    <div class="top-navbar d-none d-xl-block">
+<nav class="navbar navbar-expand-md sticky-top" id="navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url('/admin/Homes/home') }}">
+            <span class="brand-3d">TRANSGEST</span>
+        </a>
 
-    </div>
-    <div class="search-toggle-icon d-xl-none ms-auto">
-      <i class="bi bi-search"></i>
-    </div>
-    <form class="searchbar d-none d-xl-flex ms-auto">
-      <div class="position-absolute top-50 translate-middle-y search-icon ms-3"></div>
+        <button class="navbar-toggler" type="button" id="sidebarToggle">
+            <i class="fas fa-bars" style="color: var(--navbar-text);"></i>
+        </button>
 
-      <div class="position-absolute top-50 translate-middle-y d-block d-xl-none search-close-icon"><i class="bi bi-x-lg"></i></div>
-    </form>
-    <div class="top-navbar-right ms-3">
-      <ul class="navbar-nav align-items-center">
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <!-- Sélecteur de couleur -->
+                <li class="nav-item dropdown me-2">
+                    <button class="btn btn-sm btn-theme-toggle dropdown-toggle" id="themeSelector" data-bs-toggle="dropdown" title="Changer le thème">
+                        <i class="fas fa-palette"></i> Thème
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeSelector">
+                        <li><a class="dropdown-item" href="#" onclick="setTheme('default'); return false;"><i class="fas fa-circle" style="color:#0f3b5e;"></i> Marine (défaut)</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setTheme('orange'); return false;"><i class="fas fa-circle" style="color:#ea580c;"></i> Orange</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setTheme('green'); return false;"><i class="fas fa-circle" style="color:#10b981;"></i> Vert</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setTheme('red'); return false;"><i class="fas fa-circle" style="color:#ef4444;"></i> Rouge</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="setTheme('indigo'); return false;"><i class="fas fa-circle" style="color:#4f46e5;"></i> Indigo</a></li>
+                    </ul>
+                </li>
 
-        @if ($authUser->userHasPermission('Billets_notification'))
-          <li class="nav-item dropdown dropdown-large d-none d-sm-block">
-            <a class="nav-link" href="#" data-bs-toggle="dropdown">
-              <div class="notifications">
-                @if ($notifCount > 0)
-                  <span class="notify-badge">{{ $notifCount }}</span>
-                @endif
-                <i class="bx bxs-bell"></i>
-              </div>
-            </a>
+                <!-- Mode sombre -->
+                <li class="nav-item">
+                    <button class="btn btn-outline-light btn-sm me-2" id="darkModeToggle" title="Mode sombre">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </li>
 
-            <div class="dropdown-menu dropdown-menu-end p-0">
-              <div class="header-notifications-list p-2">
-                @if ($notifCount > 0)
-                  @foreach ($billetsEnAttente as $billet)
-                    <a class="dropdown-item" href="{{ url('/admin/Liste_ententes/validation/' . $billet->idBillets) }}">
-                      <div class="d-flex align-items-center">
-                        <div class="notification-box"><i class="bx bxs-coupon"></i></div>
-                        <div class="ms-3 flex-grow-1">
-                          <h6 class="mb-0 dropdown-msg-user">Billet en attente</h6>
-                          <small class="mb-0 dropdown-msg-text text-secondary">
-                            @if ($droit === 'Admin')
-                              <span class="badge bg-secondary me-1">{{ $billet->departId }}</span>
+                @if ($authUser->userHasPermission('Billets_notification'))
+                    <li class="nav-item dropdown me-2">
+                        <button class="btn btn-sm btn-theme-toggle position-relative" data-bs-toggle="dropdown" title="Notifications">
+                            <i class="fas fa-bell"></i>
+                            @if ($notifCount > 0)
+                                <span class="notify-badge">{{ $notifCount }}</span>
                             @endif
-                            {{ $billet->destinationId }} - {{ $billet->Heur_departs }}
-                          </small>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end p-0" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                            <div class="p-2">
+                                @if ($notifCount > 0)
+                                    @foreach ($billetsEnAttente as $billet)
+                                        <a class="dropdown-item d-flex align-items-center gap-2 rounded" href="{{ url('/admin/Liste_ententes/validation/' . $billet->idBillets) }}">
+                                            <i class="fas fa-ticket"></i>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold small">Billet en attente</div>
+                                                <div class="text-secondary" style="font-size: .75rem;">
+                                                    @if ($droit === 'Admin')<span class="badge bg-secondary me-1">{{ $billet->departId }}</span>@endif
+                                                    {{ $billet->destinationId }} - {{ $billet->Heur_departs }}
+                                                </div>
+                                            </div>
+                                        </a>
+                                    @endforeach
+                                    @foreach ($locationsEnAttente as $location)
+                                        <a class="dropdown-item d-flex align-items-center gap-2 rounded" href="{{ url('/admin/Locations_cars') }}">
+                                            <i class="fas fa-bus"></i>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold small">Location de car en attente</div>
+                                                <div class="text-secondary" style="font-size: .75rem;">
+                                                    <span class="badge bg-secondary me-1">{{ $location->localite ?? '-' }}</span>
+                                                    {{ $location->destination }} - {{ number_format($location->frais_location, 0, ',', ' ') }} F
+                                                </div>
+                                            </div>
+                                        </a>
+                                    @endforeach
+                                    @foreach ($billetsEnRetard as $billetRetard)
+                                        <a class="dropdown-item d-flex align-items-center gap-2 rounded" href="{{ url('/admin/Liste_du_jours/embarquement?destination=' . urlencode($billetRetard->destinationId) . '&heure=' . urlencode($billetRetard->Heur_departs)) }}">
+                                            <i class="fas fa-clock text-danger"></i>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold small">Client non embarqué (retard)</div>
+                                                <div class="text-secondary" style="font-size: .75rem;">{{ $billetRetard->Client }} — {{ $billetRetard->destinationId }} - {{ $billetRetard->Heur_departs }}</div>
+                                            </div>
+                                        </a>
+                                    @endforeach
+                                @else
+                                    <p class="text-center text-secondary p-3 mb-0">Aucune notification</p>
+                                @endif
+                            </div>
                         </div>
-                      </div>
-                    </a>
-                  @endforeach
-                  @foreach ($locationsEnAttente as $location)
-                    <a class="dropdown-item" href="{{ url('/admin/Locations_cars') }}">
-                      <div class="d-flex align-items-center">
-                        <div class="notification-box"><i class="bx bx-car"></i></div>
-                        <div class="ms-3 flex-grow-1">
-                          <h6 class="mb-0 dropdown-msg-user">Location de car en attente</h6>
-                          <small class="mb-0 dropdown-msg-text text-secondary">
-                            <span class="badge bg-secondary me-1">{{ $location->localite ?? '-' }}</span>
-                            {{ $location->destination }} - {{ number_format($location->frais_location, 0, ',', ' ') }} F
-                          </small>
-                        </div>
-                      </div>
-                    </a>
-                  @endforeach
-                  @foreach ($billetsEnRetard as $billetRetard)
-                    <a class="dropdown-item" href="{{ url('/admin/Liste_du_jours/embarquement?destination=' . urlencode($billetRetard->destinationId) . '&heure=' . urlencode($billetRetard->Heur_departs)) }}">
-                      <div class="d-flex align-items-center">
-                        <div class="notification-box"><i class="bx bx-time-five text-danger"></i></div>
-                        <div class="ms-3 flex-grow-1">
-                          <h6 class="mb-0 dropdown-msg-user">Client non embarqué (retard)</h6>
-                          <small class="mb-0 dropdown-msg-text text-secondary">
-                            {{ $billetRetard->Client }} —
-                            {{ $billetRetard->destinationId }} - {{ $billetRetard->Heur_departs }}
-                          </small>
-                        </div>
-                      </div>
-                    </a>
-                  @endforeach
-                @else
-                  <p class="text-center text-secondary p-2">Aucune notification</p>
+                    </li>
                 @endif
-              </div>
-            </div>
-          </li>
-        @endif
 
-        <li class="nav-item dropdown dropdown-large">
-          <a class="nav-link " href="#" data-bs-toggle="dropdown">
-            <div class="user-setting d-flex align-items-center gap-1">
-              <img src="{{ $authUser->photo ? asset('storage/profiles/' . $authUser->photo) : asset('assets_site/img/reservation.png') }}" class="user-img" alt="">
-              <div class="user-name">{{ $authUser->utilisateurs }} <small style="font-size: 0.75rem; color: #f59e0b; display: block; line-height: 1;">{{ $identiteAffichee }}</small></div>
-            </div>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li>
-              <a class="dropdown-item" href="{{ url('/admin/Profils') }}">
-                <div class="d-flex align-items-center">
-                  <div class="setting-icon"><i class="bx bxs-user"></i></div>
-                  <div class="setting-text ms-3"><span>Profile</span></div>
-                </div>
-              </a>
-            </li>
-
-            <li>
-              <hr class="dropdown-divider">
-            </li>
-            <li>
-              <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="dropdown-item border-0 bg-transparent w-100 text-start">
-                  <div class="d-flex align-items-center">
-                    <div class="setting-icon"><i class="bx bx-log-out-circle"></i></div>
-                    <div class="setting-text ms-3">
-                      Déconnexion
-                    </div>
-                  </div>
-                </button>
-              </form>
-            </li>
-
-          </ul>
-        </li>
-      </ul>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        @if ($authUser->photo)
+                            <img src="{{ asset('storage/profiles/' . $authUser->photo) }}" alt="{{ $authUser->utilisateurs }}" class="rounded-circle" style="width: 28px; height: 28px; object-fit: cover;">
+                        @else
+                            <i class="fas fa-user-circle fs-5"></i>
+                        @endif
+                        <span class="d-flex flex-column lh-1 text-start">
+                            <small class="opacity-75" style="font-size: .68rem;">{{ $identiteAffichee }}</small>
+                            <span>{{ $authUser->utilisateurs }}</span>
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li>
+                            <a class="dropdown-item" href="{{ url('/admin/Profils') }}">
+                                <i class="fas fa-user"></i> Mon Profil
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form action="{{ route('logout') }}" method="POST" style="display: inline; width: 100%;">
+                                @csrf
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
     </div>
-  </nav>
-</header>
+</nav>
+
+<style>
+    /* Badge de marque : fond dégradé sur les couleurs du thème choisi (change avec le
+       sélecteur "Thème"), texte plein blanc pour une lisibilité maximale (pas de texte en
+       dégradé transparent, illisible sur certains fonds), + un reflet animé qui balaie le
+       badge en continu pour un rendu vivant. */
+    .brand-3d {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        overflow: hidden;
+        font-weight: 800;
+        font-size: 18px;
+        letter-spacing: .5px;
+        color: #ffffff;
+        padding: 7px 16px;
+        border-radius: 9px;
+        background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        border: 1px solid rgba(255, 255, 255, .3);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .3);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, .4);
+    }
+
+    .brand-3d::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -60%;
+        width: 45%;
+        height: 100%;
+        background: linear-gradient(115deg, transparent, rgba(255, 255, 255, .55), transparent);
+        transform: skewX(-20deg);
+        animation: brandShine 3.2s ease-in-out infinite;
+    }
+
+    @keyframes brandShine {
+        0%   { left: -60%; }
+        55%  { left: 130%; }
+        100% { left: 130%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .brand-3d::before { animation: none; }
+    }
+</style>

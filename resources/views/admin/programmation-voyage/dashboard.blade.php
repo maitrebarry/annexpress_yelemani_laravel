@@ -2,26 +2,25 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Programmer un voyage · TransHub Admin')
+@section('title', 'Programmer un voyage · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-calendar-check me-1"></i> G-programme</span>
+    <span class="text-primary"><i class="fas fa-calendar-check me-1"></i> G-programme</span>
 @endsection
 @section('breadcrumb-active', 'Programmer un voyage')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.programmation-voyage.liste-journaliere') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-list-ul me-1"></i> Voir la liste
+        <i class="fas fa-list-ul me-1"></i> Voir la liste
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-sm border-0">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-bus me-1"></i> Programmation des voyages
+            <i class="fas fa-bus me-1"></i> Programmation des voyages
         </div>
         <div class="card-body">
             <form method="post" action="{{ route('admin.programmation-voyage.store') }}">
@@ -35,7 +34,7 @@
                     @if ($derniereDate && ! $authUser->estLectureSeule())
                         <div class="col-sm-6">
                             <button type="button" id="btnReproduireHier" class="btn btn-outline-primary shadow-sm">
-                                <i class="bx bx-repeat me-1"></i> Reproduire la programmation du {{ \Illuminate\Support\Carbon::parse($derniereDate)->format('d/m/Y') }}
+                                <i class="fas fa-repeat me-1"></i> Reproduire la programmation du {{ \Illuminate\Support\Carbon::parse($derniereDate)->format('d/m/Y') }}
                             </button>
                         </div>
                     @endif
@@ -105,7 +104,7 @@
 
                 @unless ($authUser->estLectureSeule())
                     <button class="btn btn-success shadow-sm" type="submit">
-                        <i class="bx bx-save me-1"></i> Enregistrer
+                        <i class="fas fa-floppy-disk me-1"></i> Enregistrer
                     </button>
                 @endunless
             </form>
@@ -115,7 +114,7 @@
     @if ($carsEnTransit->isNotEmpty())
         <div class="card shadow-sm border-0 mt-4">
             <div class="card-header bg-success text-white fw-bold">
-                <i class="bx bx-check-shield me-1"></i> Véhicules en approche (validation d'arrivée)
+                <i class="fas fa-shield-halved me-1"></i> Véhicules en approche (validation d'arrivée)
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -145,7 +144,7 @@
                                                 @csrf
                                                 <input type="hidden" name="id_car_arrivee" value="{{ $c->id_car }}">
                                                 <button type="submit" class="btn btn-sm btn-success shadow-sm rounded-pill px-3">
-                                                    <i class="bx bx-check-double me-1"></i> Valider l'arrivée
+                                                    <i class="fas fa-check-double me-1"></i> Valider l'arrivée
                                                 </button>
                                             </form>
                                         @endunless
@@ -162,7 +161,7 @@
     @if ($carsBloques->isNotEmpty())
         <div class="card shadow-sm border-0 mt-4">
             <div class="card-header bg-warning text-dark fw-bold">
-                <i class="bx bx-error me-1"></i> Cars bloqués (anomalie à résoudre)
+                <i class="fas fa-triangle-exclamation me-1"></i> Cars bloqués (anomalie à résoudre)
             </div>
             <div class="card-body">
                 <p class="text-muted mb-3">
@@ -194,7 +193,7 @@
                                             @csrf
                                             <input type="hidden" name="id_programmation_bloque" value="{{ $c->id_programmation }}">
                                             <button type="submit" class="btn btn-sm btn-success shadow-sm rounded-pill px-2 mb-1">
-                                                <i class="bx bx-check-double me-1"></i> Arrivé à destination
+                                                <i class="fas fa-check-double me-1"></i> Arrivé à destination
                                             </button>
                                         </form>
                                         <form method="post" action="{{ route('admin.programmation-voyage.debloquer-jamais-parti') }}" class="d-inline"
@@ -202,7 +201,7 @@
                                             @csrf
                                             <input type="hidden" name="id_programmation_bloque" value="{{ $c->id_programmation }}">
                                             <button type="submit" class="btn btn-sm btn-outline-secondary shadow-sm rounded-pill px-2 mb-1">
-                                                <i class="bx bx-undo me-1"></i> Jamais parti
+                                                <i class="fas fa-rotate-left me-1"></i> Jamais parti
                                             </button>
                                         </form>
                                     </td>

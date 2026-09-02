@@ -114,7 +114,7 @@ $mentionSignature = ($creeParChefEscale && $location->statut === 'valide')
             text-align: center;
             margin-top: 22px;
             padding: 18px;
-            background: linear-gradient(135deg, #0f3b5e, #1d6fa5);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             border-radius: 10px;
             color: #fff;
         }

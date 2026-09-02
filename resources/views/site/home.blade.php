@@ -264,26 +264,50 @@
                 </div>
             </div>
 
-            <!-- Slide 3 : confort / la seule photo réelle du projet -->
-            <div class="swiper-slide hero-slide hero-slide--3">
-                <div class="deco-pattern"></div>
-                <div class="container">
-                    <div class="hero-slide-inner has-visual">
-                        <div class="hero-slide-text">
-                            <div class="hero-badge"><i class="fas fa-shield-alt"></i> Voyagez sereinement</div>
-                            <h1>Confort, ponctualité<br><span>et sécurité à chaque trajet</span></h1>
-                            <p class="hero-lead">Des bus confortables et des départs à l'heure pour un voyage sans stress, du premier au dernier kilomètre.</p>
-                            <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="btn btn-secondary">Voir nos trajets <i class="fas fa-arrow-right"></i></a>
-                        </div>
-                        <div>
-                            <div class="hero-visual-card">
-                                <img src="{{ asset('assets_site/img/hero-slides/slide-1.jpg') }}" alt="Confort à bord">
+            <!-- Slide(s) 3 : photos réelles des cars de la compagnie (une slide par photo,
+                 uploadées depuis Configuration → Compagnie → Photos). À défaut, on retombe
+                 sur l'unique photo de démonstration du projet. -->
+            @forelse ($compagnie->photos->take(5) as $photo)
+                <div class="swiper-slide hero-slide hero-slide--3">
+                    <div class="deco-pattern"></div>
+                    <div class="container">
+                        <div class="hero-slide-inner has-visual">
+                            <div class="hero-slide-text">
+                                <div class="hero-badge"><i class="fas fa-shield-alt"></i> Voyagez sereinement</div>
+                                <h1>Confort, ponctualité<br><span>et sécurité à chaque trajet</span></h1>
+                                <p class="hero-lead">Des bus confortables et des départs à l'heure pour un voyage sans stress, du premier au dernier kilomètre.</p>
+                                <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="btn btn-secondary">Voir nos trajets <i class="fas fa-arrow-right"></i></a>
                             </div>
-                            <div class="hero-visual-caption"><i class="fas fa-check-circle" style="color:#4ade80;"></i> Confort à bord, à chaque trajet</div>
+                            <div>
+                                <div class="hero-visual-card">
+                                    <img src="{{ asset('images/compagnies_photos/'.$photo->chemin) }}" alt="Car {{ $compagnie->nom_compagnie }}">
+                                </div>
+                                <div class="hero-visual-caption"><i class="fas fa-check-circle" style="color:#4ade80;"></i> Confort à bord, à chaque trajet</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            @empty
+                <div class="swiper-slide hero-slide hero-slide--3">
+                    <div class="deco-pattern"></div>
+                    <div class="container">
+                        <div class="hero-slide-inner has-visual">
+                            <div class="hero-slide-text">
+                                <div class="hero-badge"><i class="fas fa-shield-alt"></i> Voyagez sereinement</div>
+                                <h1>Confort, ponctualité<br><span>et sécurité à chaque trajet</span></h1>
+                                <p class="hero-lead">Des bus confortables et des départs à l'heure pour un voyage sans stress, du premier au dernier kilomètre.</p>
+                                <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="btn btn-secondary">Voir nos trajets <i class="fas fa-arrow-right"></i></a>
+                            </div>
+                            <div>
+                                <div class="hero-visual-card">
+                                    <img src="{{ asset('assets_site/img/hero-slides/slide-1.jpg') }}" alt="Confort à bord">
+                                </div>
+                                <div class="hero-visual-caption"><i class="fas fa-check-circle" style="color:#4ade80;"></i> Confort à bord, à chaque trajet</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforelse
 
         </div>
         <div class="swiper-pagination"></div>

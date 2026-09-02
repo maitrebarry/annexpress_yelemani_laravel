@@ -51,13 +51,28 @@ class BilletController extends Controller
         return redirect()->route('admin.billet.create', $params);
     }
 
-    public function index(BilletService $service): View
+    public function index(Request $request, BilletService $service): View
     {
         $user = Auth::guard('staff')->user();
 
+        // La réservation est possible jusqu'à J+config('billets.jours_reservation_avance')
+        // (voir BilletService::creerReservation) : l'onglet "Autre jour" permet de retrouver
+        // les billets pris pour n'importe quel jour de cette fenêtre, pas seulement demain.
+        $joursAvance = (int) config('billets.jours_reservation_avance', 6);
+        $dateMin = now()->addDay()->toDateString();
+        $dateMax = now()->addDays($joursAvance)->toDateString();
+
+        $dateAutre = $request->query('date', $dateMin);
+        if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateAutre) || $dateAutre < $dateMin || $dateAutre > $dateMax) {
+            $dateAutre = $dateMin;
+        }
+
         return view('admin.billet.index', [
             'listeAujourdhui' => $service->getListeParDate($user, now()->toDateString()),
-            'listeDemain' => $service->getListeParDate($user, now()->addDay()->toDateString()),
+            'listeAutreJour' => $service->getListeParDate($user, $dateAutre),
+            'dateAutre' => $dateAutre,
+            'dateMin' => $dateMin,
+            'dateMax' => $dateMax,
         ]);
     }
 
@@ -115,7 +130,7 @@ class BilletController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (! in_array($user->droit, ['Admin', 'PDG'], true)) {
+        if (! in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true)) {
             Flash::set('Accès refusé.', 'danger');
 
             return redirect()->route('admin.home');
@@ -245,7 +260,7 @@ class BilletController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (in_array($user->droit, ['Admin', 'PDG'], true)) {
+        if (in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true)) {
             return view('admin.billet.demandes-report', [
                 'listeDemandes' => $service->getDemandesReportEnAttente($user->id_compagnie),
                 'estAdmin' => true,

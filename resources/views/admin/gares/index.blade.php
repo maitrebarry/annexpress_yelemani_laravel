@@ -2,14 +2,14 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Gares · TransHub Admin')
+@section('title', 'Gares · TransGest Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Gares')
 
 @section('breadcrumb-actions')
     @if ($authUser->droit !== 'PDG')
         <button type="button" id="btnOuvrirAjouterGare" class="btn btn-success d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjouterGare">
-            <i class="bx bx-plus-circle fs-5"></i> Ajouter
+            <i class="fas fa-circle-plus fs-5"></i> Ajouter
         </button>
     @endif
 @endsection
@@ -19,10 +19,9 @@
     @include('admin.partials.config-nav', ['active' => 'gares'])
 
     <div class="col-12 col-xxl-9">
-        @include('admin.partials.set_flash')
         <div class="card config-card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold"><i class="bx bx-buildings me-2"></i>Liste des gares</h5>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-building-columns me-2"></i>Liste des gares</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -186,7 +185,7 @@
                                     </div>
                                     <div class="col-md-1 d-flex align-items-start justify-content-end">
                                         <button type="button" class="btn btn-outline-danger remove-row-btn mt-4 {{ count($lignesAffichees) <= 1 ? 'd-none' : '' }}" title="Retirer cette ligne">
-                                            <i class="bx bx-trash"></i>
+                                            <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -194,7 +193,7 @@
                         </div>
 
                         <button type="button" id="addGareRow" class="btn btn-sm btn-outline-primary mb-3">
-                            <i class="bx bx-plus"></i> Ajouter une ligne
+                            <i class="fas fa-plus"></i> Ajouter une ligne
                         </button>
 
                         <div class="modal-footer border-0 px-0">
@@ -202,7 +201,7 @@
                             @if ($authUser->droit !== 'PDG')
                                 <button class="btn btn-primary fw-semibold d-flex align-items-center" type="submit" id="submitGareBtn">
                                     <span class="spinner-border spinner-border-sm me-2 d-none" id="submitGareSpinner" role="status" aria-hidden="true"></span>
-                                    <i class="bx bx-save fs-5 me-2" id="submitGareIcon"></i> Enregistrer
+                                    <i class="fas fa-floppy-disk fs-5 me-2" id="submitGareIcon"></i> Enregistrer
                                 </button>
                             @endif
                         </div>

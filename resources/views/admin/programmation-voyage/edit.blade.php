@@ -2,26 +2,25 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Modifier une programmation · TransHub Admin')
+@section('title', 'Modifier une programmation · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-calendar-check me-1"></i> G-programme</span>
+    <span class="text-primary"><i class="fas fa-calendar-check me-1"></i> G-programme</span>
 @endsection
 @section('breadcrumb-active', 'Modifier une programmation')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.programmation-voyage.liste-journaliere') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-list-ul me-1"></i> Voir la liste
+        <i class="fas fa-list-ul me-1"></i> Voir la liste
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-sm border-0">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-bus me-1"></i> Modification de la programmation — Car {{ $programmation->numero_car }}
+            <i class="fas fa-bus me-1"></i> Modification de la programmation — Car {{ $programmation->numero_car }}
         </div>
         <div class="card-body">
             <form method="post" action="{{ route('admin.programmation-voyage.update', $programmation->id_programmation) }}">
@@ -97,7 +96,7 @@
 
                 @unless ($authUser->estLectureSeule())
                     <button class="btn btn-success shadow-sm" type="submit">
-                        <i class="bx bx-save me-1"></i> Enregistrer
+                        <i class="fas fa-floppy-disk me-1"></i> Enregistrer
                     </button>
                 @endunless
             </form>

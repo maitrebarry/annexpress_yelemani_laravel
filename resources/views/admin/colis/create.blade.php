@@ -2,22 +2,21 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Enregistrement des colis · TransHub Admin')
+@section('title', 'Enregistrement des colis · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-package me-1"></i> G-colis</span>
+    <span class="text-primary"><i class="fas fa-box-open me-1"></i> G-colis</span>
 @endsection
 @section('breadcrumb-active', 'Enregistrement des colis')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.colis.index') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-list-ul me-1"></i> Liste des colis
+        <i class="fas fa-list-ul me-1"></i> Liste des colis
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="row">
         <div class="col-xxl-12">
@@ -31,7 +30,7 @@
                                 <div class="step" data-target="#test-l-1">
                                     <div class="step-trigger" role="tab" id="stepper1trigger1" aria-controls="test-l-1">
                                         <div class="bs-stepper-circle bg-primary text-white">
-                                            <i class="bx bx-user"></i>
+                                            <i class="fas fa-user"></i>
                                         </div>
                                         <div>
                                             <h5 class="mb-0 steper-title">Expéditeur</h5>
@@ -46,7 +45,7 @@
                                 <div class="step" data-target="#test-l-2">
                                     <div class="step-trigger" role="tab" id="stepper1trigger2" aria-controls="test-l-2">
                                         <div class="bs-stepper-circle bg-primary text-white">
-                                            <i class="bx bx-user-check"></i>
+                                            <i class="fas fa-user-check"></i>
                                         </div>
                                         <div>
                                             <h5 class="mb-0 steper-title">Destinataire</h5>
@@ -61,7 +60,7 @@
                                 <div class="step" data-target="#test-l-4">
                                     <div class="step-trigger" role="tab" id="stepper1trigger4" aria-controls="test-l-4">
                                         <div class="bs-stepper-circle bg-primary text-white">
-                                            <i class="bx bx-package"></i>
+                                            <i class="fas fa-box-open"></i>
                                         </div>
                                         <div>
                                             <h5 class="mb-0 steper-title">Colis</h5>
@@ -90,7 +89,7 @@
                                             <div class="col-12 col-lg-6">
                                                 <div class="form-group">
                                                     <label for="numero_exp" class="form-label">
-                                                        <i class="bx bxl-whatsapp text-success"></i> Numéro expéditeur (WhatsApp)
+                                                        <i class="fab fa-whatsapp text-success"></i> Numéro expéditeur (WhatsApp)
                                                     </label>
                                                     <input type="text" class="form-control" id="numero_exp" name="numero_exp"
                                                         placeholder="Numéro expéditeur" required oninput="verifierNumero(this, 'erreur_exp')">
@@ -99,7 +98,7 @@
                                             </div>
                                             <div class="col-12">
                                                 <div class="d-flex align-items-center gap-3">
-                                                    <button type="button" class="btn btn-primary px-4" onclick="validateStep1()">Next<i class='bx bx-right-arrow-alt ms-2'></i></button>
+                                                    <button type="button" class="btn btn-primary px-4" onclick="validateStep1()">Next<i class='fas fa-arrow-right ms-2'></i></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -117,7 +116,7 @@
                                             <div class="col-12 col-lg-6">
                                                 <div class="form-group">
                                                     <label for="numero_dest" class="form-label">
-                                                        <i class="bx bxl-whatsapp text-success"></i> Numéro destinataire (WhatsApp)
+                                                        <i class="fab fa-whatsapp text-success"></i> Numéro destinataire (WhatsApp)
                                                     </label>
                                                     <input type="text" class="form-control" id="numero_dest" name="numero_dest"
                                                         placeholder="Numéro destinataire" required oninput="verifierNumero(this, 'erreur_dest')">
@@ -126,8 +125,8 @@
                                             </div>
                                             <div class="col-12">
                                                 <div class="d-flex align-items-center gap-3">
-                                                    <button type="button" class="btn btn-outline-secondary px-4" onclick="stepper1.previous()"><i class='bx bx-left-arrow-alt me-2'></i>Previous</button>
-                                                    <button type="button" class="btn btn-primary px-4" onclick="validateStep2()">Next<i class='bx bx-right-arrow-alt ms-2'></i></button>
+                                                    <button type="button" class="btn btn-outline-secondary px-4" onclick="stepper1.previous()"><i class='fas fa-arrow-left me-2'></i>Previous</button>
+                                                    <button type="button" class="btn btn-primary px-4" onclick="validateStep2()">Next<i class='fas fa-arrow-right ms-2'></i></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -183,11 +182,11 @@
                                             </div>
                                             <div class="col-12">
                                                 <div class="d-flex align-items-center gap-3">
-                                                    <button type="button" class="btn btn-outline-secondary px-4" onclick="stepper1.previous()"><i class='bx bx-left-arrow-alt me-2'></i>Previous</button>
+                                                    <button type="button" class="btn btn-outline-secondary px-4" onclick="stepper1.previous()"><i class='fas fa-arrow-left me-2'></i>Previous</button>
 
                                                     @if ($authUser->droit !== 'PDG')
                                                         <button type="submit" class="btn btn-success rounded-pill shadow-sm" name="envoi">
-                                                            <i class="bx bx-check me-1"></i> Enregistrer
+                                                            <i class="fas fa-check me-1"></i> Enregistrer
                                                         </button>
                                                     @endif
 

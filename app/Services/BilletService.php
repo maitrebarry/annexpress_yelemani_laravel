@@ -169,9 +169,10 @@ class BilletService
 
         $jourVoyage = $data['jourVoyage'] ?? null;
         $aujourdhui = now()->toDateString();
-        $demain = now()->addDay()->toDateString();
-        if (! in_array($jourVoyage, [$aujourdhui, $demain], true)) {
-            return ['ok' => false, 'type' => 'danger', 'message' => "Date invalide : choisissez aujourd'hui ou demain."];
+        $joursAvance = (int) config('billets.jours_reservation_avance', 6);
+        $maxJour = now()->addDays($joursAvance)->toDateString();
+        if (! $jourVoyage || $jourVoyage < $aujourdhui || $jourVoyage > $maxJour) {
+            return ['ok' => false, 'type' => 'danger', 'message' => "Date invalide : choisissez une date entre aujourd'hui et dans $joursAvance jours."];
         }
 
         $nomClient = trim((string) ($data['Client'] ?? ''));
@@ -373,7 +374,7 @@ class BilletService
     // en SQL ; fait ici correctement au niveau requête.
     public function getListeParDate(Utilisateur $user, string $date): Collection
     {
-        $isAdmin = in_array($user->droit, ['Admin', 'PDG'], true);
+        $isAdmin = in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true);
 
         return Billet::query()
             ->join('client', 'billets.id_client', '=', 'client.idClient')
@@ -387,7 +388,7 @@ class BilletService
 
     public function getHistorique(Utilisateur $user, array $filtres): Collection
     {
-        $isAdmin = in_array($user->droit, ['Admin', 'PDG'], true);
+        $isAdmin = in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true);
 
         return Billet::query()
             ->join('client', 'billets.id_client', '=', 'client.idClient')
@@ -402,7 +403,7 @@ class BilletService
 
     public function getDestinationsPourFiltre(Utilisateur $user): Collection
     {
-        $isAdmin = in_array($user->droit, ['Admin', 'PDG'], true);
+        $isAdmin = in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true);
 
         return Programme::query()
             ->join('agence as a1', 'programmer.idDepart', '=', 'a1.idAgence')
@@ -871,7 +872,7 @@ class BilletService
     // deux tournent sur la même machine dans cette app.
     public function getBilletsPourEmbarquement(Utilisateur $user, string $jour, ?string $destination, ?string $heure): Collection
     {
-        $isAdmin = in_array($user->droit, ['Admin', 'PDG'], true);
+        $isAdmin = in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true);
         $maintenant = now()->format('Y-m-d H:i:s');
 
         return DB::table('billets as b')
@@ -993,7 +994,7 @@ class BilletService
     // bouton "Faire décoller".
     public function getCarsDuJourPourEmbarquement(Utilisateur $user, string $jour): Collection
     {
-        $isAdmin = in_array($user->droit, ['Admin', 'PDG'], true);
+        $isAdmin = in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true);
         $idAgence = ! $isAdmin ? Agence::where('localite', $user->agence?->localite)->where('numeroGare', $user->agence?->numeroGare)
             ->where('id_compagnie', $user->id_compagnie)->value('idAgence') : null;
 
@@ -1022,7 +1023,7 @@ class BilletService
     // traité ce jour-là — alimente la bannière d'alerte de l'écran Embarquement.
     public function getCarsComplets(Utilisateur $user, string $jour): Collection
     {
-        $isAdmin = in_array($user->droit, ['Admin', 'PDG'], true);
+        $isAdmin = in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true);
         $idAgence = ! $isAdmin ? Agence::where('localite', $user->agence?->localite)->where('numeroGare', $user->agence?->numeroGare)
             ->where('id_compagnie', $user->id_compagnie)->value('idAgence') : null;
         $maintenant = now()->format('Y-m-d H:i:s');
@@ -1115,7 +1116,7 @@ class BilletService
             return ['ok' => false, 'type' => 'danger', 'message' => "Le report n'est possible que vers aujourd'hui ou demain."];
         }
 
-        $sauteEtapeChef = in_array($user->droit, ['chef_d_escale', 'Admin', 'PDG'], true);
+        $sauteEtapeChef = in_array($user->droit, ['chef_d_escale', 'Admin', 'PDG', 'secretaire'], true);
 
         $billet->update(array_filter([
             'status_billets' => $sauteEtapeChef ? 'report_transmis' : 'report_demande',

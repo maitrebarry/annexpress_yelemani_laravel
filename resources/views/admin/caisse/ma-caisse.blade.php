@@ -5,32 +5,31 @@
     $montantAttendu = $caisse ? (float) $caisse->montant_initial + (float) $caisse->total_billets + (float) $caisse->total_colis : 0;
 @endphp
 
-@section('title', 'Ma Caisse · TransHub Admin')
+@section('title', 'Ma Caisse · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-wallet me-1"></i> Caisse</span>
+    <span class="text-primary"><i class="fas fa-wallet me-1"></i> Caisse</span>
 @endsection
 @section('breadcrumb-active', 'Ma Caisse')
 
 @section('breadcrumb-actions')
     @if ($caisse)
         <button type="button" class="btn btn-sm btn-warning rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalFermerCaisse">
-            <i class="bx bx-lock-alt me-1"></i> Fermer ma caisse
+            <i class="fas fa-lock me-1"></i> Fermer ma caisse
         </button>
     @elseif ($caisseFermee)
         <button type="button" class="btn btn-sm btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerser">
-            <i class="bx bx-send me-1"></i> Verser
+            <i class="fas fa-paper-plane me-1"></i> Verser
         </button>
     @else
         <button type="button" class="btn btn-sm btn-success rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalOuvrirCaisse">
-            <i class="bx bx-lock-open-alt me-1"></i> Ouvrir ma caisse
+            <i class="fas fa-unlock me-1"></i> Ouvrir ma caisse
         </button>
     @endif
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     @if ($caisse)
         <div class="row g-3 mb-4">
@@ -80,17 +79,17 @@
                     <div class="text-muted small">Montant compté : {{ number_format($caisseFermee->montant_compte, 0, ',', ' ') }} FCFA</div>
                 </div>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalVerser">
-                    <i class="bx bx-send me-1"></i> Verser au chef d'escale
+                    <i class="fas fa-paper-plane me-1"></i> Verser au chef d'escale
                 </button>
             </div>
         </div>
     @else
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body text-center py-5">
-                <i class="bx bx-wallet fs-1 text-muted"></i>
+                <i class="fas fa-wallet fs-1 text-muted"></i>
                 <p class="text-muted mt-2 mb-3">Aucune caisse ouverte pour le moment.</p>
                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalOuvrirCaisse">
-                    <i class="bx bx-lock-open-alt me-1"></i> Ouvrir ma caisse
+                    <i class="fas fa-unlock me-1"></i> Ouvrir ma caisse
                 </button>
             </div>
         </div>
@@ -99,7 +98,7 @@
     @if ($caisse)
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-primary text-white fw-bold">
-                <i class="bx bx-list-ul me-1"></i> Journal du jour
+                <i class="fas fa-list-ul me-1"></i> Journal du jour
                 <span class="badge bg-light text-dark ms-2">{{ $journal->count() }}</span>
             </div>
             <div class="card-body p-0">
@@ -141,7 +140,7 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-history me-1"></i> Historique de mes caisses
+            <i class="fas fa-clock-rotate-left me-1"></i> Historique de mes caisses
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -200,7 +199,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-success">
-                    <h5 class="modal-title text-white"><i class="bx bx-lock-open-alt me-1"></i> Ouvrir ma caisse</h5>
+                    <h5 class="modal-title text-white"><i class="fas fa-unlock me-1"></i> Ouvrir ma caisse</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="post" action="{{ route('admin.caisse.ouvrir-caisse') }}">
@@ -229,7 +228,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-success fw-semibold"><i class="bx bx-lock-open-alt me-2"></i>Ouvrir</button>
+                        <button type="submit" class="btn btn-success fw-semibold"><i class="fas fa-unlock me-2"></i>Ouvrir</button>
                     </div>
                 </form>
             </div>
@@ -242,7 +241,7 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header bg-warning">
-                        <h5 class="modal-title text-dark"><i class="bx bx-lock-alt me-1"></i> Fermer ma caisse</h5>
+                        <h5 class="modal-title text-dark"><i class="fas fa-lock me-1"></i> Fermer ma caisse</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form method="post" action="{{ route('admin.caisse.fermer-caisse') }}">
@@ -259,7 +258,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-warning fw-semibold text-dark"><i class="bx bx-lock-alt me-2"></i>Confirmer la fermeture</button>
+                            <button type="submit" class="btn btn-warning fw-semibold text-dark"><i class="fas fa-lock me-2"></i>Confirmer la fermeture</button>
                         </div>
                     </form>
                 </div>
@@ -273,7 +272,7 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header bg-primary">
-                        <h5 class="modal-title text-white"><i class="bx bx-send me-1"></i> Verser au chef d'escale</h5>
+                        <h5 class="modal-title text-white"><i class="fas fa-paper-plane me-1"></i> Verser au chef d'escale</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <form method="post" action="{{ route('admin.caisse.verser') }}">
@@ -310,7 +309,7 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
                             @if ($chefs->isNotEmpty())
-                                <button type="submit" class="btn btn-primary fw-semibold"><i class="bx bx-send me-2"></i>Envoyer la demande</button>
+                                <button type="submit" class="btn btn-primary fw-semibold"><i class="fas fa-paper-plane me-2"></i>Envoyer la demande</button>
                             @endif
                         </div>
                     </form>

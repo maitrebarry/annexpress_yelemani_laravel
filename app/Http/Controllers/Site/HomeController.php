@@ -21,7 +21,7 @@ class HomeController extends Controller
 {
     public function index(): View
     {
-        $compagnie = Compagnie::site();
+        $compagnie = Compagnie::site()->load('photos');
 
         // Une même destination desservie à plusieurs heures ne donne qu'une seule carte
         // (toutes les heures affichées dessus), avec le prix le plus bas parmi ces horaires.

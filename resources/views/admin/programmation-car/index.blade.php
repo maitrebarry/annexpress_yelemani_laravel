@@ -2,28 +2,27 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Cars · TransHub Admin')
+@section('title', 'Cars · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-calendar-check me-1"></i> G-programme</span>
+    <span class="text-primary"><i class="fas fa-calendar-check me-1"></i> G-programme</span>
 @endsection
 @section('breadcrumb-active', 'Cars')
 
 @section('breadcrumb-actions')
     @unless ($authUser->estLectureSeule())
         <button type="button" class="btn btn-sm btn-success rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalProgrammerCar">
-            <i class="bx bx-bus me-1"></i> Programmer un car
+            <i class="fas fa-bus me-1"></i> Programmer un car
         </button>
     @endunless
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-sm border-0">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-bus me-1"></i> Liste des cars programmés
+            <i class="fas fa-bus me-1"></i> Liste des cars programmés
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -50,15 +49,15 @@
                                                     data-id-car="{{ $c->id_car }}"
                                                     data-numero-car="{{ $c->numero_car }}"
                                                     data-trajets-existants="{{ ($trajetsParCar[$c->id_car] ?? collect())->toJson() }}">
-                                                    <i class="bx bx-plus me-2"></i>Ajouter un trajet
+                                                    <i class="fas fa-plus me-2"></i>Ajouter un trajet
                                                 </a>
                                                 <a class="dropdown-item text-danger delete-button" href="{{ route('admin.programmation-car.destroy', $c->id_car) }}"
                                                     title="La programmation de ce car et ses trajets affectés seront supprimés.">
-                                                    <i class="bx bx-trash me-2"></i>Supprimer
+                                                    <i class="fas fa-trash me-2"></i>Supprimer
                                                 </a>
                                             @endunless
                                             <a class="dropdown-item" href="javascript:;" data-bs-toggle="modal" data-bs-target="#modalDetails{{ $c->id_car }}">
-                                                <i class="bx bx-info-circle me-2"></i>Détails
+                                                <i class="fas fa-circle-info me-2"></i>Détails
                                             </a>
                                         </div>
                                     </div>
@@ -129,7 +128,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-primary fw-semibold"><i class="bx bx-save fs-5 me-2"></i>Enregistrer</button>
+                            <button type="submit" class="btn btn-primary fw-semibold"><i class="fas fa-floppy-disk fs-5 me-2"></i>Enregistrer</button>
                         </div>
                     </form>
                 </div>
@@ -159,7 +158,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-primary fw-semibold"><i class="bx bx-save fs-5 me-2"></i>Enregistrer</button>
+                            <button type="submit" class="btn btn-primary fw-semibold"><i class="fas fa-floppy-disk fs-5 me-2"></i>Enregistrer</button>
                         </div>
                     </form>
                 </div>
@@ -184,7 +183,7 @@
                                         <div class="card-body">
                                             <p class="mb-1"><strong>Itinéraire :</strong><br>{{ $t->depart.' ('.$t->gareDepart.')' }} → {{ $t->destination.' ('.$t->gareDestination.')' }}</p>
                                             <p class="mb-0"><strong>Horaire :</strong>
-                                                <span class="badge bg-primary-subtle text-primary"><i class="bx bx-time"></i> {{ substr($t->heureDepart, 0, 5) }}</span>
+                                                <span class="badge bg-primary-subtle text-primary"><i class="fas fa-clock"></i> {{ substr($t->heureDepart, 0, 5) }}</span>
                                             </p>
                                         </div>
                                     </div>

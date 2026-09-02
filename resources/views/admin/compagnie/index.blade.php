@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
-@section('title', 'Compagnies · TransHub Admin')
+@section('title', 'Compagnies · TransGest Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Compagnies')
 
 @section('breadcrumb-actions')
     <button type="button" class="btn btn-success d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjouterCompagnie">
-        <i class="bx bx-plus-circle fs-5"></i> Ajouter
+        <i class="fas fa-circle-plus fs-5"></i> Ajouter
     </button>
 @endsection
 
@@ -15,11 +15,10 @@
     @include('admin.partials.config-nav', ['active' => 'compagnie'])
 
     <div class="col-12 col-xxl-9">
-        @include('admin.partials.set_flash')
 
         <div class="card config-card">
             <div class="card-header">
-                <h5 class="mb-0 fw-bold"><i class="bx bx-buildings me-2"></i>Liste des compagnies</h5>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-building-columns me-2"></i>Liste des compagnies</h5>
             </div>
             <div class="card-body p-4">
                 <div class="table-responsive">
@@ -30,6 +29,7 @@
                                 <th>Nom compagnie</th>
                                 <th>Libellé</th>
                                 <th>Slogan</th>
+                                <th>Photos</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -41,13 +41,18 @@
                                             <img src="{{ asset('images/logos/'.$c->logo) }}" alt="Logo" style="width:45px;height:45px;object-fit:contain;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,.1);background:#fff;padding:2px;">
                                         @else
                                             <div style="width:45px;height:45px;background:rgba(245,158,11,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#ea580c;margin:0 auto;">
-                                                <i class="bx bx-bus fs-4"></i>
+                                                <i class="fas fa-bus fs-4"></i>
                                             </div>
                                         @endif
                                     </td>
                                     <td class="fw-semibold" data-label="Nom compagnie">{{ $c->nom_compagnie }}</td>
                                     <td data-label="Libellé">{{ $c->libele }}</td>
                                     <td data-label="Slogan">{{ $c->slogant }}</td>
+                                    <td data-label="Photos">
+                                        <button type="button" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalPhotos{{ $c->id_compagnie }}">
+                                            <i class="fas fa-images"></i> {{ $c->photos->count() }}
+                                        </button>
+                                    </td>
                                     <td data-label="Action">
                                         <div class="dropdown">
                                             <a href="#" class="text-dark fs-5" data-bs-toggle="dropdown" aria-expanded="false">&#8943;</a>
@@ -61,12 +66,12 @@
                                                         data-slogant="{{ $c->slogant }}"
                                                         data-logo="{{ $c->logo ? asset('images/logos/'.$c->logo) : '' }}"
                                                         data-logofilename="{{ $c->logo }}">
-                                                        <i class="bx bx-edit me-2"></i>Modifier
+                                                        <i class="fas fa-pen me-2"></i>Modifier
                                                     </a>
                                                 </li>
                                                 <li>
                                                     <a class="dropdown-item text-danger delete-button" href="{{ route('admin.compagnie.destroy', $c->id_compagnie) }}">
-                                                        <i class="bx bx-trash me-2"></i>Supprimer
+                                                        <i class="fas fa-trash me-2"></i>Supprimer
                                                     </a>
                                                 </li>
                                             </ul>
@@ -122,6 +127,16 @@
                                 <input type="file" class="form-control" name="logo" accept="image/png, image/jpeg, image/webp">
                             </div>
                         </div>
+
+                        <hr class="my-3">
+
+                        <label class="form-label d-flex align-items-center justify-content-between">
+                            <span><i class="fas fa-images me-1"></i> Photos des cars (carrousel connexion &amp; site public)</span>
+                            <button type="button" class="btn btn-sm btn-outline-primary tg-add-photo-row" data-target="photoRowsCreate">
+                                <i class="fas fa-plus"></i> Ajouter une photo
+                            </button>
+                        </label>
+                        <div id="photoRowsCreate" class="tg-photo-rows"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
@@ -175,16 +190,107 @@
             </div>
         </div>
     </div>
+
+    <!-- Modals Gestion des photos (un par compagnie) -->
+    @foreach ($liste as $c)
+        <div class="modal fade" id="modalPhotos{{ $c->id_compagnie }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary">
+                        <h5 class="modal-title text-white"><i class="fas fa-images me-2"></i>Photos — {{ $c->nom_compagnie }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">
+                            Ces photos de cars alimentent le carrousel de la page de connexion et de la
+                            vitrine publique de cette compagnie.
+                        </p>
+
+                        @if ($c->photos->isNotEmpty())
+                            <div class="row g-2 mb-4">
+                                @foreach ($c->photos as $photo)
+                                    <div class="col-4 col-md-3">
+                                        <div class="position-relative">
+                                            <img src="{{ asset('images/compagnies_photos/'.$photo->chemin) }}" class="img-fluid rounded border" style="aspect-ratio:4/3;object-fit:cover;width:100%;">
+                                            <a href="{{ route('admin.compagnie.photos.destroy', $photo->id) }}"
+                                               class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 delete-button"
+                                               style="padding:.15rem .4rem;line-height:1;"
+                                               title="Supprimer cette photo">
+                                                <i class="fas fa-xmark"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="text-center text-muted py-3 mb-3 border rounded">
+                                <i class="fas fa-images fs-3 d-block mb-2"></i>
+                                Aucune photo pour le moment.
+                            </div>
+                        @endif
+
+                        <form action="{{ route('admin.compagnie.photos.store') }}" method="post" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" name="id_compagnie" value="{{ $c->id_compagnie }}">
+
+                            <label class="form-label d-flex align-items-center justify-content-between">
+                                <span>Ajouter des photos</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary tg-add-photo-row" data-target="photoRows{{ $c->id_compagnie }}">
+                                    <i class="fas fa-plus"></i> Ajouter une photo
+                                </button>
+                            </label>
+                            <div id="photoRows{{ $c->id_compagnie }}" class="tg-photo-rows"></div>
+
+                            <div class="text-end mt-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload me-1"></i> Envoyer les photos
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
 @endsection
 
 @section('scripts')
     <script src="{{ asset('mon_js/scrip_compagnie.js') }}"></script>
     <script src="{{ asset('mon_js/alert_delete.js') }}"></script>
+    <style>
+        .tg-photo-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; }
+        .tg-photo-row input[type="file"] { flex: 1; }
+    </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             @if ($errors->any())
                 new bootstrap.Modal(document.getElementById('modalAjouterCompagnie')).show();
             @endif
+
+            // "Ajouter une photo" : chaque clic ajoute une nouvelle ligne (input file +
+            // bouton de retrait), toutes soumises ensemble dans un seul formulaire —
+            // permet d'envoyer plusieurs photos en une fois tout en gardant un contrôle
+            // ligne par ligne (comme un "add row" de tableau).
+            document.querySelectorAll('.tg-add-photo-row').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var container = document.getElementById(btn.dataset.target);
+                    if (!container) return;
+
+                    var row = document.createElement('div');
+                    row.className = 'tg-photo-row';
+                    row.innerHTML =
+                        '<input type="file" class="form-control form-control-sm" name="photos[]" accept="image/png, image/jpeg, image/webp" required>' +
+                        '<button type="button" class="btn btn-sm btn-outline-danger tg-remove-photo-row" title="Retirer cette ligne"><i class="fas fa-xmark"></i></button>';
+                    container.appendChild(row);
+
+                    row.querySelector('.tg-remove-photo-row').addEventListener('click', function () {
+                        row.remove();
+                    });
+                });
+
+                // Une première ligne par défaut, pour ne pas partir d'une liste vide.
+                btn.click();
+            });
         });
     </script>
 @endsection

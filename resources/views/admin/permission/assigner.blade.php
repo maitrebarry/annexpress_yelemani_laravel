@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', "Assigner des permissions · TransHub Admin")
+@section('title', "Assigner des permissions · TransGest Admin")
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Utilisateur')
 
@@ -9,11 +9,10 @@
     @include('admin.partials.config-nav', ['active' => 'utilisateur'])
 
     <div class="col-12 col-xxl-9">
-        @include('admin.partials.set_flash')
 
         <div class="card config-card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bx bx-lock-open me-2"></i>Assignation de permissions à :
+                <h5 class="mb-0"><i class="fas fa-lock-open me-2"></i>Assignation de permissions à :
                     <span style="color:#ea580c">{{ $utilisateur->utilisateurs ?? '' }}</span>
                 </h5>
             </div>
@@ -28,15 +27,15 @@
                             $groupes[$module][] = ['id' => $perm->id_permision, 'action' => $action, 'full_name' => $perm->nom_permission];
                         }
                         $moduleIcons = [
-                            'Billets' => 'bx bx-ticket',
-                            'colis' => 'bx bx-package',
-                            'Configuration' => 'bx bx-cog',
-                            'Programme' => 'bx bx-calendar',
-                            'Rapport' => 'bx bx-bar-chart-alt-2',
-                            'utilisateur' => 'bx bx-user',
-                            'Caisse' => 'bx bx-wallet',
-                            'Depenses' => 'bx bx-money',
-                            'Location' => 'bx bx-car',
+                            'Billets' => 'fas fa-ticket',
+                            'colis' => 'fas fa-box-open',
+                            'Configuration' => 'fas fa-gear',
+                            'Programme' => 'fas fa-calendar',
+                            'Rapport' => 'fas fa-chart-column',
+                            'utilisateur' => 'fas fa-user',
+                            'Caisse' => 'fas fa-wallet',
+                            'Depenses' => 'fas fa-money-bill-wave',
+                            'Location' => 'fas fa-car',
                         ];
                     @endphp
 
@@ -55,7 +54,7 @@
                             <div class="col-12 col-lg-6">
                                 <div class="card permission-card h-100">
                                     <div class="card-header permission-module-header text-white d-flex justify-content-between align-items-center">
-                                        <span><i class="{{ $moduleIcons[$module] ?? 'bx bx-key' }} me-2"></i>{{ ucfirst($module) }}</span>
+                                        <span><i class="{{ $moduleIcons[$module] ?? 'fas fa-key' }} me-2"></i>{{ ucfirst($module) }}</span>
                                         <label class="module-select-all d-flex align-items-center gap-1 mb-0" for="{{ $moduleIndex }}">
                                             <input class="form-check-input module-all-cb" type="checkbox" id="{{ $moduleIndex }}" data-module="{{ $moduleIndex }}">
                                             <span class="small">Tout</span>
@@ -84,7 +83,7 @@
                     </div>
 
                     <div class="text-end mt-4">
-                        <button type="submit" class="btn btn-primary px-5"><i class="bx bx-check me-2"></i>Assigner les permissions</button>
+                        <button type="submit" class="btn btn-primary px-5"><i class="fas fa-check me-2"></i>Assigner les permissions</button>
                     </div>
                 </form>
             </div>

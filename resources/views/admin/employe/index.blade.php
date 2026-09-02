@@ -4,29 +4,29 @@
     $authUser = auth('staff')->user();
 @endphp
 
-@section('title', 'Employés · TransHub Admin')
+@section('title', 'Employés · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-id-card me-1"></i> Personnel</span>
+    <span class="text-primary"><i class="fas fa-id-card me-1"></i> Personnel</span>
 @endsection
 @section('breadcrumb-active', 'Employés')
 
 @section('breadcrumb-actions')
     <div class="d-flex gap-2 flex-wrap">
         <button type="button" id="btnSelectionMultiple" class="btn btn-sm btn-outline-secondary rounded-pill shadow-sm">
-            <i class="bx bx-list-check me-1"></i> Sélection multiple
+            <i class="fas fa-list-check me-1"></i> Sélection multiple
         </button>
         <a href="{{ route('admin.employe.liste-imprimable') }}" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill shadow-sm">
-            <i class="bx bxs-file-pdf me-1"></i> Imprimer la liste
+            <i class="fas fa-file-pdf me-1"></i> Imprimer la liste
         </a>
         @if ($peutVoirUtilisateurs)
             <a href="{{ route('admin.configuration.index') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-                <i class="bx bx-user me-1"></i> Gérer les utilisateurs
+                <i class="fas fa-user me-1"></i> Gérer les utilisateurs
             </a>
         @endif
         @if ($peutVoirChauffeurs)
             <a href="{{ route('admin.car.index') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-                <i class="bx bx-car me-1"></i> Gérer les chauffeurs
+                <i class="fas fa-car me-1"></i> Gérer les chauffeurs
             </a>
         @endif
     </div>
@@ -34,12 +34,11 @@
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-4 px-4 d-flex align-items-center gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <i class="bx bx-id-card fs-4"></i>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <i class="fas fa-id-card fs-4"></i>
             <span class="fw-semibold fs-5">Liste des employés</span>
         </div>
         <div class="card-body p-4">
@@ -48,13 +47,13 @@
                 <div id="batchToolbar" class="d-none align-items-center flex-wrap gap-3 mb-3 p-3 bg-light rounded-3 border">
                     <span id="selectionCount" class="fw-semibold">0 sélectionné(s)</span>
                     <button type="submit" id="btnImprimerSelection" class="btn btn-primary btn-sm d-flex align-items-center gap-2" disabled>
-                        <i class="bx bx-printer"></i> Imprimer la sélection (max 4 par feuille A4)
+                        <i class="fas fa-print"></i> Imprimer la sélection (max 4 par feuille A4)
                     </button>
                 </div>
 
                 <div class="table-responsive">
                     @php
-                        $theadStyle = 'background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;';
+                        $theadStyle = 'background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;';
                     @endphp
                     <table id="example" class="table table-hover align-middle mb-0">
                         <thead>
@@ -81,7 +80,7 @@
                                             <img src="{{ asset('storage/profiles/'.$employe['photo']) }}" alt="Photo" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
                                         @else
                                             <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width:40px;height:40px;">
-                                                <i class="bx bx-user fs-5"></i>
+                                                <i class="fas fa-user fs-5"></i>
                                             </div>
                                         @endif
                                     </td>
@@ -103,7 +102,7 @@
                                         <button type="button" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2"
                                             data-bs-toggle="modal" data-bs-target="#modalImprimerBadge"
                                             data-type="{{ $employe['type'] }}" data-id="{{ $employe['id'] }}" data-nom="{{ $employe['nom'] }}">
-                                            <i class="bx bx-printer"></i> Imprimer
+                                            <i class="fas fa-print"></i> Imprimer
                                         </button>
                                     </td>
                                 </tr>
@@ -121,9 +120,9 @@
     <div class="modal fade" id="modalImprimerBadge" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
-                <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5);">
+                <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
                     <h5 class="modal-title text-white d-flex align-items-center gap-2">
-                        <i class="bx bx-printer"></i> Imprimer le badge <span id="modalImprimerNom"></span>
+                        <i class="fas fa-print"></i> Imprimer le badge <span id="modalImprimerNom"></span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -132,10 +131,10 @@
                     <a href="#" id="modalImprimerLienFormat1" target="_blank"
                        class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-between px-3 py-3">
                         <span class="d-flex align-items-center gap-2">
-                            <i class="bx bxs-id-card fs-4"></i>
+                            <i class="fas fa-id-card fs-4"></i>
                             Format 1 — Corporate Horizontal
                         </span>
-                        <i class="bx bx-chevron-right fs-4"></i>
+                        <i class="fas fa-chevron-right fs-4"></i>
                     </a>
                 </div>
             </div>

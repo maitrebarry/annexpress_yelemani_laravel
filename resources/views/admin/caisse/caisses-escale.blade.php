@@ -2,24 +2,23 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Supervision Escale · TransHub Admin')
+@section('title', 'Supervision Escale · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-wallet me-1"></i> Caisse</span>
+    <span class="text-primary"><i class="fas fa-wallet me-1"></i> Caisse</span>
 @endsection
 @section('breadcrumb-active', 'Supervision Escale')
 
 @section('breadcrumb-actions')
     @if ($idAgence && $authUser->userHasPermission('Caisse_modifier'))
         <button type="button" class="btn btn-sm btn-warning rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalClotureEscale">
-            <i class="bx bx-check-double me-1"></i> Clôturer la journée
+            <i class="fas fa-check-double me-1"></i> Clôturer la journée
         </button>
     @endif
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
@@ -40,7 +39,7 @@
                     <input type="date" class="form-control" name="date" value="{{ $date }}" max="{{ now()->toDateString() }}" onchange="this.form.submit()">
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary w-100"><i class="bx bx-filter-alt me-1"></i> Filtrer</button>
+                    <button type="submit" class="btn btn-outline-primary w-100"><i class="fas fa-filter me-1"></i> Filtrer</button>
                 </div>
             </form>
         </div>
@@ -49,7 +48,7 @@
     @if (! $idAgence)
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center py-5">
-                <i class="bx bx-buildings fs-1 text-muted"></i>
+                <i class="fas fa-building-columns fs-1 text-muted"></i>
                 <p class="text-muted mt-2 mb-0">Choisissez une gare pour afficher ses caisses.</p>
             </div>
         </div>
@@ -93,7 +92,7 @@
             <div class="col-12 col-xl-8">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header bg-primary text-white fw-bold">
-                        <i class="bx bx-wallet me-1"></i> Caisses des opérateurs
+                        <i class="fas fa-wallet me-1"></i> Caisses des opérateurs
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -149,7 +148,7 @@
             <div class="col-12 col-xl-4">
                 <div class="card shadow-sm border-0 border-top border-4 border-warning h-100">
                     <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
-                        <span><i class="bx bx-time-five me-1"></i> Versements en attente</span>
+                        <span><i class="fas fa-clock me-1"></i> Versements en attente</span>
                         <span class="badge bg-warning text-dark">{{ $versementsAttente->count() }}</span>
                     </div>
                     <div class="card-body">
@@ -174,7 +173,7 @@
                                                 <input type="hidden" name="action" value="valide">
                                                 <input type="hidden" name="id_agence" value="{{ $idAgence }}">
                                                 <input type="hidden" name="date" value="{{ $date }}">
-                                                <button type="submit" class="btn btn-success btn-sm w-100"><i class="bx bx-check"></i> Valider</button>
+                                                <button type="submit" class="btn btn-success btn-sm w-100"><i class="fas fa-check"></i> Valider</button>
                                             </form>
                                             <form method="post" action="{{ route('admin.caisse.valider-versement') }}" class="reject-versement-form flex-fill">
                                                 @csrf
@@ -182,7 +181,7 @@
                                                 <input type="hidden" name="action" value="rejete">
                                                 <input type="hidden" name="id_agence" value="{{ $idAgence }}">
                                                 <input type="hidden" name="date" value="{{ $date }}">
-                                                <button type="button" class="btn btn-outline-danger btn-sm w-100 reject-versement-btn"><i class="bx bx-x"></i> Rejeter</button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm w-100 reject-versement-btn"><i class="fas fa-xmark"></i> Rejeter</button>
                                             </form>
                                         </div>
                                     @endif
@@ -198,7 +197,7 @@
 
         <div class="card shadow-sm border-0 mt-4">
             <div class="card-header bg-primary text-white fw-bold">
-                <i class="bx bx-history me-1"></i> Historique des versements
+                <i class="fas fa-clock-rotate-left me-1"></i> Historique des versements
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -247,13 +246,13 @@
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
                     <div class="modal-header bg-warning">
-                        <h5 class="modal-title text-dark"><i class="bx bx-check-double me-1"></i> Clôturer la journée du {{ \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') }}</h5>
+                        <h5 class="modal-title text-dark"><i class="fas fa-check-double me-1"></i> Clôturer la journée du {{ \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         @if ($caissesOuvertes > 0)
                             <div class="alert alert-danger">
-                                <i class="bx bx-error-circle me-1"></i>
+                                <i class="fas fa-circle-exclamation me-1"></i>
                                 Clôture impossible : <strong>{{ $caissesOuvertes }}</strong> caisse(s) sont encore ouvertes pour cette gare aujourd'hui. Toutes doivent être fermées avant la clôture.
                             </div>
                         @else
@@ -278,7 +277,7 @@
                                 </div>
                             </div>
                             <div class="alert alert-warning small mb-0">
-                                <i class="bx bx-error me-1"></i> Cette action est définitive : elle génère le rapport officiel de clôture pour l'Admin et les propriétaires. Assurez-vous que tous les versements sont validés.
+                                <i class="fas fa-triangle-exclamation me-1"></i> Cette action est définitive : elle génère le rapport officiel de clôture pour l'Admin et les propriétaires. Assurez-vous que tous les versements sont validés.
                             </div>
                         @endif
 
@@ -302,7 +301,7 @@
                                 @csrf
                                 <input type="hidden" name="id_agence" value="{{ $idAgence }}">
                                 <input type="hidden" name="date" value="{{ $date }}">
-                                <button type="submit" class="btn btn-warning fw-semibold text-dark"><i class="bx bx-check-double me-2"></i>Valider la clôture</button>
+                                <button type="submit" class="btn btn-warning fw-semibold text-dark"><i class="fas fa-check-double me-2"></i>Valider la clôture</button>
                             </form>
                         @endif
                     </div>

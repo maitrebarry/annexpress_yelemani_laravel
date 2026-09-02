@@ -2,24 +2,23 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Historique des colis · TransHub Admin')
+@section('title', 'Historique des colis · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-history me-1"></i> G-colis</span>
+    <span class="text-primary"><i class="fas fa-clock-rotate-left me-1"></i> G-colis</span>
 @endsection
 @section('breadcrumb-active', 'Historique des colis')
 
 @section('breadcrumb-actions')
     @if ($authUser->droit !== 'PDG')
         <a href="{{ route('admin.colis.create') }}" class="btn btn-sm btn-primary rounded-pill shadow-sm">
-            <i class="bx bx-plus me-1"></i> Ajouter
+            <i class="fas fa-plus me-1"></i> Ajouter
         </a>
     @endif
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
@@ -33,7 +32,7 @@
                     <input type="date" class="form-control" name="date_fin" value="{{ $dateFin }}">
                 </div>
                 <div class="col-md-4">
-                    <button type="submit" class="btn btn-outline-primary w-100"><i class="bx bx-filter-alt me-1"></i> Filtrer</button>
+                    <button type="submit" class="btn btn-outline-primary w-100"><i class="fas fa-filter me-1"></i> Filtrer</button>
                 </div>
             </form>
         </div>
@@ -45,7 +44,7 @@
                 <li class="nav-item" role="presentation">
                     <a class="nav-link active" data-bs-toggle="tab" href="#tabEnregistres" role="tab" aria-selected="true">
                         <div class="d-flex align-items-center">
-                            <div class="tab-icon"><i class="fadeIn animated bx bx-calendar-event font-19"></i></div>
+                            <div class="tab-icon"><i class="fadeIn animated fas fa-calendar-days font-19"></i></div>
                             <div class="tab-title">Colis enregistrés</div>
                         </div>
                     </a>
@@ -53,7 +52,7 @@
                 <li class="nav-item" role="presentation">
                     <a class="nav-link" data-bs-toggle="tab" href="#tabLivres" role="tab" aria-selected="false">
                         <div class="d-flex align-items-center">
-                            <div class="tab-icon"><i class="fadeIn animated bx bx-time-five font-19"></i></div>
+                            <div class="tab-icon"><i class="fadeIn animated fas fa-clock font-19"></i></div>
                             <div class="tab-title">Colis livrés</div>
                         </div>
                     </a>

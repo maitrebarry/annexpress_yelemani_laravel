@@ -1,5 +1,5 @@
 @php
-    $isAdmin = in_array($authUser->droit, ['Admin', 'PDG'], true);
+    $isAdmin = in_array($authUser->droit, ['Admin', 'PDG', 'secretaire'], true);
     $peutAnnuler = in_array($authUser->droit, ['Admin', 'chef_d_escale'], true) && $authUser->userHasPermission('Billets_annulation');
     $peutReporter = ! $authUser->estLectureSeule() && $authUser->userHasPermission('Billets_reporte');
     $peutImprimer = $authUser->userHasPermission('Billets_impression');
@@ -12,7 +12,7 @@
     <div class="col-6 col-xl-4">
         <div class="card border-0 shadow-sm border-start border-4 border-primary h-100">
             <div class="card-body">
-                <div class="text-muted small"><i class="bx bx-ticket me-1"></i> Tickets</div>
+                <div class="text-muted small"><i class="fas fa-ticket me-1"></i> Tickets</div>
                 <div class="fs-4 fw-bold">{{ $liste->count() }}</div>
             </div>
         </div>
@@ -20,7 +20,7 @@
     <div class="col-6 col-xl-4">
         <div class="card bg-primary text-white border-0 shadow-sm h-100">
             <div class="card-body">
-                <div class="small opacity-75"><i class="bx bx-money me-1"></i> Montant total</div>
+                <div class="small opacity-75"><i class="fas fa-money-bill-wave me-1"></i> Montant total</div>
                 <div class="fs-4 fw-bold">{{ number_format($montant, 0, ',', ' ') }} F</div>
             </div>
         </div>
@@ -29,8 +29,8 @@
 
 <div class="card border-0 shadow rounded-4 overflow-hidden">
     <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2"
-         style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-        <i class="bx bx-list-ul fs-5"></i>
+         style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+        <i class="fas fa-list-ul fs-5"></i>
         <span class="fw-semibold">Billets</span>
     </div>
     <div class="table-responsive p-2">
@@ -80,18 +80,18 @@
                                 @else
                                     <div class="dropdown">
                                         <a href="#" class="text-dark fs-5" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bx bx-dots-vertical-rounded"></i>
+                                            <i class="fas fa-ellipsis-vertical"></i>
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                             @if ($peutImprimer)
                                                 <li>
                                                     <a class="dropdown-item thermal-print-btn" href="#" data-id="{{ $b->idBillets }}">
-                                                        <i class="bx bx-printer me-2"></i>Imprimer (thermique)
+                                                        <i class="fas fa-print me-2"></i>Imprimer (thermique)
                                                     </a>
                                                 </li>
                                                 <li>
                                                     <a class="dropdown-item" href="{{ url('/admin/Liste_du_jours/recu/' . $b->idBillets) }}" target="_blank">
-                                                        <i class="bx bx-file-pdf me-2"></i>Ouvrir PDF
+                                                        <i class="fas fa-file-pdf me-2"></i>Ouvrir PDF
                                                     </a>
                                                 </li>
                                             @endif
@@ -99,14 +99,14 @@
                                                 @if ($peutReporter)
                                                     <li>
                                                         <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalReporter{{ $b->idBillets }}">
-                                                            <i class="bx bx-calendar-edit me-2"></i>Reporter
+                                                            <i class="fas fa-calendar-day me-2"></i>Reporter
                                                         </a>
                                                     </li>
                                                 @endif
                                                 @if ($peutAnnuler)
                                                     <li>
                                                         <a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#modalAnnuler{{ $b->idBillets }}">
-                                                            <i class="bx bx-x-circle me-2"></i>{{ $authUser->droit === 'chef_d_escale' ? "Demander l'annulation" : 'Annuler le billet' }}
+                                                            <i class="fas fa-circle-xmark me-2"></i>{{ $authUser->droit === 'chef_d_escale' ? "Demander l'annulation" : 'Annuler le billet' }}
                                                         </a>
                                                     </li>
                                                 @endif
@@ -135,7 +135,7 @@
                             @csrf
                             <input type="hidden" name="idBillets" value="{{ $b->idBillets }}">
                             <div class="modal-header bg-primary">
-                                <h5 class="modal-title text-white"><i class="bx bx-calendar-edit me-1"></i> Reporter le voyage</h5>
+                                <h5 class="modal-title text-white"><i class="fas fa-calendar-day me-1"></i> Reporter le voyage</h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">

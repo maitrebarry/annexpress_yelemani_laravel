@@ -22,7 +22,7 @@ class BanqueController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (! in_array($user->droit, ['Admin', 'PDG'], true)) {
+        if (! in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true)) {
             Flash::set('Accès refusé.', 'danger');
 
             return redirect()->route('admin.home');
@@ -69,7 +69,7 @@ class BanqueController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (! in_array($user->droit, ['Admin', 'PDG'], true)) {
+        if (! in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true)) {
             return response()->json(['error' => 'Accès refusé.'], 403);
         }
 

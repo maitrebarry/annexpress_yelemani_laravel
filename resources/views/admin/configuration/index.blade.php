@@ -1,14 +1,22 @@
 @extends('layouts.admin')
 
-@php $authUser = auth('staff')->user(); @endphp
+@php
+    $authUser = auth('staff')->user();
+    $labelDroit = fn (string $droit) => match ($droit) {
+        'chef_d_escale' => "Chef d'escale",
+        'PDG' => 'PDG (superviseur, lecture seule)',
+        'secretaire' => 'Secrétaire Général',
+        default => $droit,
+    };
+@endphp
 
-@section('title', 'Utilisateurs · TransHub Admin')
+@section('title', 'Utilisateurs · TransGest Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Utilisateur')
 
 @section('breadcrumb-actions')
     <button type="button" class="btn btn-success d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjouterUtilisateur">
-        <i class="bx bx-plus-circle fs-5"></i> Ajouter
+        <i class="fas fa-circle-plus fs-5"></i> Ajouter
     </button>
 @endsection
 
@@ -17,11 +25,10 @@
     @include('admin.partials.config-nav', ['active' => 'utilisateur'])
 
     <div class="col-12 col-xxl-9">
-        @include('admin.partials.set_flash')
 
         <div class="card config-card">
             <div class="card-header">
-                <h5 class="mb-0 fw-bold"><i class="bx bx-group me-2"></i>Liste des utilisateurs</h5>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-users me-2"></i>Liste des utilisateurs</h5>
             </div>
             <div class="card-body p-4">
                 <div class="table-responsive">
@@ -47,7 +54,7 @@
                                             <img src="{{ asset('storage/profiles/'.$u->photo) }}" alt="Photo" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
                                         @else
                                             <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                                <i class="bx bx-user fs-5"></i>
+                                                <i class="fas fa-user fs-5"></i>
                                             </div>
                                         @endif
                                     </td>
@@ -76,7 +83,7 @@
                                             <div class="dropdown-menu">
                                                 @unless ($authUser->estLectureSeule())
                                                     <a class="dropdown-item" href="{{ route('admin.permission.assigner', $u->idUser) }}">
-                                                        <i class="bx bx-lock-open me-2"></i>Permissions
+                                                        <i class="fas fa-lock-open me-2"></i>Permissions
                                                     </a>
                                                     <a class="dropdown-item edit-utilisateur-btn" href="javascript:;"
                                                         data-bs-toggle="modal" data-bs-target="#modalModification"
@@ -87,7 +94,7 @@
                                                         data-droit="{{ $u->droit }}"
                                                         data-profile="{{ $u->profile }}"
                                                         data-photo="{{ $u->photo ? asset('storage/profiles/'.$u->photo) : '' }}">
-                                                        <i class="bx bx-edit me-2"></i>Modifier
+                                                        <i class="fas fa-pen me-2"></i>Modifier
                                                     </a>
                                                     <a class="dropdown-item" href="javascript:;"
                                                         data-bs-toggle="modal" data-bs-target="#modalStatut{{ $u->idUser }}">
@@ -98,7 +105,7 @@
                                                 @if ($authUser->isSuperAdmin())
                                                     <a class="dropdown-item text-danger" href="javascript:;"
                                                         data-bs-toggle="modal" data-bs-target="#modalSuppression{{ $u->idUser }}">
-                                                        <i class="bx bx-trash me-2"></i>Supprimer
+                                                        <i class="fas fa-trash me-2"></i>Supprimer
                                                     </a>
                                                 @endif
                                             </div>
@@ -155,7 +162,7 @@
                                     <option value="" disabled selected>Choisissez un droit</option>
                                     @foreach ($droitsAutorises as $droit)
                                         <option value="{{ $droit }}" {{ old('droit') === $droit ? 'selected' : '' }}>
-                                            {{ $droit === 'chef_d_escale' ? "Chef d'escale" : ($droit === 'PDG' ? 'PDG (superviseur, lecture seule)' : $droit) }}
+                                            {{ $labelDroit($droit) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -203,7 +210,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-primary fw-semibold"><i class="bx bx-save fs-5 me-2"></i>Enregistrer</button>
+                        <button type="submit" class="btn btn-primary fw-semibold"><i class="fas fa-floppy-disk fs-5 me-2"></i>Enregistrer</button>
                     </div>
                 </form>
             </div>
@@ -240,7 +247,7 @@
                                 <select class="form-select" id="edit_droit" name="droit" required>
                                     @foreach ($droitsAutorises as $droit)
                                         <option value="{{ $droit }}">
-                                            {{ $droit === 'chef_d_escale' ? "Chef d'escale" : ($droit === 'PDG' ? 'PDG (superviseur, lecture seule)' : $droit) }}
+                                            {{ $labelDroit($droit) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -268,7 +275,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-primary fw-semibold"><i class="bx bx-save fs-5 me-2"></i>Enregistrer</button>
+                        <button type="submit" class="btn btn-primary fw-semibold"><i class="fas fa-floppy-disk fs-5 me-2"></i>Enregistrer</button>
                     </div>
                 </form>
             </div>
@@ -292,7 +299,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body text-center">
-                            <i class="bx bx-error-circle text-danger" style="font-size: 60px;"></i>
+                            <i class="fas fa-circle-exclamation text-danger" style="font-size: 60px;"></i>
                             <p class="mt-3">
                                 Voulez-vous vraiment
                                 <strong class="text-danger">{{ $u->status == 1 ? 'désactiver' : 'activer' }}</strong>
@@ -356,7 +363,7 @@
             var addServiceField = document.getElementById('add_serviceField');
 
             function toggleAddFields() {
-                var estAdminOuPdg = ['Admin', 'PDG'].includes(addDroit.value);
+                var estAdminOuPdg = ['Admin', 'PDG', 'secretaire'].includes(addDroit.value);
                 addGareField.classList.toggle('d-none', estAdminOuPdg);
                 addGareField.querySelector('select').required = !estAdminOuPdg;
                 if (addCompagnieField) {

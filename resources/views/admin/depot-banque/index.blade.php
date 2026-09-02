@@ -2,21 +2,21 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Dépôt en banque · TransHub Admin')
+@section('title', 'Dépôt en banque · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-buildings me-1"></i> Banque</span>
+    <span class="text-primary"><i class="fas fa-building-columns me-1"></i> Banque</span>
 @endsection
 @section('breadcrumb-active', 'Dépôt en banque')
 
 @section('breadcrumb-actions')
     <div class="d-flex gap-2">
         <a href="{{ route('admin.depot-banque.historique') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-            <i class="bx bx-history me-1"></i> Historique complet
+            <i class="fas fa-clock-rotate-left me-1"></i> Historique complet
         </a>
         @if ($authUser->droit !== 'PDG')
             <button type="button" class="btn btn-sm btn-success rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNouveauDepot">
-                <i class="bx bx-send me-1"></i> Faire un dépôt
+                <i class="fas fa-paper-plane me-1"></i> Faire un dépôt
             </button>
         @endif
     </div>
@@ -24,13 +24,12 @@
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     @if ($authUser->droit === 'chef_d_escale')
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-2">
                 <div>
-                    <div class="text-muted small"><i class="bx bx-wallet me-1"></i> Solde disponible pour dépôt (versements validés non encore déposés)</div>
+                    <div class="text-muted small"><i class="fas fa-wallet me-1"></i> Solde disponible pour dépôt (versements validés non encore déposés)</div>
                     <div class="fs-3 fw-bold {{ $soldeDisponible > 0 ? 'text-success' : 'text-muted' }}">{{ number_format($soldeDisponible, 0, ',', ' ') }} FCFA</div>
                 </div>
                 <div class="text-muted small text-end" style="max-width: 320px;">
@@ -42,8 +41,8 @@
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <i class="bx bx-list-ul fs-5"></i>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <i class="fas fa-list-ul fs-5"></i>
             <span class="fw-semibold">{{ $authUser->droit === 'chef_d_escale' ? 'Mes demandes' : 'Demandes récentes' }}</span>
         </div>
         <div class="table-responsive p-2">
@@ -98,7 +97,7 @@
                     <form method="post" action="{{ route('admin.depot-banque.store') }}">
                         @csrf
                         <div class="modal-header bg-success">
-                            <h5 class="modal-title text-white"><i class="bx bx-send me-1"></i> Nouvelle demande de dépôt</h5>
+                            <h5 class="modal-title text-white"><i class="fas fa-paper-plane me-1"></i> Nouvelle demande de dépôt</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -156,7 +155,7 @@
                         @if ($listeBanques->isNotEmpty())
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                                <button type="submit" class="btn btn-success"><i class="bx bx-send me-1"></i> Envoyer la demande</button>
+                                <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane me-1"></i> Envoyer la demande</button>
                             </div>
                         @endif
                     </form>

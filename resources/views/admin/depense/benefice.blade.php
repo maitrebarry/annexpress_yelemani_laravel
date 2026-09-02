@@ -1,21 +1,20 @@
 @extends('layouts.admin')
 
-@section('title', 'Bénéfice de la compagnie · TransHub Admin')
+@section('title', 'Bénéfice de la compagnie · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-money me-1"></i> Finances</span>
+    <span class="text-primary"><i class="fas fa-money-bill-wave me-1"></i> Finances</span>
 @endsection
 @section('breadcrumb-active', 'Bénéfice de la compagnie')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.depense.index') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-money me-1"></i> Gérer les dépenses
+        <i class="fas fa-money-bill-wave me-1"></i> Gérer les dépenses
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body d-flex flex-wrap gap-2">
@@ -70,7 +69,7 @@
                 Revenus (billets + colis + location) − remboursements − dépenses locales − dépenses globales
             </small>
             <small class="text-muted d-block">
-                <i class="bx bx-info-circle"></i> Les remboursements sont cumulés depuis l'ouverture des caisses (pas encore filtrables par période).
+                <i class="fas fa-circle-info"></i> Les remboursements sont cumulés depuis l'ouverture des caisses (pas encore filtrables par période).
             </small>
         </div>
     </div>

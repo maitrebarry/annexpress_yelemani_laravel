@@ -63,7 +63,7 @@ class HomeController extends Controller
         $showBillets = $droit !== 'Utilisateur' || $profile === 'billet';
         $showColis = $droit !== 'Utilisateur' || $profile === 'colis';
         $showVoyages = $droit !== 'Utilisateur';
-        $showTopGares = in_array($droit, ['Admin', 'PDG'], true) && ! $gareId;
+        $showTopGares = in_array($droit, ['Admin', 'PDG', 'secretaire'], true) && ! $gareId;
 
         $data = [
             'mode' => 'compagnie',
@@ -95,7 +95,7 @@ class HomeController extends Controller
             $data['topGares'] = $droit === 'Admin' ? $this->stats->getTopGares($idCompagnie) : [];
         }
 
-        if (in_array($droit, ['Admin', 'PDG'], true)) {
+        if (in_array($droit, ['Admin', 'PDG', 'secretaire'], true)) {
             $data['beneficeJour'] = $this->stats->getBeneficeJour($idCompagnie, $gareLabel, $date);
         }
 

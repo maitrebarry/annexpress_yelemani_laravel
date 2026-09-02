@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Place limite · TransHub Admin')
+@section('title', 'Place limite · TransGest Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Place limite')
 
@@ -9,10 +9,9 @@
     @include('admin.partials.config-nav', ['active' => 'place_limite'])
 
     <div class="col-12 col-xxl-9">
-        @include('admin.partials.set_flash')
         <div class="card config-card">
             <div class="card-header">
-                <h5 class="mb-0 fw-bold"><i class="bx bx-chair me-2"></i>Limites des places</h5>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-chair me-2"></i>Limites des places</h5>
             </div>
             <div class="card-body p-4">
                 @forelse ($listePlace as $p)
@@ -25,7 +24,7 @@
                             data-bs-target="#modalModifierPlace"
                             data-place="{{ $p->place_minumale }}"
                             data-id="{{ $p->id_place_minumale }}" title="Modifier">
-                            <i class='bx bx-message-square-edit fs-1'></i>
+                            <i class='fas fa-pen-to-square fs-1'></i>
                         </button>
                     </div>
                 @empty

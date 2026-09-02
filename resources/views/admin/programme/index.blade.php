@@ -2,28 +2,27 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Voyages · TransHub Admin')
+@section('title', 'Voyages · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-calendar-check me-1"></i> G-programme</span>
+    <span class="text-primary"><i class="fas fa-calendar-check me-1"></i> G-programme</span>
 @endsection
 @section('breadcrumb-active', 'Voyages')
 
 @section('breadcrumb-actions')
     @unless ($authUser->estLectureSeule())
         <a href="{{ route('admin.programme.create') }}" class="btn btn-sm btn-success rounded-pill shadow-sm">
-            <i class="bx bx-plus-circle me-1"></i> Ajouter
+            <i class="fas fa-circle-plus me-1"></i> Ajouter
         </a>
     @endunless
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-sm border-0">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-calendar-check me-1"></i> Liste des voyages programmés
+            <i class="fas fa-calendar-check me-1"></i> Liste des voyages programmés
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -50,7 +49,7 @@
                                     {{ ($p->depart->localite ?? '?').' ('.($p->depart->numeroGare ?? '?').')' }}
                                     @if ($p->estDoublon)
                                         <br><span class="badge bg-warning text-dark" title="Un autre trajet identique (même départ/destination/heure) existe déjà — vérifiez les deux et supprimez celui en trop.">
-                                            <i class="bx bx-error"></i> Doublon
+                                            <i class="fas fa-triangle-exclamation"></i> Doublon
                                         </span>
                                     @endif
                                 </td>
@@ -78,11 +77,11 @@
                                                     data-rdv="{{ $p->rdv }}"
                                                     data-route="{{ ($p->depart->localite ?? '?').' → '.($p->destination->localite ?? '?') }}"
                                                     data-escales="{{ $escalesData->toJson() }}">
-                                                    <i class="bx bx-edit me-2"></i>Modifier
+                                                    <i class="fas fa-pen me-2"></i>Modifier
                                                 </a>
                                                 <a class="dropdown-item text-danger delete-button" href="{{ route('admin.programme.destroy', $p->idProgrammer) }}"
                                                     title="Ce voyage et ses éventuelles escales/affectations de car seront également supprimés.">
-                                                    <i class="bx bx-trash me-2"></i>Supprimer
+                                                    <i class="fas fa-trash me-2"></i>Supprimer
                                                 </a>
                                             @endunless
                                         </div>
@@ -108,7 +107,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary">
                     <h5 class="modal-title text-white">
-                        <i class="bx bx-edit me-1"></i> Modifier le trajet : <span id="editProgrammeRoute"></span>
+                        <i class="fas fa-pen me-1"></i> Modifier le trajet : <span id="editProgrammeRoute"></span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -141,7 +140,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-primary fw-semibold"><i class="bx bx-save fs-5 me-2"></i>Enregistrer</button>
+                        <button type="submit" class="btn btn-primary fw-semibold"><i class="fas fa-floppy-disk fs-5 me-2"></i>Enregistrer</button>
                     </div>
                 </form>
             </div>
@@ -179,7 +178,7 @@
                     if (escales.length > 0) {
                         var label = document.createElement('label');
                         label.className = 'form-label fw-semibold mt-3';
-                        label.innerHTML = '<i class="bx bx-map-alt me-1"></i>Frais des escales';
+                        label.innerHTML = '<i class="fas fa-map me-1"></i>Frais des escales';
                         container.appendChild(label);
                         escales.forEach(function (e) {
                             var group = document.createElement('div');

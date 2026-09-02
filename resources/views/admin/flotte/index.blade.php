@@ -1,25 +1,24 @@
 @extends('layouts.admin')
 
-@section('title', 'État de la flotte · TransHub Admin')
+@section('title', 'État de la flotte · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-map-pin me-1"></i> G-programme</span>
+    <span class="text-primary"><i class="fas fa-location-dot me-1"></i> G-programme</span>
 @endsection
 @section('breadcrumb-active', 'Où se trouvent les cars')
 
 @section('breadcrumb-actions')
     <a href="javascript:history.back()" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-left-arrow-alt me-1"></i> Retour
+        <i class="fas fa-arrow-left me-1"></i> Retour
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-lg border-0 rounded-3">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-bus me-1"></i> État actuel de tous les cars
+            <i class="fas fa-bus me-1"></i> État actuel de tous les cars
         </div>
         <div class="card-body">
             @if ($cars->isEmpty())
@@ -67,7 +66,7 @@
                                         @if ($enTransit && ! empty($car->id_programmation))
                                             <div>
                                                 {{ $car->origine }}
-                                                <i class="bx bx-right-arrow-alt mx-1"></i>
+                                                <i class="fas fa-arrow-right mx-1"></i>
                                                 {{ $car->destination }}
                                                 @if (! empty($car->numeroGareDestination))
                                                     <span class="text-muted">(gare {{ $car->numeroGareDestination }})</span>

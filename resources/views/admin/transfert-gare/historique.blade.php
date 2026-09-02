@@ -1,25 +1,24 @@
 @extends('layouts.admin')
 
-@section('title', 'Transferts · TransHub Admin')
+@section('title', 'Transferts · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-calendar-check me-1"></i> G-programme</span>
+    <span class="text-primary"><i class="fas fa-calendar-check me-1"></i> G-programme</span>
 @endsection
 @section('breadcrumb-active', 'Transferts')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.programmation-voyage.liste-journaliere') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-left-arrow-alt me-1"></i> Retour aux programmations
+        <i class="fas fa-arrow-left me-1"></i> Retour aux programmations
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-sm border-0">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-transfer me-1"></i> Historique des transferts de passagers
+            <i class="fas fa-right-left me-1"></i> Historique des transferts de passagers
         </div>
         <div class="card-body">
             <div class="table-responsive">

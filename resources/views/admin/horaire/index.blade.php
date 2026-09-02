@@ -2,13 +2,13 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Horaires · TransHub Admin')
+@section('title', 'Horaires · TransGest Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Horaire')
 
 @section('breadcrumb-actions')
     <button type="button" class="btn btn-success d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjouterHoraire">
-        <i class="bx bx-plus-circle fs-5"></i> Ajouter
+        <i class="fas fa-circle-plus fs-5"></i> Ajouter
     </button>
 @endsection
 
@@ -17,11 +17,10 @@
     @include('admin.partials.config-nav', ['active' => 'horaire'])
 
     <div class="col-12 col-xxl-9">
-        @include('admin.partials.set_flash')
 
         <div class="card config-card">
             <div class="card-header">
-                <h5 class="mb-0 fw-bold"><i class="bx bx-time me-2"></i>Liste des horaires</h5>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-clock me-2"></i>Liste des horaires</h5>
             </div>
             <div class="card-body p-4">
                 <div class="table-responsive">
@@ -40,10 +39,10 @@
                                         <a href="javascript:;" class="edit-horaire-btn me-2" title="Modifier"
                                             data-bs-toggle="modal" data-bs-target="#modalModifierHoraire"
                                             data-id="{{ $h->id_heure }}" data-heure="{{ \Illuminate\Support\Carbon::parse($h->heuredepart)->format('H:i') }}">
-                                            <i class="bx bx-edit text-primary fs-4"></i>
+                                            <i class="fas fa-pen text-primary fs-4"></i>
                                         </a>
                                         <a href="{{ route('admin.horaire.destroy', $h->id_heure) }}" class="delete-button" title="Supprimer">
-                                            <i class="bx bx-trash text-danger fs-4"></i>
+                                            <i class="fas fa-trash text-danger fs-4"></i>
                                         </a>
                                     </td>
                                 </tr>
@@ -84,16 +83,16 @@
                             <div class="input-group mb-2 horaire-row">
                                 <input type="time" class="form-control" name="heuredepart[]" required>
                                 <button type="button" class="btn btn-outline-danger remove-row-btn d-none" title="Retirer cette ligne">
-                                    <i class="bx bx-trash"></i>
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
                         <button type="button" id="addHoraireRow" class="btn btn-sm btn-outline-primary mb-3">
-                            <i class="bx bx-plus"></i> Ajouter une ligne
+                            <i class="fas fa-plus"></i> Ajouter une ligne
                         </button>
                         <div class="modal-footer border-0 px-0">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-primary fw-semibold"><i class="bx bx-save fs-5 me-2"></i>Enregistrer</button>
+                            <button type="submit" class="btn btn-primary fw-semibold"><i class="fas fa-floppy-disk fs-5 me-2"></i>Enregistrer</button>
                         </div>
                     </form>
                 </div>

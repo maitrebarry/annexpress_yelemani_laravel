@@ -6,7 +6,7 @@
   <div class="card config-card">
     <div class="card-header">
       <div class="card-title">
-        <i class="bx bx-cog fs-4 me-2"></i> Paramètres Généraux
+        <i class="fas fa-gear fs-4 me-2"></i> Paramètres Généraux
       </div>
     </div>
     <div class="card-body p-3">
@@ -16,7 +16,7 @@
             <a class="nav-link {{ $active === 'compagnie' ? 'active' : '' }} text-break" role="tab"
               aria-current="page" href="{{ url('/admin/Compagnies') }}"
               aria-selected="true">
-              <i class="bx bx-buildings me-2 align-middle d-inline-block"></i>Compagnie
+              <i class="fas fa-building-columns me-2 align-middle d-inline-block"></i>Compagnie
             </a>
           </li>
         @endif
@@ -25,7 +25,7 @@
             <a class="nav-link {{ $active === 'utilisateur' ? 'active' : '' }} text-break" role="tab"
               aria-current="page" href="{{ url('/admin/Configurations') }}"
               aria-selected="true">
-              <i class="bx bx-user me-2 align-middle d-inline-block"></i>Utilisateur
+              <i class="fas fa-user me-2 align-middle d-inline-block"></i>Utilisateur
             </a>
           </li>
         @endif
@@ -34,7 +34,7 @@
             <a class="nav-link {{ $active === 'gares' ? 'active' : '' }} text-break" role="tab"
               aria-current="page" href="{{ url('/admin/Liste_gares') }}"
               aria-selected="true">
-              <i class="bx bx-home me-2 align-middle d-inline-block"></i>Gares
+              <i class="fas fa-house me-2 align-middle d-inline-block"></i>Gares
             </a>
           </li>
         @endif
@@ -44,7 +44,7 @@
             <a class="nav-link {{ $active === 'escale' ? 'active' : '' }} text-break mb-0" role="tab"
               aria-current="page" href="{{ url('/admin/Add_liste_escales') }}"
               aria-selected="true">
-              <i class="bx bx-map-pin me-2 align-middle d-inline-block"></i>Escale
+              <i class="fas fa-location-dot me-2 align-middle d-inline-block"></i>Escale
             </a>
           </li>
         @endif
@@ -54,7 +54,7 @@
             <a class="nav-link {{ $active === 'horaire' ? 'active' : '' }} text-break mb-0" role="tab"
               aria-current="page" href="{{ url('/admin/Add_liste_horaire') }}"
               aria-selected="true">
-              <i class="bx bx-time me-2 align-middle d-inline-block"></i>Horaire
+              <i class="fas fa-clock me-2 align-middle d-inline-block"></i>Horaire
             </a>
           </li>
         @endif
@@ -63,7 +63,7 @@
             <a class="nav-link {{ $active === 'cars' ? 'active' : '' }} text-break" role="tab"
               aria-current="page" href="{{ url('/admin/Cars_chauffeurs') }}"
               aria-selected="true">
-              <i class="bx bx-car me-2 align-middle d-inline-block"></i>Cars & Chauffeurs
+              <i class="fas fa-car me-2 align-middle d-inline-block"></i>Cars & Chauffeurs
             </a>
           </li>
         @endif
@@ -73,7 +73,7 @@
           <a class="nav-link {{ $active === 'permission' ? 'active' : '' }} text-break mb-0" role="tab"
             aria-current="page" href="{{ url('/admin/Add_liste_horaire/add_permission') }}"
             aria-selected="true">
-            <i class="bx bx-shield-quarter me-2 align-middle d-inline-block"></i>Permission
+            <i class="fas fa-shield-halved me-2 align-middle d-inline-block"></i>Permission
           </a>
         </li>
         @endif
@@ -83,7 +83,7 @@
             <a class="nav-link {{ $active === 'place_limite' ? 'active' : '' }} text-break" role="tab"
               aria-current="page" href="{{ url('/admin/Compagnies/place_limite') }}"
               aria-selected="true">
-              <i class="bx bx-chair me-2 align-middle d-inline-block"></i>Place limite
+              <i class="fas fa-chair me-2 align-middle d-inline-block"></i>Place limite
             </a>
           </li>
         @endif

@@ -24,7 +24,7 @@ class DepenseController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (! in_array($user->droit, ['Admin', 'chef_d_escale', 'PDG'], true)) {
+        if (! in_array($user->droit, ['Admin', 'chef_d_escale', 'PDG', 'secretaire'], true)) {
             Flash::set('Accès refusé.', 'danger');
 
             return redirect()->route('admin.home');
@@ -57,7 +57,7 @@ class DepenseController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (! in_array($user->droit, ['Admin', 'PDG'], true)) {
+        if (! in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true)) {
             Flash::set("Accès réservé à l'Admin de la compagnie.", 'danger');
 
             return redirect()->route('admin.home');

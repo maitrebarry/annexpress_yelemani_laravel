@@ -19,7 +19,7 @@ class GaresController extends Controller
 
         if ($user->isSuperAdmin()) {
             $listes = Agence::all();
-        } elseif (in_array($user->droit, ['Admin', 'PDG'], true) && $user->id_compagnie) {
+        } elseif (in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true) && $user->id_compagnie) {
             $listes = Agence::where('id_compagnie', $user->id_compagnie)->get();
         } else {
             Flash::set('Accès restreint ou données manquantes', 'danger');

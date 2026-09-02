@@ -6,21 +6,21 @@
     $soldeTotal = $listeBanques->sum('solde');
 @endphp
 
-@section('title', 'Comptes banque · TransHub Admin')
+@section('title', 'Comptes banque · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-buildings me-1"></i> Banque</span>
+    <span class="text-primary"><i class="fas fa-building-columns me-1"></i> Banque</span>
 @endsection
 @section('breadcrumb-active', 'Comptes banque')
 
 @section('breadcrumb-actions')
     <div class="d-flex gap-2">
         <a href="{{ route('admin.depot-banque.en-attente') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-            <i class="bx bx-time me-1"></i> Demandes en attente
+            <i class="fas fa-clock me-1"></i> Demandes en attente
         </a>
         @if ($authUser->droit === 'Admin')
             <button type="button" class="btn btn-sm btn-success rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNouvelleBanque">
-                <i class="bx bx-plus me-1"></i> Nouveau compte
+                <i class="fas fa-plus me-1"></i> Nouveau compte
             </button>
         @endif
     </div>
@@ -28,13 +28,12 @@
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-4">
             <div class="card border-0 shadow-sm border-start border-4 border-primary h-100">
                 <div class="card-body">
-                    <div class="text-muted small"><i class="bx bx-buildings me-1"></i> Comptes banque</div>
+                    <div class="text-muted small"><i class="fas fa-building-columns me-1"></i> Comptes banque</div>
                     <div class="fs-4 fw-bold">{{ $listeBanques->count() }}</div>
                 </div>
             </div>
@@ -42,7 +41,7 @@
         <div class="col-6 col-xl-4">
             <div class="card border-0 shadow-sm border-start border-4 border-success h-100">
                 <div class="card-body">
-                    <div class="text-muted small"><i class="bx bx-check-circle me-1"></i> Comptes actifs</div>
+                    <div class="text-muted small"><i class="fas fa-circle-check me-1"></i> Comptes actifs</div>
                     <div class="fs-4 fw-bold">{{ $nbActifs }}</div>
                 </div>
             </div>
@@ -50,7 +49,7 @@
         <div class="col-6 col-xl-4">
             <div class="card bg-primary text-white border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <div class="small opacity-75"><i class="bx bx-wallet me-1"></i> Solde cumulé</div>
+                    <div class="small opacity-75"><i class="fas fa-wallet me-1"></i> Solde cumulé</div>
                     <div class="fs-4 fw-bold">{{ number_format($soldeTotal, 0, ',', ' ') }} F</div>
                 </div>
             </div>
@@ -59,8 +58,8 @@
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <i class="bx bx-list-ul fs-5"></i>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <i class="fas fa-list-ul fs-5"></i>
             <span class="fw-semibold">Comptes banque de la compagnie</span>
         </div>
         <div class="table-responsive p-2">
@@ -78,7 +77,7 @@
                 <tbody>
                     @forelse ($listeBanques as $b)
                         <tr>
-                            <td class="fw-semibold"><i class="bx bx-buildings text-primary me-1"></i> {{ $b->nom }}</td>
+                            <td class="fw-semibold"><i class="fas fa-building-columns text-primary me-1"></i> {{ $b->nom }}</td>
                             <td>{{ $b->numero_compte ?? '-' }}</td>
                             <td class="fw-bold text-success">{{ number_format($b->solde, 0, ',', ' ') }} F</td>
                             <td>
@@ -92,12 +91,12 @@
                             <td>
                                 <div class="dropdown">
                                     <a href="#" class="text-dark fs-5" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                        <i class="fas fa-ellipsis-vertical"></i>
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                         <li>
                                             <a class="dropdown-item btn-voir-mouvements" href="#" data-bs-toggle="modal" data-bs-target="#modalMouvementsBanque" data-id="{{ $b->id_banque }}">
-                                                <i class="bx bx-transfer-alt me-2"></i>Mouvements
+                                                <i class="fas fa-arrow-right-arrow-left me-2"></i>Mouvements
                                             </a>
                                         </li>
                                         @if ($authUser->droit === 'Admin')
@@ -105,7 +104,7 @@
                                                 <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalEditBanque"
                                                    data-id="{{ $b->id_banque }}" data-nom="{{ $b->nom }}"
                                                    data-numero="{{ $b->numero_compte }}" data-statut="{{ $b->statut }}">
-                                                    <i class="bx bx-edit me-2"></i>Modifier
+                                                    <i class="fas fa-pen me-2"></i>Modifier
                                                 </a>
                                             </li>
                                         @endif
@@ -193,7 +192,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-primary">
-                    <h5 class="modal-title text-white mb-0"><i class="bx bx-transfer-alt me-1"></i> Mouvements — <span id="mvtBanqueNom"></span></h5>
+                    <h5 class="modal-title text-white mb-0"><i class="fas fa-arrow-right-arrow-left me-1"></i> Mouvements — <span id="mvtBanqueNom"></span></h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

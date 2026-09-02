@@ -1,21 +1,20 @@
 @extends('layouts.admin')
 
-@section('title', 'Rapport Compagnie · TransHub Admin')
+@section('title', 'Rapport Compagnie · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-wallet me-1"></i> Caisse</span>
+    <span class="text-primary"><i class="fas fa-wallet me-1"></i> Caisse</span>
 @endsection
 @section('breadcrumb-active', 'Rapport Compagnie')
 
 @section('breadcrumb-actions')
     <button type="button" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm" onclick="window.print()">
-        <i class="bx bx-printer me-1"></i> Imprimer
+        <i class="fas fa-print me-1"></i> Imprimer
     </button>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
@@ -25,7 +24,7 @@
                     <input type="date" class="form-control" name="date" value="{{ $date }}" max="{{ now()->toDateString() }}">
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary w-100"><i class="bx bx-filter-alt me-1"></i> Consulter</button>
+                    <button type="submit" class="btn btn-outline-primary w-100"><i class="fas fa-filter me-1"></i> Consulter</button>
                 </div>
             </form>
         </div>
@@ -43,7 +42,7 @@
         <div class="col-6 col-xl-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <div class="text-muted small"><i class="bx bx-ticket text-success me-1"></i>Recettes billets</div>
+                    <div class="text-muted small"><i class="fas fa-ticket text-success me-1"></i>Recettes billets</div>
                     <div class="fs-4 fw-bold">{{ number_format($totalBillets, 0, ',', ' ') }} F</div>
                 </div>
             </div>
@@ -51,7 +50,7 @@
         <div class="col-6 col-xl-4">
             <div class="card border-0 shadow-sm h-100">
                 <div class="card-body">
-                    <div class="text-muted small"><i class="bx bx-package text-info me-1"></i>Recettes colis</div>
+                    <div class="text-muted small"><i class="fas fa-box-open text-info me-1"></i>Recettes colis</div>
                     <div class="fs-4 fw-bold">{{ number_format($totalColis, 0, ',', ' ') }} F</div>
                 </div>
             </div>
@@ -60,7 +59,7 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-map-pin me-1"></i> Recettes par escale
+            <i class="fas fa-location-dot me-1"></i> Recettes par escale
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">

@@ -75,16 +75,16 @@ class ConfigurationController extends Controller
             'id_agence' => ['nullable', 'string'],
             'id_compagnie' => ['nullable', 'string'],
             'profile' => ['nullable', Rule::in(['billet', 'colis'])],
-            'photo' => ['nullable', 'image', 'max:2048'],
+            'photo' => ['nullable', 'image', 'max:5120'],
         ]);
 
         // Un chef d'escale ou un simple Utilisateur doit être rattaché à une gare ; seuls
         // Admin et PDG (rattachés à une compagnie entière) échappent à cette règle.
-        if (! in_array($data['droit'], ['Admin', 'PDG'], true) && empty($data['id_agence'])) {
+        if (! in_array($data['droit'], ['Admin', 'PDG', 'secretaire'], true) && empty($data['id_agence'])) {
             return back()->withErrors(['id_agence' => 'La gare est obligatoire pour ce type de compte.'])->withInput();
         }
 
-        $idCompagnie = in_array($data['droit'], ['Admin', 'PDG'], true)
+        $idCompagnie = in_array($data['droit'], ['Admin', 'PDG', 'secretaire'], true)
             ? ($data['id_compagnie'] ?? null)
             : $user->id_compagnie;
 
@@ -141,7 +141,7 @@ class ConfigurationController extends Controller
             'droit' => ['required', Rule::in($droitsAutorises)],
             'profile' => ['nullable', Rule::in(['billet', 'colis'])],
             'motPasse' => ['nullable', 'string', 'min:6'],
-            'photo' => ['nullable', 'image', 'max:2048'],
+            'photo' => ['nullable', 'image', 'max:5120'],
         ]);
 
         $profile = $data['droit'] === 'Utilisateur' ? ($data['profile'] ?? null) : null;
@@ -245,8 +245,8 @@ class ConfigurationController extends Controller
     private function droitsAutorisesPour(string $role): array
     {
         return $role === 'super_admin'
-            ? ['super_admin', 'Admin', 'PDG', 'Utilisateur', 'chef_d_escale']
-            : ['Utilisateur', 'chef_d_escale'];
+            ? ['super_admin', 'Admin', 'PDG', 'secretaire', 'Utilisateur', 'chef_d_escale']
+            : ['Utilisateur', 'chef_d_escale', 'secretaire'];
     }
 
     private function requirePermission(string $permission): void

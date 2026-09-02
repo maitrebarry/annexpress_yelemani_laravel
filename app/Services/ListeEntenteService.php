@@ -23,7 +23,7 @@ class ListeEntenteService
 {
     public function listeEnAttente(Utilisateur $user): Collection
     {
-        $isAdmin = in_array($user->droit, ['Admin', 'PDG'], true);
+        $isAdmin = in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true);
 
         return Billet::query()
             ->join('client', 'billets.id_client', '=', 'client.idClient')

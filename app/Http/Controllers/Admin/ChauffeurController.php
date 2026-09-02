@@ -21,7 +21,7 @@ class ChauffeurController extends Controller
             'nom_prenom' => ['required', 'string', 'max:200'],
             'numero' => self::NUMERO_RULES,
             'id_car' => ['required', 'integer', 'exists:car,id_car'],
-            'photo' => ['nullable', 'image', 'max:2048'],
+            'photo' => ['nullable', 'image', 'max:5120'],
         ], [
             'numero.regex' => 'Le numéro de téléphone doit contenir exactement 8 chiffres et commencer par 6, 7, 8 ou 9.',
         ]);
@@ -58,7 +58,7 @@ class ChauffeurController extends Controller
             'nom_prenom' => ['required', 'string', 'max:200'],
             'numero' => self::NUMERO_RULES,
             'id_car' => ['required', 'integer', 'exists:car,id_car'],
-            'photo' => ['nullable', 'image', 'max:2048'],
+            'photo' => ['nullable', 'image', 'max:5120'],
         ], [
             'numero.regex' => 'Le numéro de téléphone doit contenir exactement 8 chiffres et commencer par 6, 7, 8 ou 9.',
         ]);

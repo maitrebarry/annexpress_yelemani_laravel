@@ -23,7 +23,7 @@ class DepotBanqueController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (! in_array($user->droit, ['chef_d_escale', 'Admin', 'PDG'], true)) {
+        if (! in_array($user->droit, ['chef_d_escale', 'Admin', 'PDG', 'secretaire'], true)) {
             Flash::set('Accès refusé.', 'danger');
 
             return redirect()->route('admin.home');
@@ -59,7 +59,7 @@ class DepotBanqueController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (! in_array($user->droit, ['Admin', 'PDG'], true)) {
+        if (! in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true)) {
             Flash::set('Accès refusé.', 'danger');
 
             return redirect()->route('admin.home');
@@ -94,7 +94,7 @@ class DepotBanqueController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (! in_array($user->droit, ['chef_d_escale', 'Admin', 'PDG'], true)) {
+        if (! in_array($user->droit, ['chef_d_escale', 'Admin', 'PDG', 'secretaire'], true)) {
             Flash::set('Accès refusé.', 'danger');
 
             return redirect()->route('admin.home');

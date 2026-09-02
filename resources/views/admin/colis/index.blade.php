@@ -2,29 +2,28 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Liste des colis · TransHub Admin')
+@section('title', 'Liste des colis · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-package me-1"></i> G-colis</span>
+    <span class="text-primary"><i class="fas fa-box-open me-1"></i> G-colis</span>
 @endsection
 @section('breadcrumb-active', 'Liste des colis')
 
 @section('breadcrumb-actions')
     @if ($authUser->droit !== 'PDG')
         <a href="{{ route('admin.colis.create') }}" class="btn btn-sm btn-success rounded-pill shadow-sm">
-            <i class="bx bx-plus me-1"></i> Ajouter
+            <i class="fas fa-plus me-1"></i> Ajouter
         </a>
     @endif
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <!-- Filtrage : meme principe que la liste d'embarquement (admin/Liste_du_jours) -->
     <div class="card border-top border-primary border-1">
         <div class="bg-light border-bottom rounded-top px-3 py-2 d-flex align-items-center mb-0 mt-1" style="gap:8px;">
-            <i class="bx bx-filter-alt text-primary" style="font-size:1.3rem;"></i>
+            <i class="fas fa-filter text-primary" style="font-size:1.3rem;"></i>
             <h6 class="mb-0 fw-bold text-primary" style="letter-spacing:1px;">Filtrage</h6>
         </div>
 
@@ -53,7 +52,7 @@
             <div class="row">
                 <div class="col-md-12 mt-3" id="printBtnWrapperColis">
                     <button type="button" class="btn btn-success" id="btnImprimerListeColis">
-                        <i class="bx bx-printer"></i> Exporter la liste en PDF
+                        <i class="fas fa-print"></i> Exporter la liste en PDF
                     </button>
                     <small class="text-muted ms-2">Laissez "Toutes" pour exporter tous les colis, ou choisissez un filtre pour n'exporter que la liste filtrée.</small>
                 </div>
@@ -63,7 +62,7 @@
 
     <div class="card shadow-lg border-0 rounded-3">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-list-ul me-1"></i> Liste des colis enregistrés
+            <i class="fas fa-list-ul me-1"></i> Liste des colis enregistrés
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -91,7 +90,7 @@
                                 <td data-label="Action">
                                     <div class="dropdown">
                                         <a href="#" class="text-dark fs-5" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bx bx-dots-vertical-rounded"></i>
+                                            <i class="fas fa-ellipsis-vertical"></i>
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                             <li>
@@ -111,7 +110,7 @@
                                                     data-numero-exp="{{ $colis->numero_exp }}"
                                                     data-destinataire="{{ $colis->destinataire }}"
                                                     data-numero-dest="{{ $colis->numero_dest }}">
-                                                    <i class="bx bx-show-alt me-2"></i>Détails
+                                                    <i class="fas fa-eye me-2"></i>Détails
                                                 </a>
                                             </li>
                                             @if ($authUser->droit !== 'PDG')
@@ -124,18 +123,18 @@
                                                         data-destination-id="{{ $colis->id_agence }}"
                                                         data-valeur="{{ $colis->valeur }}"
                                                         data-frais="{{ $colis->fraix_transaction }}">
-                                                        <i class="bx bx-edit me-2"></i>Modifier
+                                                        <i class="fas fa-pen me-2"></i>Modifier
                                                     </a>
                                                 </li>
                                             @endif
                                             <li>
                                                 <a class="dropdown-item" href="{{ url('/admin/Colis_prise_en_charges/imprimer_recu/'.$colis->id_colis) }}" target="_blank">
-                                                    <i class="bx bx-printer me-2"></i>Imprimer (imprimante câble/USB)
+                                                    <i class="fas fa-print me-2"></i>Imprimer (imprimante câble/USB)
                                                 </a>
                                             </li>
                                             <li>
                                                 <a class="dropdown-item thermal-print-colis-btn" href="#" data-id="{{ $colis->id_colis }}">
-                                                    <i class="bx bx-printer me-2"></i>Imprimer (imprimante WiFi)
+                                                    <i class="fas fa-print me-2"></i>Imprimer (imprimante WiFi)
                                                 </a>
                                             </li>
                                         </ul>
@@ -155,7 +154,7 @@
             <div class="modal-content border-0 shadow colis-modal">
                 <div class="modal-header colis-modal-header text-white">
                     <div>
-                        <h5 class="modal-title mb-0"><i class="bx bx-package me-2"></i><span id="dc_nom"></span></h5>
+                        <h5 class="modal-title mb-0"><i class="fas fa-box-open me-2"></i><span id="dc_nom"></span></h5>
                         <small class="opacity-75">Code colis : <span id="dc_code"></span></small>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -163,17 +162,17 @@
                 <div class="modal-body p-4">
                     <div class="row g-3 mb-4 text-center">
                         <div class="col-4">
-                            <div class="colis-stat-icon bg-success bg-opacity-10 text-success"><i class="bx bx-money"></i></div>
+                            <div class="colis-stat-icon bg-success bg-opacity-10 text-success"><i class="fas fa-money-bill-wave"></i></div>
                             <div class="small text-muted">Valeur</div>
                             <div class="fw-bold"><span id="dc_valeur"></span> FCFA</div>
                         </div>
                         <div class="col-4">
-                            <div class="colis-stat-icon bg-warning bg-opacity-10 text-warning"><i class="bx bx-receipt"></i></div>
+                            <div class="colis-stat-icon bg-warning bg-opacity-10 text-warning"><i class="fas fa-receipt"></i></div>
                             <div class="small text-muted">Frais</div>
                             <div class="fw-bold"><span id="dc_frais"></span> FCFA</div>
                         </div>
                         <div class="col-4">
-                            <div class="colis-stat-icon bg-info bg-opacity-10 text-info"><i class="bx bx-check-shield"></i></div>
+                            <div class="colis-stat-icon bg-info bg-opacity-10 text-info"><i class="fas fa-shield-halved"></i></div>
                             <div class="small text-muted">Statut</div>
                             <div id="dc_status_badge"></div>
                         </div>
@@ -182,25 +181,25 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="colis-panel">
-                                <div class="colis-panel-title"><i class="bx bx-upload me-1"></i> Expéditeur</div>
-                                <div class="colis-info-row"><i class="bx bx-user"></i><span id="dc_expediteur"></span></div>
-                                <div class="colis-info-row"><i class="bx bx-phone"></i><span id="dc_numero_exp"></span></div>
+                                <div class="colis-panel-title"><i class="fas fa-upload me-1"></i> Expéditeur</div>
+                                <div class="colis-info-row"><i class="fas fa-user"></i><span id="dc_expediteur"></span></div>
+                                <div class="colis-info-row"><i class="fas fa-phone"></i><span id="dc_numero_exp"></span></div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="colis-panel">
-                                <div class="colis-panel-title"><i class="bx bx-download me-1"></i> Destinataire</div>
-                                <div class="colis-info-row"><i class="bx bx-user"></i><span id="dc_destinataire"></span></div>
-                                <div class="colis-info-row"><i class="bx bx-phone"></i><span id="dc_numero_dest"></span></div>
+                                <div class="colis-panel-title"><i class="fas fa-download me-1"></i> Destinataire</div>
+                                <div class="colis-info-row"><i class="fas fa-user"></i><span id="dc_destinataire"></span></div>
+                                <div class="colis-info-row"><i class="fas fa-phone"></i><span id="dc_numero_dest"></span></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="colis-panel mt-3">
-                        <div class="colis-panel-title"><i class="bx bx-box me-1"></i> Colis</div>
-                        <div class="colis-info-row"><i class="bx bx-tag"></i> Nature : <span class="ms-1" id="dc_nature"></span></div>
-                        <div class="colis-info-row"><i class="bx bx-map-pin"></i> <span id="dc_lieu_label">Destination</span> : <span class="ms-1" id="dc_lieu"></span></div>
-                        <div class="colis-info-row"><i class="bx bx-calendar"></i> Enregistré le <span class="ms-1" id="dc_date"></span></div>
+                        <div class="colis-panel-title"><i class="fas fa-box me-1"></i> Colis</div>
+                        <div class="colis-info-row"><i class="fas fa-tag"></i> Nature : <span class="ms-1" id="dc_nature"></span></div>
+                        <div class="colis-info-row"><i class="fas fa-location-dot"></i> <span id="dc_lieu_label">Destination</span> : <span class="ms-1" id="dc_lieu"></span></div>
+                        <div class="colis-info-row"><i class="fas fa-calendar"></i> Enregistré le <span class="ms-1" id="dc_date"></span></div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -269,7 +268,7 @@
 
     <style>
         .colis-modal-header {
-            background: linear-gradient(135deg, #0f3b5e, #1d6fa5);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         }
 
         .colis-stat-icon {
@@ -292,7 +291,7 @@
 
         .colis-panel-title {
             font-weight: 600;
-            color: #0f3b5e;
+            color: var(--primary-color);
             margin-bottom: 10px;
             font-size: .95rem;
         }

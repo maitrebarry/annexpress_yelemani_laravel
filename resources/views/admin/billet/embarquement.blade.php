@@ -2,22 +2,21 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Embarquement · TransHub Admin')
+@section('title', 'Embarquement · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-category me-1"></i> G-réservation</span>
+    <span class="text-primary"><i class="fas fa-list me-1"></i> G-réservation</span>
 @endsection
 @section('breadcrumb-active', 'Embarquement')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.billet.demandes-report') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-transfer me-1"></i> Demandes de report
+        <i class="fas fa-right-left me-1"></i> Demandes de report
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
@@ -40,7 +39,7 @@
                     <input type="time" class="form-control" name="heure" value="{{ $heureSelectionnee }}">
                 </div>
                 <div class="col-md-3">
-                    <button type="submit" class="btn btn-outline-primary w-100"><i class="bx bx-filter-alt me-1"></i> Filtrer</button>
+                    <button type="submit" class="btn btn-outline-primary w-100"><i class="fas fa-filter me-1"></i> Filtrer</button>
                 </div>
             </form>
         </div>
@@ -52,7 +51,7 @@
                 <div class="col-12 col-md-6 col-xl-4">
                     <div class="card border-0 shadow-sm border-start border-4 border-warning h-100">
                         <div class="card-body py-2">
-                            <div class="small text-warning-emphasis fw-semibold"><i class="bx bx-error-circle me-1"></i> Car complet</div>
+                            <div class="small text-warning-emphasis fw-semibold"><i class="fas fa-circle-exclamation me-1"></i> Car complet</div>
                             <div class="fw-bold">{{ $cc->numero_car }} — {{ $cc->depart }} → {{ $cc->destination }} ({{ \Illuminate\Support\Carbon::parse($cc->heure)->format('H:i') }})</div>
                             <div class="text-muted small">{{ $cc->nbr_place_reserve }}/{{ $cc->nbr_place }} places</div>
                         </div>
@@ -77,11 +76,11 @@
                             </div>
                             @if ($c->decolle_le)
                                 <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                    <i class="bx bx-check-circle"></i> Décollé à {{ \Illuminate\Support\Carbon::parse($c->decolle_le)->format('H:i') }}{{ $c->decolle_par_nom ? ' par '.$c->decolle_par_nom : '' }}
+                                    <i class="fas fa-circle-check"></i> Décollé à {{ \Illuminate\Support\Carbon::parse($c->decolle_le)->format('H:i') }}{{ $c->decolle_par_nom ? ' par '.$c->decolle_par_nom : '' }}
                                 </span>
                             @else
                                 <button type="button" class="btn btn-sm btn-primary w-100 btn-decoller" data-id="{{ $c->id_programmation }}" {{ $c->nb_restants > 0 ? 'disabled' : '' }}>
-                                    <i class="bx bx-send me-1"></i> Faire décoller {{ $c->nb_restants > 0 ? "($c->nb_restants restant(s))" : '' }}
+                                    <i class="fas fa-paper-plane me-1"></i> Faire décoller {{ $c->nb_restants > 0 ? "($c->nb_restants restant(s))" : '' }}
                                 </button>
                             @endif
                         </div>
@@ -93,10 +92,10 @@
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-3 px-4 d-flex align-items-center justify-content-between gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <span class="fw-semibold"><i class="bx bx-list-ul me-1"></i> Passagers du {{ \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') }}</span>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <span class="fw-semibold"><i class="fas fa-list-ul me-1"></i> Passagers du {{ \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') }}</span>
             <button type="button" class="btn btn-sm btn-success" id="btnEmbarquerSelection" disabled>
-                <i class="bx bx-check-double me-1"></i> Embarquer la sélection
+                <i class="fas fa-check-double me-1"></i> Embarquer la sélection
             </button>
         </div>
         <div class="table-responsive p-2">
@@ -132,7 +131,7 @@
                     @csrf
                     <input type="hidden" name="idBillets" id="reportIdBillets">
                     <div class="modal-header bg-primary">
-                        <h5 class="modal-title text-white"><i class="bx bx-transfer me-1"></i> Demander un report</h5>
+                        <h5 class="modal-title text-white"><i class="fas fa-right-left me-1"></i> Demander un report</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">

@@ -16,7 +16,7 @@ class HoraireController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (in_array($user->droit, ['Admin', 'PDG'], true) && $user->id_compagnie) {
+        if (in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true) && $user->id_compagnie) {
             $liste = Horaire::where('id_compagnie', $user->id_compagnie)->orderBy('heuredepart')->get();
         } else {
             $liste = Horaire::orderBy('heuredepart')->get();

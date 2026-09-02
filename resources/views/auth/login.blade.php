@@ -1,347 +1,371 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Connexion · TransHub</title>
-    <meta name="description" content="Accédez à votre espace de gestion TransHub.">
-
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion · TransGest</title>
+    <meta name="description" content="Accédez à votre espace de gestion TransGest.">
+    <meta name="theme-color" content="#0f3b5e">
+    <link rel="icon" href="{{ asset('favicon.ico') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
         :root {
-            --primary:      #0f3b5e;
-            --primary-light:#1d6fa5;
-            --accent:       #e67e22;
-            --accent-light: #f59e0b;
-            --bg:           #f4f6fb;
-            --card-bg:      #ffffff;
-            --border:       #e2e8f0;
-            --text:         #1e293b;
-            --muted:        #64748b;
-            --error:        #dc2626;
+            --login-primary: #0f3b5e;
+            --login-accent: #1d6fa5;
+            --login-highlight: #e67e22;
+            --login-danger: #dc2626;
+            --login-bg: #eef2f8;
+            --login-text: #1e293b;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             min-height: 100vh;
-            background: #f4f6fb;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 24px 16px;
-            color: var(--text);
+            margin: 0;
+            background-color: var(--login-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--login-text);
+            overflow: hidden;
         }
 
-        /* ── Logo ───────────────────────────────────────── */
-        .logo-wrap {
+        .split-layout {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .image-side {
+            flex: 1;
+            position: relative;
+            background: linear-gradient(180deg, rgba(15,59,94,.55), rgba(15,59,94,.75)), url('{{ asset('assets_site/img/hero-bg.jpg') }}') center/cover no-repeat var(--login-primary);
+        }
+
+        /* The SVG wave divider */
+        .wave-divider {
+            position: absolute;
+            top: 0;
+            right: -1px; /* Align perfectly with the login side */
+            height: 100%;
+            width: 150px;
+            z-index: 5;
+        }
+
+        .wave-divider svg {
+            height: 100%;
+            width: 100%;
+            display: block;
+        }
+
+        .login-side {
+            flex: 0 0 520px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 24px;
+            background-color: var(--login-bg);
+            padding: 24px;
+            position: relative;
+            z-index: 10;
         }
-        .logo-wrap img {
-            height: 56px;
-            width: auto;
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-card {
+            border: 0;
+            border-radius: 12px;
+            border-top: 3.5px solid var(--login-highlight);
+            box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .login-header {
+            background: var(--login-primary);
+            color: #fff;
+            padding: 28px 34px;
+            text-align: center;
+        }
+
+        .brand-mark {
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            padding: 6px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .brand-mark img {
+            width: 100%;
+            height: 100%;
             object-fit: contain;
         }
 
-        /* ── Card ───────────────────────────────────────── */
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 36px 40px 32px;
-            width: 100%;
-            max-width: 420px;
-            border-top: 3.5px solid var(--accent);
-            box-shadow: 0 2px 16px rgba(0,0,0,.07);
+        .login-header h1 {
+            font-size: 24px;
+            margin: 0;
+            font-weight: 800;
+            letter-spacing: .3px;
         }
 
-        .card-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            letter-spacing: -.3px;
-            color: var(--primary);
-        }
-        .card-sub {
-            font-size: 13.5px;
-            color: var(--muted);
-            margin-bottom: 28px;
-        }
-
-        /* ── Form ───────────────────────────────────────── */
-        label {
-            display: block;
+        .login-header p {
+            margin: 4px 0 0;
             font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 6px;
-            color: var(--text);
+            color: rgba(255,255,255,.75);
         }
 
-        .input-wrap { margin-bottom: 20px; }
-
-        input[type="email"],
-        input[type="password"],
-        input[type="text"] {
-            width: 100%;
-            height: 42px;
-            padding: 0 12px;
-            border: 1.5px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-            font-family: inherit;
-            color: var(--text);
+        .login-body {
             background: #fff;
-            outline: none;
-            transition: border-color .18s, box-shadow .18s;
-        }
-        input:focus {
-            border-color: var(--primary-light);
-            box-shadow: 0 0 0 3px rgba(29,111,165,.2);
-        }
-        input.is-error { border-color: var(--error); }
-
-        .error-msg {
-            font-size: 12.5px;
-            color: var(--error);
-            margin-top: 5px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            padding: 32px 34px;
         }
 
-        /* ── Password toggle ───────────────────────────── */
-        .pw-wrap { position: relative; }
-        .pw-wrap input { padding-right: 40px; }
-        .pw-toggle {
-            position: absolute;
-            right: 11px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            color: var(--muted);
-            display: flex;
-            align-items: center;
-        }
-        .pw-toggle:hover { color: var(--text); }
-        .pw-toggle svg { width: 18px; height: 18px; }
-
-        /* ── Remember / Forgot ─────────────────────────── */
-        .row-remember {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 22px;
-            gap: 8px;
-        }
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 13px;
-            color: var(--muted);
-            cursor: pointer;
-            user-select: none;
-        }
-        .checkbox-label input[type="checkbox"] {
-            width: 15px;
-            height: 15px;
-            accent-color: var(--primary);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        .forgot-link {
-            font-size: 13px;
-            color: var(--primary-light);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .forgot-link:hover { text-decoration: underline; }
-
-        /* ── Button ─────────────────────────────────────── */
-        .btn-submit {
-            width: 100%;
-            height: 44px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: #fff;
-            border: none;
-            border-radius: 6px;
-            font-size: 14.5px;
+        .form-label {
             font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: opacity .18s, transform .1s;
+            margin-bottom: 7px;
+            font-size: 13.5px;
         }
-        .btn-submit:hover  { opacity: .9; }
-        .btn-submit:active { transform: scale(.985); }
-        .btn-submit:disabled { opacity: .7; cursor: not-allowed; }
-        .spinner {
-            width: 16px; height: 16px;
-            border: 2px solid rgba(255,255,255,.35);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin .7s linear infinite;
-            display: none;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Footer ─────────────────────────────────────── */
-        .page-footer {
-            margin-top: 28px;
-            text-align: center;
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #d7dee9;
+            padding: 12px 14px;
+            min-height: 46px;
         }
-        .badge-row {
-            display: flex;
+
+        .form-control:focus {
+            border-color: var(--login-accent);
+            box-shadow: 0 0 0 0.2rem rgba(29, 111, 165, 0.16);
+        }
+
+        .password-field {
+            position: relative;
+        }
+
+        .password-field .form-control {
+            padding-right: 48px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            border: 0;
+            border-radius: 8px;
+            background: transparent;
+            color: #64748b;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
         }
-        .badge-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
-            color: var(--muted);
+
+        .toggle-password:hover,
+        .toggle-password:focus {
+            color: var(--login-primary);
+            background: rgba(29, 111, 165, 0.08);
+            outline: none;
         }
-        .badge-item svg { width: 13px; height: 13px; stroke: var(--primary-light); fill: none; }
-        .copyright {
+
+        .invalid-feedback {
+            display: block;
+        }
+
+        .btn-login {
+            background: var(--login-primary);
+            border-color: var(--login-primary);
+            border-radius: 8px;
+            min-height: 46px;
+            font-weight: 700;
+            width: 100%;
+            color: #fff;
+        }
+
+        .btn-login:hover,
+        .btn-login:focus {
+            background: #0b2c48;
+            border-color: #0b2c48;
+            color: #fff;
+        }
+
+        .login-link {
+            color: var(--login-accent);
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .login-link:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            border-radius: 8px;
+        }
+
+        .page-footer {
+            position: absolute;
+            bottom: 18px;
+            left: 0;
+            right: 0;
+            text-align: center;
             font-size: 11.5px;
             color: #94a3b8;
         }
 
-        @media (max-width: 480px) {
-            .card { padding: 28px 20px 24px; }
+        @media (max-width: 992px) {
+            .split-layout {
+                flex-direction: column;
+            }
+            .image-side {
+                display: none;
+            }
+            .login-side {
+                flex: 1;
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-
-    {{-- Logo --}}
-    <div class="logo-wrap">
-        <a href="{{ url('/') }}">
-            <img src="{{ asset('images/logos/transhub_logo.png') }}" alt="TransHub">
-        </a>
-    </div>
-
-    {{-- Card --}}
-    <div class="card">
-        <div class="card-title">Connexion</div>
-        <div class="card-sub">Accédez à votre espace de gestion.</div>
-
-        @if (session('status'))
-            <div style="background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:20px;">
-                {{ session('status') }}
+    <div class="split-layout">
+        <!-- Image Side (Left) -->
+        <div class="image-side">
+            <!-- Wavy oblique SVG divider -->
+            <div class="wave-divider">
+                <svg viewBox="0 0 100 1000" preserveAspectRatio="none">
+                    <path d="M100,0 L0,0 C40,250 -40,500 60,750 C110,875 0,1000 0,1000 L100,1000 Z" fill="#eef2f8" />
+                </svg>
             </div>
-        @endif
+        </div>
 
-        <form method="POST" action="{{ route('login.store') }}" id="formLogin" novalidate>
-            @csrf
-
-            {{-- Email --}}
-            <div class="input-wrap">
-                <label for="emailUser">Email</label>
-                <input
-                    type="email"
-                    id="emailUser"
-                    name="emailUser"
-                    value="{{ old('emailUser') }}"
-                    autocomplete="email"
-                    autofocus
-                    class="{{ $errors->has('emailUser') ? 'is-error' : '' }}"
-                >
-                @error('emailUser')
-                    <div class="error-msg">
-                        <svg viewBox="0 0 20 20" fill="currentColor" style="width:13px;height:13px;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                        {{ $message }}
+        <!-- Login Side (Right) -->
+        <div class="login-side">
+            <main class="login-container">
+                <div class="card login-card">
+                    <div class="login-header">
+                        <div class="brand-mark">
+                            <img src="{{ asset('images/logos/transgest_icon.png') }}" alt="TransGest">
+                        </div>
+                        <h1>TransGest</h1>
+                        <p>Accédez à votre espace de gestion</p>
                     </div>
-                @enderror
-            </div>
 
-            {{-- Mot de passe --}}
-            <div class="input-wrap">
-                <label for="motPasse">Mot de passe</label>
-                <div class="pw-wrap">
-                    <input
-                        type="password"
-                        id="motPasse"
-                        name="motPasse"
-                        autocomplete="current-password"
-                        class="{{ $errors->has('motPasse') ? 'is-error' : '' }}"
-                    >
-                    <button type="button" class="pw-toggle" id="pwToggle" aria-label="Afficher/Masquer">
-                        <svg id="eyeOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"/>
-                        </svg>
-                        <svg id="eyeOn" style="display:none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8S1 12 1 12z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                    </button>
+                    <div class="login-body">
+                        @if($errors->any())
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="fas fa-exclamation-circle"></i> <strong>Échec de la connexion</strong>
+                                <ul class="mb-0 mt-2">
+                                    @foreach($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                            </div>
+                        @endif
+
+                        @if(session('status'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <i class="fas fa-check-circle"></i> {{ session('status') }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                            </div>
+                        @endif
+
+                        <form method="POST" action="{{ route('login.store') }}" id="loginForm" novalidate>
+                            @csrf
+
+                            <div class="mb-3">
+                                <label for="emailUser" class="form-label">Email</label>
+                                <input type="email"
+                                       class="form-control @error('emailUser') is-invalid @enderror"
+                                       id="emailUser"
+                                       name="emailUser"
+                                       value="{{ old('emailUser') }}"
+                                       autocomplete="email"
+                                       autofocus>
+                                @error('emailUser')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="motPasse" class="form-label">Mot de passe</label>
+                                <div class="password-field">
+                                    <input type="password"
+                                           class="form-control @error('motPasse') is-invalid @enderror"
+                                           id="motPasse"
+                                           name="motPasse"
+                                           autocomplete="current-password">
+                                    <button type="button"
+                                            class="toggle-password"
+                                            aria-label="Afficher le mot de passe"
+                                            aria-pressed="false"
+                                            data-password-toggle="motPasse">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                @error('motPasse')
+                                    <span class="invalid-feedback">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           name="remember"
+                                           id="remember"
+                                           {{ old('remember') ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="remember">
+                                        Se souvenir de moi
+                                    </label>
+                                </div>
+                                <a class="login-link" href="#">Mot de passe oublié ?</a>
+                            </div>
+
+                            <button type="submit" class="btn btn-login">
+                                <i class="fas fa-right-to-bracket"></i> Se connecter
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                @error('motPasse')
-                    <div class="error-msg">
-                        <svg viewBox="0 0 20 20" fill="currentColor" style="width:13px;height:13px;"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                        {{ $message }}
-                    </div>
-                @enderror
-            </div>
+            </main>
 
-            {{-- Se souvenir + mot de passe oublié --}}
-            <div class="row-remember">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                    Se souvenir de moi
-                </label>
-                <a href="#" class="forgot-link">Mot de passe oublié ?</a>
-            </div>
-
-            {{-- Bouton --}}
-            <button type="submit" class="btn-submit" id="btnSubmit">
-                <span class="spinner" id="loginSpinner"></span>
-                <span id="loginLabel">Se connecter</span>
-            </button>
-        </form>
+            <footer class="page-footer">
+                &copy; {{ date('Y') }} TransGest &mdash; Plateforme de gestion du transport
+            </footer>
+        </div>
     </div>
 
-    {{-- Footer --}}
-    <footer class="page-footer">
-        <div class="copyright">&copy; {{ date('Y') }} TransHub &mdash; Plateforme de gestion du transport</div>
-    </footer>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Toggle mot de passe
-        const pwToggle = document.getElementById('pwToggle');
-        const pwInput  = document.getElementById('motPasse');
-        const eyeOff   = document.getElementById('eyeOff');
-        const eyeOn    = document.getElementById('eyeOn');
+        document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const passwordInput = document.getElementById(button.dataset.passwordToggle);
+                const icon = button.querySelector('i');
+                const isHidden = passwordInput.type === 'password';
 
-        pwToggle.addEventListener('click', function () {
-            const show = pwInput.type === 'password';
-            pwInput.type = show ? 'text' : 'password';
-            eyeOff.style.display = show ? 'none' : '';
-            eyeOn.style.display  = show ? '' : 'none';
+                passwordInput.type = isHidden ? 'text' : 'password';
+                button.setAttribute('aria-label', isHidden ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+                button.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+                icon.classList.toggle('fa-eye', !isHidden);
+                icon.classList.toggle('fa-eye-slash', isHidden);
+            });
         });
 
-        // Spinner au submit
-        document.getElementById('formLogin').addEventListener('submit', function () {
-            const btn = document.getElementById('btnSubmit');
+        document.getElementById('loginForm')?.addEventListener('submit', function () {
+            var btn = this.querySelector('button[type="submit"]');
+            if (!btn || btn.disabled) return;
             btn.disabled = true;
-            document.getElementById('loginSpinner').style.display = 'block';
-            document.getElementById('loginLabel').textContent = 'Connexion…';
+            btn.insertAdjacentHTML('afterbegin', '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>');
         });
     </script>
-
 </body>
 </html>

@@ -36,4 +36,9 @@ class Compagnie extends Model
     {
         return $this->hasMany(Utilisateur::class, 'id_compagnie', 'id_compagnie');
     }
+
+    public function photos()
+    {
+        return $this->hasMany(CompagniePhoto::class, 'id_compagnie', 'id_compagnie')->orderBy('ordre');
+    }
 }

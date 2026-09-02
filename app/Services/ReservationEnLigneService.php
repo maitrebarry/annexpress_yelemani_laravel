@@ -55,9 +55,10 @@ class ReservationEnLigneService
 
         $jourVoyage = $data['jourVoyage'] ?? '';
         $aujourdhui = now()->toDateString();
-        $demain = now()->addDay()->toDateString();
-        if (! in_array($jourVoyage, [$aujourdhui, $demain], true)) {
-            return ['ok' => false, 'message' => 'Date invalide : choisissez aujourd\'hui ou demain.'];
+        $joursAvance = (int) config('billets.jours_reservation_avance', 6);
+        $maxJour = now()->addDays($joursAvance)->toDateString();
+        if (! $jourVoyage || $jourVoyage < $aujourdhui || $jourVoyage > $maxJour) {
+            return ['ok' => false, 'message' => "Date invalide : choisissez une date entre aujourd'hui et dans $joursAvance jours."];
         }
 
         // Prix recalculé côté serveur : jamais confiance dans un montant posté par le

@@ -31,7 +31,7 @@ class ProfilController extends Controller
             'emailUser' => ['required', 'email', 'max:250', Rule::unique('utilisateur', 'emailUser')->ignore($user->idUser, 'idUser')],
             'telephone' => ['nullable', 'regex:'.self::TELEPHONE_REGEX],
             'motPasse' => ['nullable', 'string', 'min:6', 'confirmed'],
-            'photo' => ['nullable', 'image', 'max:2048'],
+            'photo' => ['nullable', 'image', 'max:5120'],
         ], [
             'motPasse.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
             'motPasse.min' => 'Le mot de passe doit faire au moins 6 caractères.',

@@ -5,34 +5,33 @@
     $aujourdhui = now()->toDateString();
 @endphp
 
-@section('title', 'Location des cars · TransHub Admin')
+@section('title', 'Location des cars · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-car me-1"></i> Finances</span>
+    <span class="text-primary"><i class="fas fa-car me-1"></i> Finances</span>
 @endsection
 @section('breadcrumb-active', 'Location des cars')
 
 @section('breadcrumb-actions')
     @if ($authUser->droit !== 'PDG')
         <button type="button" class="btn btn-sm btn-success rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNouvelleLocation">
-            <i class="bx bx-plus me-1"></i> Nouvelle location
+            <i class="fas fa-plus me-1"></i> Nouvelle location
         </button>
     @endif
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-4 px-4 d-flex align-items-center gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <i class="bx bx-list-ul fs-4"></i>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <i class="fas fa-list-ul fs-4"></i>
             <span class="fw-semibold fs-5">Historique des locations</span>
         </div>
         <div class="table-responsive">
             @php
-                $theadStyle = 'background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;';
+                $theadStyle = 'background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;';
             @endphp
             <table id="example" class="table table-hover align-middle mb-0">
                 <thead>
@@ -58,34 +57,34 @@
                             <td class="fw-bold text-success">{{ number_format($l->frais_location, 0, ',', ' ') }} F</td>
                             <td>
                                 @if ($l->statut === 'valide')
-                                    <span class="badge bg-success"><i class="bx bx-check me-1"></i>Validée</span>
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Validée</span>
                                 @elseif ($l->statut === 'en_attente')
-                                    <span class="badge bg-warning text-dark"><i class="bx bx-time me-1"></i>En attente</span>
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>En attente</span>
                                 @else
-                                    <span class="badge bg-danger"><i class="bx bx-x me-1"></i>Rejetée</span>
+                                    <span class="badge bg-danger"><i class="fas fa-xmark me-1"></i>Rejetée</span>
                                 @endif
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
                                     <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" data-bs-toggle="modal" data-bs-target="#modalDetails{{ $l->id_location }}" title="Détails">
-                                        <i class="bx bx-info-circle"></i>
+                                        <i class="fas fa-circle-info"></i>
                                     </button>
                                     <a href="{{ route('admin.location-car.facture', $l->id_location) }}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2" title="Facture">
-                                        <i class="bx bx-printer"></i>
+                                        <i class="fas fa-print"></i>
                                     </a>
                                     @if ($authUser->droit === 'Admin' && $l->statut === 'en_attente')
                                         <form method="post" action="{{ route('admin.location-car.valider', $l->id_location) }}" class="location-action-form">
                                             @csrf
                                             <button type="button" class="btn btn-sm btn-success py-0 px-2 location-valider-btn"
                                                 data-destination="{{ $l->destination }}" data-frais="{{ number_format($l->frais_location, 0, ',', ' ') }}" title="Valider">
-                                                <i class="bx bx-check"></i>
+                                                <i class="fas fa-check"></i>
                                             </button>
                                         </form>
                                         <form method="post" action="{{ route('admin.location-car.rejeter', $l->id_location) }}" class="location-action-form">
                                             @csrf
                                             <button type="button" class="btn btn-sm btn-danger py-0 px-2 location-rejeter-btn"
                                                 data-destination="{{ $l->destination }}" data-frais="{{ number_format($l->frais_location, 0, ',', ' ') }}" title="Rejeter">
-                                                <i class="bx bx-x"></i>
+                                                <i class="fas fa-xmark"></i>
                                             </button>
                                         </form>
                                     @endif
@@ -108,9 +107,9 @@
                 <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
                     <form method="post" action="{{ route('admin.location-car.store') }}" id="formLocation">
                         @csrf
-                        <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5);">
+                        <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
                             <h5 class="modal-title text-white d-flex align-items-center gap-2">
-                                <i class="bx bx-car"></i> Nouvelle location de car
+                                <i class="fas fa-car"></i> Nouvelle location de car
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -183,7 +182,7 @@
                                 <div class="col-12 col-xl-4">
                                     <div class="card border-0 shadow-sm rounded-4 h-100">
                                         <div class="card-header bg-white border-0 pt-3 px-4">
-                                            <span class="fw-semibold text-muted text-uppercase small"><i class="bx bx-receipt me-1"></i> Résumé</span>
+                                            <span class="fw-semibold text-muted text-uppercase small"><i class="fas fa-receipt me-1"></i> Résumé</span>
                                         </div>
                                         <div class="card-body px-4 pb-4">
                                             <div class="d-flex justify-content-between py-2 border-bottom">
@@ -209,9 +208,9 @@
                                             <div class="mt-3">
                                                 <span class="badge {{ in_array($authUser->droit, ['Admin', 'super_admin'], true) ? 'bg-success' : 'bg-warning text-dark' }} w-100 py-2">
                                                     @if (in_array($authUser->droit, ['Admin', 'super_admin'], true))
-                                                        <i class="bx bx-check-circle me-1"></i> Créditée immédiatement à la caisse
+                                                        <i class="fas fa-circle-check me-1"></i> Créditée immédiatement à la caisse
                                                     @else
-                                                        <i class="bx bx-time-five me-1"></i> Sera en attente de validation Admin
+                                                        <i class="fas fa-clock me-1"></i> Sera en attente de validation Admin
                                                     @endif
                                                 </span>
                                             </div>
@@ -222,7 +221,7 @@
                         </div>
                         <div class="modal-footer border-0 px-4 pb-4">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-success px-4"><i class="bx bx-save me-1"></i> Enregistrer la location</button>
+                            <button type="submit" class="btn btn-success px-4"><i class="fas fa-floppy-disk me-1"></i> Enregistrer la location</button>
                         </div>
                     </form>
                 </div>
@@ -234,9 +233,9 @@
         <div class="modal fade" id="modalDetails{{ $l->id_location }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
-                    <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5);">
+                    <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
                         <h5 class="modal-title text-white d-flex align-items-center gap-2">
-                            <i class="bx bx-car"></i> Location vers {{ $l->destination }}
+                            <i class="fas fa-car"></i> Location vers {{ $l->destination }}
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -271,17 +270,17 @@
                         </div>
                         <div class="mt-3 text-center">
                             @if ($l->statut === 'valide')
-                                <span class="badge bg-success py-2 px-3"><i class="bx bx-check me-1"></i>Validée</span>
+                                <span class="badge bg-success py-2 px-3"><i class="fas fa-check me-1"></i>Validée</span>
                             @elseif ($l->statut === 'en_attente')
-                                <span class="badge bg-warning text-dark py-2 px-3"><i class="bx bx-time me-1"></i>En attente de validation</span>
+                                <span class="badge bg-warning text-dark py-2 px-3"><i class="fas fa-clock me-1"></i>En attente de validation</span>
                             @else
-                                <span class="badge bg-danger py-2 px-3"><i class="bx bx-x me-1"></i>Rejetée</span>
+                                <span class="badge bg-danger py-2 px-3"><i class="fas fa-xmark me-1"></i>Rejetée</span>
                             @endif
                         </div>
                     </div>
                     <div class="modal-footer border-0 px-4 pb-4">
                         <a href="{{ route('admin.location-car.facture', $l->id_location) }}" target="_blank" class="btn btn-outline-primary">
-                            <i class="bx bx-printer me-1"></i> Imprimer la facture
+                            <i class="fas fa-print me-1"></i> Imprimer la facture
                         </a>
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
                     </div>
@@ -407,7 +406,7 @@
                         html: `Valider la location vers "<strong>${btn.dataset.destination}</strong>" de <strong>${btn.dataset.frais} FCFA</strong> ?<br>Elle sera créditée à la caisse.`,
                         icon: 'question',
                         showCancelButton: true,
-                        confirmButtonText: '<i class="bx bx-check"></i> Oui, valider',
+                        confirmButtonText: '<i class="fas fa-check"></i> Oui, valider',
                         cancelButtonText: 'Annuler',
                         customClass: { confirmButton: 'btn btn-success me-2', cancelButton: 'btn btn-secondary' },
                         buttonsStyling: false,
@@ -423,7 +422,7 @@
                         html: `Rejeter la location vers "<strong>${btn.dataset.destination}</strong>" de <strong>${btn.dataset.frais} FCFA</strong> ?`,
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonText: '<i class="bx bx-x"></i> Oui, rejeter',
+                        confirmButtonText: '<i class="fas fa-xmark"></i> Oui, rejeter',
                         cancelButtonText: 'Annuler',
                         customClass: { confirmButton: 'btn btn-danger me-2', cancelButton: 'btn btn-secondary' },
                         buttonsStyling: false,

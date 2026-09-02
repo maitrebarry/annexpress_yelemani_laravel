@@ -2,22 +2,21 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Programmer un voyage · TransHub Admin')
+@section('title', 'Programmer un voyage · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-calendar-check me-1"></i> G-programme</span>
+    <span class="text-primary"><i class="fas fa-calendar-check me-1"></i> G-programme</span>
 @endsection
 @section('breadcrumb-active', 'Programmer un voyage')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.programme.index') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-list-ul me-1"></i> Voir la liste
+        <i class="fas fa-list-ul me-1"></i> Voir la liste
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     @if ($choixCompagnieRequis)
         <div class="card shadow-sm border-0">
@@ -33,7 +32,7 @@
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <button type="submit" class="btn btn-primary">Continuer <i class="bx bx-right-arrow-alt ms-1"></i></button>
+                        <button type="submit" class="btn btn-primary">Continuer <i class="fas fa-arrow-right ms-1"></i></button>
                     </div>
                 </form>
             </div>
@@ -48,7 +47,7 @@
                                 <div class="d-lg-flex flex-lg-row align-items-lg-center justify-content-lg-between" role="tablist">
                                     <div class="step" data-target="#step-itineraire">
                                         <div class="step-trigger" role="tab" id="stepper1trigger1" aria-controls="step-itineraire">
-                                            <div class="bs-stepper-circle bg-primary text-white"><i class="bx bx-map-pin"></i></div>
+                                            <div class="bs-stepper-circle bg-primary text-white"><i class="fas fa-location-dot"></i></div>
                                             <div>
                                                 <h5 class="mb-0 steper-title">Itinéraire</h5>
                                                 <p class="mb-0 steper-sub-title small text-muted">Départ, escales, destination</p>
@@ -58,7 +57,7 @@
                                     <div class="bs-stepper-line"></div>
                                     <div class="step" data-target="#step-horaire">
                                         <div class="step-trigger" role="tab" id="stepper1trigger2" aria-controls="step-horaire">
-                                            <div class="bs-stepper-circle bg-primary text-white"><i class="bx bx-time-five"></i></div>
+                                            <div class="bs-stepper-circle bg-primary text-white"><i class="fas fa-clock"></i></div>
                                             <div>
                                                 <h5 class="mb-0 steper-title">Horaire</h5>
                                                 <p class="mb-0 steper-sub-title small text-muted">Heure de départ, RDV</p>
@@ -68,7 +67,7 @@
                                     <div class="bs-stepper-line"></div>
                                     <div class="step" data-target="#step-tarif">
                                         <div class="step-trigger" role="tab" id="stepper1trigger3" aria-controls="step-tarif">
-                                            <div class="bs-stepper-circle bg-primary text-white"><i class="bx bx-money"></i></div>
+                                            <div class="bs-stepper-circle bg-primary text-white"><i class="fas fa-money-bill-wave"></i></div>
                                             <div>
                                                 <h5 class="mb-0 steper-title">Tarification</h5>
                                                 <p class="mb-0 steper-sub-title small text-muted">Prix transport et escales</p>
@@ -91,7 +90,7 @@
                                             <div class="row g-3">
                                                 <div class="col-12 col-lg-4">
                                                     <label for="choixAgence" class="form-label">
-                                                        <i class="bx bx-current-location text-primary me-1"></i>Départ<span class="text-danger ms-1">*</span>
+                                                        <i class="fas fa-location-crosshairs text-primary me-1"></i>Départ<span class="text-danger ms-1">*</span>
                                                     </label>
                                                     <select id="choixAgence" name="idDepart" class="form-select shadow-sm" required>
                                                         <option value="">Sélectionner le départ</option>
@@ -102,7 +101,7 @@
                                                 </div>
 
                                                 <div class="col-12 col-lg-4">
-                                                    <label class="form-label"><i class="bx bx-map-alt text-primary me-1"></i>Escale(s) <small class="text-muted">(optionnel)</small></label>
+                                                    <label class="form-label"><i class="fas fa-map text-primary me-1"></i>Escale(s) <small class="text-muted">(optionnel)</small></label>
                                                     <div class="border rounded p-2 shadow-sm" style="max-height: 180px; overflow-y: auto;">
                                                         @forelse ($listeEscale as $e)
                                                             <div class="form-check">
@@ -118,7 +117,7 @@
 
                                                 <div class="col-12 col-lg-4">
                                                     <label for="choixAgences" class="form-label">
-                                                        <i class="bx bx-flag text-primary me-1"></i>Destination<span class="text-danger ms-1">*</span>
+                                                        <i class="fas fa-flag text-primary me-1"></i>Destination<span class="text-danger ms-1">*</span>
                                                     </label>
                                                     <select id="choixAgences" name="idDestination" class="form-select shadow-sm" required>
                                                         <option value="">Sélectionner la destination</option>
@@ -127,10 +126,10 @@
                                                         @endforeach
                                                     </select>
                                                     <small class="form-text text-muted">
-                                                        <i class="bx bx-info-circle"></i> Les gares de la même localité que le départ sont masquées (voyage interne impossible).
+                                                        <i class="fas fa-circle-info"></i> Les gares de la même localité que le départ sont masquées (voyage interne impossible).
                                                     </small>
                                                     <button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-bs-toggle="collapse" data-bs-target="#trajetsExistants">
-                                                        <i class="bx bx-list-ul"></i> Voir tous les trajets déjà programmés ({{ count($tousLesTrajets) }})
+                                                        <i class="fas fa-list-ul"></i> Voir tous les trajets déjà programmés ({{ count($tousLesTrajets) }})
                                                     </button>
                                                 </div>
 
@@ -159,7 +158,7 @@
                                                 </div>
 
                                                 <div class="col-12">
-                                                    <button type="button" class="btn btn-primary px-4" onclick="stepper1.next()">Suivant <i class="bx bx-right-arrow-alt ms-2"></i></button>
+                                                    <button type="button" class="btn btn-primary px-4" onclick="stepper1.next()">Suivant <i class="fas fa-arrow-right ms-2"></i></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -168,7 +167,7 @@
                                         <div id="step-horaire" role="tabpanel" class="bs-stepper-pane" aria-labelledby="stepper1trigger2">
                                             <div class="row g-3">
                                                 <div class="col-12">
-                                                    <label class="form-label"><i class="bx bx-time text-primary me-1"></i>Heure(s) de départ<span class="text-danger ms-1">*</span></label>
+                                                    <label class="form-label"><i class="fas fa-clock text-primary me-1"></i>Heure(s) de départ<span class="text-danger ms-1">*</span></label>
                                                     <p class="small text-muted mb-2">
                                                         Cochez une ou plusieurs heures : un voyage sera programmé pour chacune, avec le même itinéraire et les mêmes tarifs saisis aux autres étapes. Le RDV est calculé automatiquement, 45 min avant chaque départ.
                                                     </p>
@@ -187,8 +186,8 @@
 
                                                 <div class="col-12">
                                                     <div class="d-flex align-items-center gap-3">
-                                                        <button type="button" class="btn btn-outline-secondary px-4" onclick="stepper1.previous()"><i class="bx bx-left-arrow-alt me-2"></i>Précédent</button>
-                                                        <button type="button" class="btn btn-primary px-4" onclick="stepper1.next()">Suivant <i class="bx bx-right-arrow-alt ms-2"></i></button>
+                                                        <button type="button" class="btn btn-outline-secondary px-4" onclick="stepper1.previous()"><i class="fas fa-arrow-left me-2"></i>Précédent</button>
+                                                        <button type="button" class="btn btn-primary px-4" onclick="stepper1.next()">Suivant <i class="fas fa-arrow-right ms-2"></i></button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -198,7 +197,7 @@
                                         <div id="step-tarif" role="tabpanel" class="bs-stepper-pane" aria-labelledby="stepper1trigger3">
                                             <div class="row g-3">
                                                 <div class="col-12">
-                                                    <label for="prix" class="form-label"><i class="bx bx-money text-primary me-1"></i>Frais de transport<span class="text-danger ms-1">*</span></label>
+                                                    <label for="prix" class="form-label"><i class="fas fa-money-bill-wave text-primary me-1"></i>Frais de transport<span class="text-danger ms-1">*</span></label>
                                                     <div class="input-group shadow-sm">
                                                         <input type="number" class="form-control" id="prix" name="prix" required>
                                                         <span class="input-group-text">FCFA</span>
@@ -207,9 +206,9 @@
 
                                                 <div class="col-12" id="fraixEscaleField" style="display: none;">
                                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <label class="form-label fw-semibold mb-0"><i class="bx bx-map-alt me-1"></i>Frais des escales</label>
+                                                        <label class="form-label fw-semibold mb-0"><i class="fas fa-map me-1"></i>Frais des escales</label>
                                                         <button type="button" id="btnAppliquerTous" class="btn btn-sm btn-outline-primary">
-                                                            <i class="bx bx-copy"></i> Appliquer le tarif de base à toutes les escales
+                                                            <i class="fas fa-copy"></i> Appliquer le tarif de base à toutes les escales
                                                         </button>
                                                     </div>
                                                     <div id="fraixEscaleContainer"></div>
@@ -217,10 +216,10 @@
 
                                                 <div class="col-12">
                                                     <div class="d-flex align-items-center gap-3">
-                                                        <button type="button" class="btn btn-outline-secondary px-4" onclick="stepper1.previous()"><i class="bx bx-left-arrow-alt me-2"></i>Précédent</button>
+                                                        <button type="button" class="btn btn-outline-secondary px-4" onclick="stepper1.previous()"><i class="fas fa-arrow-left me-2"></i>Précédent</button>
                                                         @unless ($authUser->estLectureSeule())
                                                             <button type="submit" class="btn btn-success rounded-pill shadow-sm px-4" name="enregistre">
-                                                                <i class="bx bx-check me-1"></i> Enregistrer
+                                                                <i class="fas fa-check me-1"></i> Enregistrer
                                                             </button>
                                                         @endunless
                                                     </div>

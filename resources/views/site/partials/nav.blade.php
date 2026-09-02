@@ -8,7 +8,7 @@
     Site dédié à une seule compagnie (2026-08-24) : le branding (logo + nom du header) est
     désormais celui de App\Models\Compagnie::site() sur TOUTES les pages du site (une vue
     peut passer $compagnie explicitement si elle l'a déjà résolue, sinon ce partial le
-    résout lui-même) — plus de logo TransHub générique en usage normal. Le deuxième lien de
+    résout lui-même) — plus de logo TransGest générique en usage normal. Le deuxième lien de
     nav pointe vers la page trajets de cette compagnie ("Nos trajets") plutôt que vers
     l'ancien catalogue multi-compagnies (route `site.compagnies` retirée de la nav, elle
     redirige maintenant vers cette même page si on y accède directement).

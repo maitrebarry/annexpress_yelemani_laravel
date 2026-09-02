@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 
-@section('title', 'Permissions · TransHub Admin')
+@section('title', 'Permissions · TransGest Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Permission')
 
 @section('breadcrumb-actions')
     <button type="button" class="btn btn-success d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjouterPermission">
-        <i class="bx bx-plus-circle fs-5"></i> Ajouter
+        <i class="fas fa-circle-plus fs-5"></i> Ajouter
     </button>
 @endsection
 
@@ -15,10 +15,9 @@
     @include('admin.partials.config-nav', ['active' => 'permission'])
 
     <div class="col-12 col-xxl-9">
-        @include('admin.partials.set_flash')
         <div class="card config-card">
             <div class="card-header">
-                <h5 class="mb-0 fw-bold"><i class="bx bx-shield-quarter me-2"></i>Liste des permissions</h5>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-shield-halved me-2"></i>Liste des permissions</h5>
             </div>
             <div class="card-body p-4">
                 <div class="table-responsive">

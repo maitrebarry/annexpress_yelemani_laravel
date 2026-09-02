@@ -9,23 +9,23 @@
     $totalEnAttente = $enAttente->sum('montant');
 @endphp
 
-@section('title', 'Dépenses · TransHub Admin')
+@section('title', 'Dépenses · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-money me-1"></i> Finances</span>
+    <span class="text-primary"><i class="fas fa-money-bill-wave me-1"></i> Finances</span>
 @endsection
 @section('breadcrumb-active', 'Dépenses')
 
 @section('breadcrumb-actions')
     <div class="d-flex gap-2">
-        @if (in_array($authUser->droit, ['Admin', 'PDG'], true))
+        @if (in_array($authUser->droit, ['Admin', 'PDG', 'secretaire'], true))
             <a href="{{ route('admin.depense.benefice') }}" class="btn btn-sm btn-outline-success rounded-pill shadow-sm">
-                <i class="bx bx-line-chart me-1"></i> Bénéfice de la compagnie
+                <i class="fas fa-chart-line me-1"></i> Bénéfice de la compagnie
             </a>
         @endif
         @if ($authUser->droit !== 'PDG')
             <button type="button" class="btn btn-sm btn-success rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNouvelleDepense">
-                <i class="bx bx-plus me-1"></i> Enregistrer une dépense
+                <i class="fas fa-plus me-1"></i> Enregistrer une dépense
             </button>
         @endif
     </div>
@@ -33,7 +33,6 @@
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-3">
@@ -72,7 +71,7 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-list-ul me-1"></i> Historique des dépenses
+            <i class="fas fa-list-ul me-1"></i> Historique des dépenses
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
@@ -122,14 +121,14 @@
                                                 @csrf
                                                 <button type="button" class="btn btn-sm btn-success py-0 px-2 depense-valider-btn"
                                                     data-libelle="{{ $d->libelle ?: $d->categorie }}" data-montant="{{ number_format($d->montant, 0, ',', ' ') }}">
-                                                    <i class="bx bx-check"></i> Valider
+                                                    <i class="fas fa-check"></i> Valider
                                                 </button>
                                             </form>
                                             <form method="post" action="{{ route('admin.depense.rejeter', $d->id_depense) }}" class="depense-action-form">
                                                 @csrf
                                                 <button type="button" class="btn btn-sm btn-danger py-0 px-2 depense-rejeter-btn"
                                                     data-libelle="{{ $d->libelle ?: $d->categorie }}" data-montant="{{ number_format($d->montant, 0, ',', ' ') }}">
-                                                    <i class="bx bx-x"></i> Rejeter
+                                                    <i class="fas fa-xmark"></i> Rejeter
                                                 </button>
                                             </form>
                                         </div>
@@ -159,7 +158,7 @@
                     <form method="post" action="{{ route('admin.depense.store') }}">
                         @csrf
                         <div class="modal-header bg-success">
-                            <h5 class="modal-title text-white"><i class="bx bx-plus-circle me-1"></i> Enregistrer une dépense</h5>
+                            <h5 class="modal-title text-white"><i class="fas fa-circle-plus me-1"></i> Enregistrer une dépense</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -214,7 +213,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                            <button type="submit" class="btn btn-success"><i class="bx bx-save me-1"></i> Enregistrer</button>
+                            <button type="submit" class="btn btn-success"><i class="fas fa-floppy-disk me-1"></i> Enregistrer</button>
                         </div>
                     </form>
                 </div>

@@ -2,28 +2,27 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Tickets en entente · TransHub Admin')
+@section('title', 'Tickets en entente · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-category me-1"></i> G-réservation</span>
+    <span class="text-primary"><i class="fas fa-list me-1"></i> G-réservation</span>
 @endsection
 @section('breadcrumb-active', 'Tickets en entente')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.billet.index') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-left-arrow-alt me-1"></i> Retour
+        <i class="fas fa-arrow-left me-1"></i> Retour
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="row g-3 mb-4">
         <div class="col-6 col-xl-4">
             <div class="card border-0 shadow-sm border-start border-4 border-warning h-100">
                 <div class="card-body">
-                    <div class="text-muted small"><i class="bx bx-time me-1"></i> Réservations en attente</div>
+                    <div class="text-muted small"><i class="fas fa-clock me-1"></i> Réservations en attente</div>
                     <div class="fs-4 fw-bold">{{ $liste->count() }}</div>
                 </div>
             </div>
@@ -32,8 +31,8 @@
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-3 px-4 d-flex align-items-center gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <i class="bx bx-globe fs-5"></i>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <i class="fas fa-globe fs-5"></i>
             <span class="fw-semibold">Réservations en ligne à valider</span>
         </div>
         <div class="table-responsive p-2">
@@ -55,7 +54,7 @@
                         <tr>
                             <td><span class="badge bg-light text-dark border">{{ $b->numeroBillets }}</span></td>
                             <td class="fw-semibold">{{ $b->Client }}</td>
-                            <td>{{ $b->departId }} <i class="bx bx-right-arrow-alt"></i> {{ $b->destinationId }}</td>
+                            <td>{{ $b->departId }} <i class="fas fa-arrow-right"></i> {{ $b->destinationId }}</td>
                             <td>{{ $b->nombrePassages }}</td>
                             <td>{{ \Illuminate\Support\Carbon::parse($b->jourVoyage)->format('d/m/Y') }} {{ \Illuminate\Support\Carbon::parse($b->Heur_departs)->format('H:i') }}</td>
                             <td>{{ \Illuminate\Support\Carbon::parse($b->date_expiration)->format('d/m/Y') }}</td>
@@ -65,7 +64,7 @@
                                     <span class="text-muted small">Lecture seule</span>
                                 @else
                                     <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalValider{{ $b->idBillets }}">
-                                        <i class="bx bx-check-shield"></i> Valider
+                                        <i class="fas fa-shield-halved"></i> Valider
                                     </button>
                                 @endif
                             </td>
@@ -86,7 +85,7 @@
                     <form method="post" action="{{ route('admin.entente.valider', $b->idBillets) }}">
                         @csrf
                         <div class="modal-header bg-success">
-                            <h5 class="modal-title text-white"><i class="bx bx-check-shield me-1"></i> Valider la réservation</h5>
+                            <h5 class="modal-title text-white"><i class="fas fa-shield-halved me-1"></i> Valider la réservation</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -117,7 +116,7 @@
                                 </div>
                             </div>
                             <div class="alert alert-info small mt-3 mb-0">
-                                <i class="bx bx-info-circle me-1"></i> Le client a communiqué le n° <strong>{{ $b->numeroPaiement }}</strong> lors du paiement — demandez-lui de le confirmer avant de valider. Le montant sera crédité sur votre caisse ouverte et un reçu envoyé au client si un email a été renseigné.
+                                <i class="fas fa-circle-info me-1"></i> Le client a communiqué le n° <strong>{{ $b->numeroPaiement }}</strong> lors du paiement — demandez-lui de le confirmer avant de valider. Le montant sera crédité sur votre caisse ouverte et un reçu envoyé au client si un email a été renseigné.
                             </div>
                         </div>
                         <div class="modal-footer">

@@ -16,7 +16,7 @@ class EscaleController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (in_array($user->droit, ['Admin', 'PDG'], true) && $user->id_compagnie) {
+        if (in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true) && $user->id_compagnie) {
             $liste = Escale::where('id_compagnie', $user->id_compagnie)->orderBy('escales')->get();
         } else {
             $liste = Escale::orderBy('escales')->get();

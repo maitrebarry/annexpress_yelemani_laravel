@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\RapportBilletService;
+use App\Support\Flash;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -12,10 +14,17 @@ use Illuminate\View\View;
  */
 class RapportBilletController extends Controller
 {
-    public function mensuel(RapportBilletService $service): View
+    public function mensuel(RapportBilletService $service): View|RedirectResponse
     {
         $user = Auth::guard('staff')->user();
         $idCompagnie = $user->id_compagnie;
+
+        if ($idCompagnie === null) {
+            Flash::set("Ce rapport n'est disponible que pour un compte rattaché à une compagnie.", 'warning');
+
+            return redirect()->route('admin.home');
+        }
+
         $mois = now()->format('Y-m');
 
         return view('admin.rapport_billet.mensuel', [
@@ -27,10 +36,17 @@ class RapportBilletController extends Controller
         ]);
     }
 
-    public function annuel(RapportBilletService $service): View
+    public function annuel(RapportBilletService $service): View|RedirectResponse
     {
         $user = Auth::guard('staff')->user();
         $idCompagnie = $user->id_compagnie;
+
+        if ($idCompagnie === null) {
+            Flash::set("Ce rapport n'est disponible que pour un compte rattaché à une compagnie.", 'warning');
+
+            return redirect()->route('admin.home');
+        }
+
         $annee = (int) now()->format('Y');
 
         return view('admin.rapport_billet.annuel', [
@@ -45,7 +61,7 @@ class RapportBilletController extends Controller
 
     private function billetsParGare(RapportBilletService $service, $user, string $mois)
     {
-        if (in_array($user->droit, ['Admin', 'PDG'], true)) {
+        if (in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true)) {
             return $service->getSommeBilletsParLocaliteEtGare($user->id_compagnie, null, $mois);
         }
 
@@ -58,7 +74,7 @@ class RapportBilletController extends Controller
 
     private function billetsParGareAnnuel(RapportBilletService $service, $user, int $annee)
     {
-        if (in_array($user->droit, ['Admin', 'PDG'], true)) {
+        if (in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true)) {
             return $service->getSommeBilletsParLocaliteEtGareAnnuel($user->id_compagnie, null, $annee);
         }
 

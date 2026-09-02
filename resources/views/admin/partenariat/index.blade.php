@@ -1,25 +1,24 @@
 @extends('layouts.admin')
 
-@section('title', 'Demandes de partenariat · TransHub Admin')
+@section('title', 'Demandes de partenariat · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-handshake me-1"></i> Partenariats</span>
+    <span class="text-primary"><i class="fas fa-handshake me-1"></i> Partenariats</span>
 @endsection
 @section('breadcrumb-active', 'Demandes de partenariat')
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card border-0 shadow rounded-4 overflow-hidden">
         <div class="card-header border-0 py-4 px-4 d-flex align-items-center gap-2"
-             style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;">
-            <i class="bx bx-handshake fs-4"></i>
+             style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;">
+            <i class="fas fa-handshake fs-4"></i>
             <span class="fw-semibold fs-5">Compagnies partenaires inscrites</span>
         </div>
         <div class="table-responsive">
             @php
-                $theadStyle = 'background: linear-gradient(135deg, #0f3b5e, #1d6fa5); color: #fff;';
+                $theadStyle = 'background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); color: #fff;';
             @endphp
             <table class="table table-hover align-middle mb-0">
                 <thead>
@@ -53,16 +52,16 @@
                             </td>
                             <td>
                                 @if ($p->en_attente_reponse)
-                                    <span class="badge bg-warning text-dark py-2 px-3"><i class="bx bx-time me-1"></i>En attente de réponse</span>
+                                    <span class="badge bg-warning text-dark py-2 px-3"><i class="fas fa-clock me-1"></i>En attente de réponse</span>
                                 @elseif ($p->messages_count > 0)
-                                    <span class="badge bg-success py-2 px-3"><i class="bx bx-check me-1"></i>À jour</span>
+                                    <span class="badge bg-success py-2 px-3"><i class="fas fa-check me-1"></i>À jour</span>
                                 @else
                                     <span class="badge bg-secondary py-2 px-3">Inscrit</span>
                                 @endif
                             </td>
                             <td>
                                 <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalDiscussion{{ $p->id_partenaire }}">
-                                    <i class="bx bx-message-dots me-1"></i> Discussion
+                                    <i class="fas fa-comment-dots me-1"></i> Discussion
                                 </button>
                             </td>
                         </tr>
@@ -80,9 +79,9 @@
         <div class="modal fade" id="modalDiscussion{{ $p->id_partenaire }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
-                    <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5);">
+                    <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
                         <h5 class="modal-title text-white d-flex align-items-center gap-2">
-                            <i class="bx bx-handshake"></i> {{ $p->nom_compagnie }}
+                            <i class="fas fa-handshake"></i> {{ $p->nom_compagnie }}
                         </h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -102,7 +101,7 @@
                         @csrf
                         <input type="hidden" name="id_partenaire" value="{{ $p->id_partenaire }}">
                         <textarea name="message" rows="2" class="form-control" placeholder="Répondre à {{ $p->nom_compagnie }}..." required></textarea>
-                        <button type="submit" class="btn btn-primary"><i class="bx bx-send"></i></button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
                     </form>
                 </div>
             </div>

@@ -2,28 +2,27 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Réclamation de colis · TransHub Admin')
+@section('title', 'Réclamation de colis · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-error me-1"></i> G-colis</span>
+    <span class="text-primary"><i class="fas fa-triangle-exclamation me-1"></i> G-colis</span>
 @endsection
 @section('breadcrumb-active', 'Réclamation de colis')
 
 @section('breadcrumb-actions')
     @if ($authUser->droit !== 'PDG')
         <button type="button" class="btn btn-sm btn-danger rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalNouvelleReclamation">
-            <i class="bx bx-plus me-1"></i> Nouvelle réclamation
+            <i class="fas fa-plus me-1"></i> Nouvelle réclamation
         </button>
     @endif
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="card shadow-lg border-0 rounded-3">
         <div class="card-header bg-primary text-white fw-bold">
-            <i class="bx bx-list-ul me-1"></i> Réclamations
+            <i class="fas fa-list-ul me-1"></i> Réclamations
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -60,10 +59,10 @@
                                 <td data-label="Action">
                                     @if ($peutGerer)
                                         <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalGerer{{ $rec->id_colis }}">
-                                            <i class="bx bx-cog"></i> Gérer
+                                            <i class="fas fa-gear"></i> Gérer
                                         </button>
                                     @else
-                                        <span class="text-muted small"><i class="bx bx-lock-alt"></i> Non autorisé</span>
+                                        <span class="text-muted small"><i class="fas fa-lock"></i> Non autorisé</span>
                                     @endif
                                 </td>
                             </tr>
@@ -82,9 +81,9 @@
     <div class="modal fade" id="modalNouvelleReclamation" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
-                <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5);">
+                <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
                     <h5 class="modal-title text-white d-flex align-items-center gap-2">
-                        <i class="bx bx-search-alt"></i> Nouvelle réclamation
+                        <i class="fas fa-magnifying-glass"></i> Nouvelle réclamation
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -92,7 +91,7 @@
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" id="rc_code_recherche" placeholder="Code du colis (ex: C12345)">
                         <button class="btn btn-primary" type="button" id="rc_btn_rechercher">
-                            <i class="bx bx-search"></i> Rechercher
+                            <i class="fas fa-magnifying-glass"></i> Rechercher
                         </button>
                     </div>
 
@@ -133,7 +132,7 @@
             <div class="modal fade" id="modalGerer{{ $rec->id_colis }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content border-0 shadow rounded-4 overflow-hidden">
-                        <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #0f3b5e, #1d6fa5);">
+                        <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
                             <h5 class="modal-title text-white">Gérer la réclamation</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -156,7 +155,7 @@
 
                                 @if ($authUser->droit === 'Admin')
                                     <div class="mb-3 admin-caisse-div" id="admin-caisse-{{ $rec->id_colis }}" style="{{ $rec->status_reclamation === 'Remboursé' ? '' : 'display:none;' }}">
-                                        <label class="form-label text-danger fw-bold"><i class="bx bx-wallet"></i> Débiter quelle caisse ouverte ?</label>
+                                        <label class="form-label text-danger fw-bold"><i class="fas fa-wallet"></i> Débiter quelle caisse ouverte ?</label>
                                         @php
                                             $caissesFiltrees = collect($caissesOuvertes)->filter(fn ($c) => $c->localite === $rec->provient_de || $c->localite === $rec->destination);
                                         @endphp
@@ -174,7 +173,7 @@
                                     </div>
                                 @else
                                     <div class="alert alert-info small mb-0 admin-caisse-div" id="admin-caisse-{{ $rec->id_colis }}" style="{{ $rec->status_reclamation === 'Remboursé' ? '' : 'display:none;' }}">
-                                        <i class="bx bx-info-circle"></i> Le remboursement sera débité de votre caisse individuelle actuellement ouverte.
+                                        <i class="fas fa-circle-info"></i> Le remboursement sera débité de votre caisse individuelle actuellement ouverte.
                                     </div>
                                 @endif
                             </div>

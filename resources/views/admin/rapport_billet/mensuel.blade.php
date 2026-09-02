@@ -10,22 +10,21 @@
     };
 @endphp
 
-@section('title', 'Rapport mensuel des billets · TransHub Admin')
+@section('title', 'Rapport mensuel des billets · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-bar-chart-alt-2 me-1"></i> Rapport billets</span>
+    <span class="text-primary"><i class="fas fa-chart-column me-1"></i> Rapport billets</span>
 @endsection
 @section('breadcrumb-active', 'Rapport mensuel')
 
 @section('breadcrumb-actions')
     <a href="{{ route('admin.rapport-billet.annuel') }}" class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-        <i class="bx bx-calendar me-1"></i> Rapport annuel
+        <i class="fas fa-calendar me-1"></i> Rapport annuel
     </a>
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
     <div class="row g-4">
         <div class="col-md-6 col-lg-4">
@@ -35,7 +34,7 @@
                         <p class="mb-1 text-muted fw-medium">Présentiel</p>
                         <h3 class="mb-0 text-primary">{{ $totalPresentiel }}</h3>
                     </div>
-                    <i class="bi bi-box-seam fs-1 text-primary"></i>
+                    <i class="fas fa-box fs-1 text-primary"></i>
                 </div>
             </div>
         </div>
@@ -46,7 +45,7 @@
                         <p class="mb-1 text-muted fw-medium">En ligne</p>
                         <h3 class="mb-0 text-success">{{ $totalEnLigne }}</h3>
                     </div>
-                    <i class="bi bi-send-check fs-1 text-success"></i>
+                    <i class="fas fa-paper-plane fs-1 text-success"></i>
                 </div>
             </div>
         </div>
@@ -57,7 +56,7 @@
                         <p class="mb-1 text-muted fw-medium">Reportés</p>
                         <h3 class="mb-0 text-warning">{{ $totalRepporte }}</h3>
                     </div>
-                    <i class="bi bi-hourglass-split fs-1 text-warning"></i>
+                    <i class="fas fa-hourglass-half fs-1 text-warning"></i>
                 </div>
             </div>
         </div>

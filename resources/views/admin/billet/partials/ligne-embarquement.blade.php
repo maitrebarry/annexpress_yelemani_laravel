@@ -27,16 +27,16 @@
             <span class="text-muted small">—</span>
         @elseif ($estEmbarque)
             <button type="button" class="btn btn-sm btn-outline-secondary btn-annuler-embarquement" data-id="{{ $b->idBillets }}">
-                <i class="bx bx-undo"></i> Annuler
+                <i class="fas fa-rotate-left"></i> Annuler
             </button>
         @else
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-sm btn-success btn-marquer-embarque" data-id="{{ $b->idBillets }}">
-                    <i class="bx bx-check"></i> Embarquer
+                    <i class="fas fa-check"></i> Embarquer
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalDemanderReport"
                     data-id="{{ $b->idBillets }}" data-client="{{ $b->Client }}">
-                    <i class="bx bx-transfer"></i> Reporter
+                    <i class="fas fa-right-left"></i> Reporter
                 </button>
             </div>
         @endif

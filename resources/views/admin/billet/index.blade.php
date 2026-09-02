@@ -5,51 +5,60 @@
     $montantListe = fn ($liste) => $liste->sum(fn ($b) => (float) preg_replace('/[^\d.]/', '', (string) $b->montant_payer));
 @endphp
 
-@section('title', 'Liste des tickets · TransHub Admin')
+@section('title', 'Liste des tickets · TransGest Admin')
 
 @section('breadcrumb-title')
-    <span class="text-primary"><i class="bx bx-category me-1"></i> G-réservation</span>
+    <span class="text-primary"><i class="fas fa-list me-1"></i> G-réservation</span>
 @endsection
 @section('breadcrumb-active', 'Liste des tickets')
 
 @section('breadcrumb-actions')
     @if (! $authUser->estLectureSeule())
         <a href="{{ route('admin.billet.create') }}" class="btn btn-sm btn-success rounded-pill shadow-sm">
-            <i class="bx bx-plus me-1"></i> Nouvelle réservation
+            <i class="fas fa-plus me-1"></i> Nouvelle réservation
         </a>
     @endif
 @endsection
 
 @section('content')
 
-    @include('admin.partials.set_flash')
 
+    @php $autreJourActif = request()->filled('date'); @endphp
     <ul class="nav nav-pills gap-2 mb-4" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabAujourdhui" type="button">
-                <i class="bx bx-calendar-event me-1"></i> Aujourd'hui
+            <button class="nav-link {{ $autreJourActif ? '' : 'active' }}" data-bs-toggle="tab" data-bs-target="#tabAujourdhui" type="button">
+                <i class="fas fa-calendar-days me-1"></i> Aujourd'hui
                 <span class="badge bg-light text-dark ms-1">{{ $listeAujourdhui->count() }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabDemain" type="button">
-                <i class="bx bx-time-five me-1"></i> Demain
-                <span class="badge bg-light text-dark ms-1">{{ $listeDemain->count() }}</span>
+            <button class="nav-link {{ $autreJourActif ? 'active' : '' }}" data-bs-toggle="tab" data-bs-target="#tabAutreJour" type="button">
+                <i class="fas fa-clock me-1"></i> Autre jour
+                <span class="badge bg-light text-dark ms-1">{{ $listeAutreJour->count() }}</span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <a class="nav-link" href="{{ route('admin.billet.historique') }}">
-                <i class="bx bx-history me-1"></i> Historique
+                <i class="fas fa-clock-rotate-left me-1"></i> Historique
             </a>
         </li>
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane fade show active" id="tabAujourdhui" role="tabpanel">
+        <div class="tab-pane fade {{ $autreJourActif ? '' : 'show active' }}" id="tabAujourdhui" role="tabpanel">
             @include('admin.billet.partials.table-billets', ['liste' => $listeAujourdhui, 'montant' => $montantListe($listeAujourdhui), 'tableId' => 'tableAujourdhui'])
         </div>
-        <div class="tab-pane fade" id="tabDemain" role="tabpanel">
-            @include('admin.billet.partials.table-billets', ['liste' => $listeDemain, 'montant' => $montantListe($listeDemain), 'tableId' => 'tableDemain'])
+        <div class="tab-pane fade {{ $autreJourActif ? 'show active' : '' }}" id="tabAutreJour" role="tabpanel">
+            <form method="get" class="d-flex align-items-center gap-2 mb-3">
+                <label for="dateAutreJour" class="form-label mb-0 fw-semibold small">
+                    Réservations du :
+                </label>
+                <input type="date" id="dateAutreJour" name="date" class="form-control form-control-sm"
+                       style="max-width:170px;" value="{{ $dateAutre }}" min="{{ $dateMin }}" max="{{ $dateMax }}"
+                       onchange="this.form.submit()">
+                <span class="text-muted small">(jusqu'à {{ \Illuminate\Support\Carbon::parse($dateMax)->format('d/m/Y') }} — réservation possible jusqu'à {{ (int) config('billets.jours_reservation_avance', 6) }} jours à l'avance)</span>
+            </form>
+            @include('admin.billet.partials.table-billets', ['liste' => $listeAutreJour, 'montant' => $montantListe($listeAutreJour), 'tableId' => 'tableAutreJour'])
         </div>
     </div>
 
@@ -61,13 +70,14 @@
         document.addEventListener('DOMContentLoaded', function () {
             // Deux tables sur la même page (onglets) : id="example" (init globale via
             // table-datatable.js) ne convient qu'à une table par page, donc initialisées ici
-            // explicitement. La table de l'onglet "Demain", caché au chargement, a ses largeurs
-            // de colonnes recalculées via columns.adjust() dès que l'onglet devient visible —
-            // sinon DataTables les fige à 0 (limitation connue sur un conteneur display:none).
+            // explicitement. La table de l'onglet "Autre jour", caché au chargement, a ses
+            // largeurs de colonnes recalculées via columns.adjust() dès que l'onglet devient
+            // visible — sinon DataTables les fige à 0 (limitation connue sur un conteneur
+            // display:none).
             const tableAujourdhui = $('#tableAujourdhui').DataTable();
-            const tableDemain = $('#tableDemain').DataTable();
-            document.querySelector('[data-bs-target="#tabDemain"]')?.addEventListener('shown.bs.tab', function () {
-                tableDemain.columns.adjust();
+            const tableAutreJour = $('#tableAutreJour').DataTable();
+            document.querySelector('[data-bs-target="#tabAutreJour"]')?.addEventListener('shown.bs.tab', function () {
+                tableAutreJour.columns.adjust();
             });
 
             document.querySelectorAll('.form-annuler-billet').forEach(function (form) {

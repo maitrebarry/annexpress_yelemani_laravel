@@ -24,11 +24,23 @@ $('.edit-btn').click(function (e) {
     let slogant  = $(this).data('slogant');
     let logo     = $(this).data('logo'); // full URL for preview
     let logoFilename = $(this).data('logofilename'); // just the filename
+    let telephone = $(this).data('telephone');
+    let email     = $(this).data('email');
+    let whatsapp  = $(this).data('whatsapp');
+    let adresse   = $(this).data('adresse');
+    let facebook  = $(this).data('facebook');
+    let instagram = $(this).data('instagram');
 
     $('#inputidCompagnie').val(id);
     $('#inputnomCompagnie').val(nom);
     $('#inputlibele').val(libele);
     $('#inputslogant').val(slogant);
+    $('#inputtelephone').val(telephone);
+    $('#inputemail').val(email);
+    $('#inputwhatsapp').val(whatsapp);
+    $('#inputadresse').val(adresse);
+    $('#inputfacebook').val(facebook);
+    $('#inputinstagram').val(instagram);
 
     if (logo) {
         $('#logoPreview').attr('src', logo).show();

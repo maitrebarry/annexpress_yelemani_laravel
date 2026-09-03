@@ -366,6 +366,33 @@
     }
     html.dark-mode .sidebar .nav-section-title { color: #666; }
 
+    {{-- Groupes repliables du sidebar (Billetterie, Colis, Programmation...) — sections
+         par priorité/dépendance d'usage, écrans regroupés sous un même menu déroulant
+         plutôt qu'un simple séparateur visuel comme dans l'ancienne disposition. --}}
+    .sidebar .nav-link-group { font-weight: 600; cursor: pointer; }
+    .sidebar .nav-caret { font-size: 11px; margin-left: auto; transition: transform 0.25s ease; opacity: 0.7; }
+    .sidebar .nav-link-group.collapsed .nav-caret { transform: rotate(-90deg); }
+    .sidebar .nav-link-group .badge { margin-left: auto; }
+    .sidebar .nav-link-group.collapsed .badge { margin-left: 0; margin-right: 6px; }
+    .sidebar .nav-subgroup {
+        padding-left: 14px;
+        border-left: 2px solid rgba(255,255,255,.08);
+        margin: 0 0 6px 30px;
+    }
+    .sidebar .nav-subgroup .nav-link {
+        padding: 9px 14px;
+        margin: 2px 0;
+        font-size: 13px;
+        border-left: none;
+    }
+    .sidebar .nav-subgroup .nav-link:hover,
+    .sidebar .nav-subgroup .nav-link.active {
+        border-left: none;
+        border-radius: 6px;
+    }
+    .sidebar.collapsed .nav-subgroup,
+    .sidebar.collapsed .nav-caret { display: none !important; }
+
     .sidebar hr { border-color: #333; opacity: 0.5; margin: 10px 0; }
     html.dark-mode .sidebar hr { border-color: #222; }
 

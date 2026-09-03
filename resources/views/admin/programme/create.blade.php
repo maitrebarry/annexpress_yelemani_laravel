@@ -241,6 +241,15 @@
 @section('scripts')
     @unless ($choixCompagnieRequis)
         <script>
+            // Initialise le stepper (bs-stepper.min.js est chargé dans foot.blade.php mais
+            // ne s'auto-initialise jamais tout seul) — sans ceci, les 3 étapes
+            // (Itinéraire/Horaire/Tarification) restent toutes masquées puisqu'aucune
+            // n'obtient jamais la classe "active", et les boutons Suivant/Précédent
+            // échouent (stepper1 non défini) : la page semblait ne "rien" afficher.
+            document.addEventListener('DOMContentLoaded', function () {
+                window.stepper1 = new Stepper(document.querySelector('#stepper1'));
+            });
+
             // Synchronise les champs de tarif par escale avec les cases cochées.
             document.addEventListener('DOMContentLoaded', function () {
                 const prixInput = document.getElementById('prix');

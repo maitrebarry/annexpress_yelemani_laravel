@@ -3,6 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Applique le mode sombre / la couleur de theme AVANT le premier rendu (pas de
+        // flash de theme par defaut) - meme mecanique que resources/views/admin/partials/header.blade.php.
+        (function () {
+            try {
+                if (localStorage.getItem('tgSiteDarkMode') === 'true') {
+                    document.documentElement.classList.add('dark-mode');
+                }
+                var theme = localStorage.getItem('tgSiteTheme');
+                if (theme && theme !== 'default') {
+                    document.documentElement.setAttribute('data-theme', theme);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Site en cours de configuration · TransGest</title>
     <style>
         body {

@@ -15,6 +15,12 @@ class Compagnie extends Model
         'libele',
         'slogant',
         'logo',
+        'telephone',
+        'email',
+        'adresse',
+        'facebook',
+        'instagram',
+        'whatsapp',
     ];
 
     protected static ?self $siteCompagnie = null;

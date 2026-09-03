@@ -3,6 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <script>
+        // Applique le mode sombre / la couleur de theme AVANT le premier rendu (pas de
+        // flash de theme par defaut) - meme mecanique que resources/views/admin/partials/header.blade.php.
+        (function () {
+            try {
+                if (localStorage.getItem('tgSiteDarkMode') === 'true') {
+                    document.documentElement.classList.add('dark-mode');
+                }
+                var theme = localStorage.getItem('tgSiteTheme');
+                if (theme && theme !== 'default') {
+                    document.documentElement.setAttribute('data-theme', theme);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $compagnie->nom_compagnie }} - Réservation & suivi de colis</title>
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
@@ -10,192 +26,198 @@
     <link href="{{ asset('assets_site/css/aos.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/swiper-bundle.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/site-common.css') }}" rel="stylesheet">
+    <link rel="manifest" href="{{ route('site.manifest') }}">
+    <meta name="theme-color" content="#0f3b5e">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw-site.js', { scope: '/' }).catch(function () {});
+            });
+        }
+    </script>
+    <script defer src="{{ asset('assets_site/js/site-transitions.js') }}"></script>
     <style>
-        /* ========== SEARCH CARD ========== */
-        .search-section { margin-top: -40px; position: relative; z-index: 10; }
-        .search-card { background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 32px; }
-        .search-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; align-items: end; }
-        .form-group label {
-            display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 8px;
-            color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .form-control, .form-select {
-            width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: var(--radius);
-            font-size: 0.9rem; transition: all 0.3s;
-        }
-        .form-select {
-            appearance: none; -webkit-appearance: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%237f8c8d'><path d='M5.5 7.5l4.5 5 4.5-5z'/></svg>");
-            background-repeat: no-repeat; background-position: right 14px center; background-size: 14px;
-            padding-right: 40px; cursor: pointer;
-        }
-        .form-control:focus, .form-select:focus { outline: none; border-color: var(--secondary); box-shadow: 0 0 0 4px rgba(230, 126, 34, 0.12); }
+        /* ================================================================
+           Refonte 2026-09-03 — maquette utilisateur, fidélité explicite demandée.
+           Page : hero (recherche flottante) → bandeau 4 icônes → destinations
+           populaires → application + chiffres clés → footer. Rien d'autre : les
+           anciennes sections (suivi colis, "comment ça marche", CTA finale) ont
+           été retirées de l'accueil car absentes de la maquette (le suivi de
+           colis reste accessible via son propre lien de nav / sa propre page).
+           ================================================================ */
 
-        /* Chips "villes populaires" sous la recherche — clic = pré-remplit le champ destination */
-        .quick-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 16px; }
-        .quick-chips span.label { font-size: 0.72rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; margin-right: 2px; }
-        .quick-chip {
-            border: 1px solid #e2e8f0; background: white; color: var(--primary); font-size: 0.78rem; font-weight: 600;
-            padding: 6px 14px; border-radius: 50px; cursor: pointer; transition: all 0.2s;
+        /* ========== HERO ========== */
+        .hero {
+            position: relative;
+            min-height: 560px;
+            overflow: hidden;
+            color: white;
         }
-        .quick-chip:hover, .quick-chip.is-active { background: var(--primary); border-color: var(--primary); color: white; transform: translateY(-1px); }
+        .hero .swiper, .hero .swiper-wrapper, .hero .swiper-slide { height: 560px; }
+        .hero-slide {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+        }
+        .hero-slide::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, rgba(10,26,44,.88) 0%, rgba(10,26,44,.62) 45%, rgba(10,26,44,.25) 75%, rgba(10,26,44,.15) 100%);
+        }
+        .hero-slide .container { position: relative; z-index: 2; width: 100%; }
+        .hero-slide-text { max-width: 560px; }
+        .hero-eyebrow { font-size: .8rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; opacity: .85; margin-bottom: 14px; }
+        .hero-slide-text h1 { font-size: 2.7rem; line-height: 1.15; letter-spacing: -.5px; margin-bottom: 18px; }
+        .hero-slide-text h1 .accent { color: var(--secondary); display: block; position: relative; }
+        .hero-slide-text h1 .accent::after { content: ''; display: block; width: 70px; height: 4px; background: var(--secondary); border-radius: 2px; margin-top: 10px; }
+        .hero-lead { font-size: 1rem; opacity: .88; line-height: 1.6; max-width: 460px; margin-bottom: 26px; }
+        .hero-feature-row { display: flex; gap: 30px; flex-wrap: wrap; }
+        .hero-feature { display: flex; align-items: center; gap: 10px; font-size: .82rem; font-weight: 600; }
+        .hero-feature i { font-size: 1.3rem; opacity: .95; }
+        .hero-feature span { line-height: 1.3; }
 
-        /* ========== MARQUEE DES VILLES DESSERVIES ========== */
-        .marquee-section { background: var(--primary-dark); overflow: hidden; padding: 14px 0; }
-        .marquee-track { display: flex; width: max-content; animation: marqueeScroll 30s linear infinite; }
-        .marquee-track:hover { animation-play-state: paused; }
-        .marquee-item {
-            display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.85);
-            font-size: 0.82rem; font-weight: 600; letter-spacing: 0.3px; padding: 0 28px; white-space: nowrap;
+        .hero-carousel .swiper-pagination { bottom: 24px !important; left: 24px !important; width: auto !important; text-align: left !important; }
+        .hero-carousel .swiper-pagination-bullet { width: 9px; height: 9px; background: rgba(255,255,255,.5); opacity: 1; margin: 0 4px 0 0 !important; transition: all .25s; }
+        .hero-carousel .swiper-pagination-bullet-active { background: var(--secondary); width: 24px; border-radius: 5px; }
+        .hero-carousel .swiper-button-prev, .hero-carousel .swiper-button-next {
+            width: 42px; height: 42px; background: rgba(255,255,255,.15); border-radius: 50%; backdrop-filter: blur(4px);
         }
-        .marquee-item i { color: var(--secondary); font-size: 0.7rem; }
-        @keyframes marqueeScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .hero-carousel .swiper-button-prev { left: 20px; } .hero-carousel .swiper-button-next { right: 20px; }
+        .hero-carousel .swiper-button-prev::after, .hero-carousel .swiper-button-next::after { font-size: .95rem; color: white; font-weight: 700; }
+        @media (max-width: 1180px) { .hero-carousel .swiper-button-prev, .hero-carousel .swiper-button-next { display: none; } }
 
-        /* ========== SECTION HEADER ========== */
-        .section-header { text-align: center; margin-bottom: 48px; }
-        .section-header .eyebrow {
-            display: inline-block; color: var(--secondary); font-weight: 700; font-size: 0.75rem;
-            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+        /* Carte de recherche flottante — persistante, hors du carrousel */
+        .hero-search-wrap { position: absolute; top: 0; right: 0; height: 100%; display: flex; align-items: center; z-index: 5; pointer-events: none; }
+        .hero-search-card {
+            pointer-events: auto;
+            background: white; color: var(--dark); border-radius: var(--radius-lg);
+            box-shadow: 0 25px 60px -12px rgba(0,0,0,.4); padding: 26px 26px 22px;
+            width: 320px;
         }
-        .section-header h2 { font-size: 2rem; margin-bottom: 12px; }
-        .section-header p { color: var(--gray); max-width: 600px; margin: 0 auto; }
+        .hero-search-card h3 { font-size: 1.15rem; margin-bottom: 2px; }
+        .hero-search-sub { font-size: .78rem; color: var(--gray); margin-bottom: 16px; }
+        .trip-toggle { display: flex; gap: 8px; margin-bottom: 18px; }
+        .trip-toggle button {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+            border: 1px solid #e2e8f0; background: white; color: var(--gray);
+            font-size: .78rem; font-weight: 600; padding: 8px 10px; border-radius: 50px; cursor: pointer; transition: all .2s;
+        }
+        .trip-toggle button i { font-size: .8rem; }
+        .trip-toggle button.is-active { background: var(--primary-dark); border-color: var(--primary-dark); color: white; }
+        .hsc-field { margin-bottom: 12px; }
+        .hsc-field label { display: block; font-size: .68rem; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+        .hsc-field .hsc-input-wrap { position: relative; }
+        .hsc-field select, .hsc-field input {
+            width: 100%; border: 1px solid #e2e8f0; border-radius: var(--radius); padding: 9px 34px 9px 11px;
+            font-size: .85rem; font-weight: 600; color: var(--dark); appearance: none; background: white;
+        }
+        .hsc-field select:focus, .hsc-field input:focus { outline: none; border-color: var(--secondary); }
+        .hsc-field i.field-icon { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); color: var(--gray); font-size: .8rem; pointer-events: none; }
+        .hsc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .hero-search-card .btn-block { margin-top: 6px; padding: 12px; font-size: .88rem; }
+        .hsc-trust { display: flex; justify-content: space-between; margin-top: 16px; font-size: .68rem; color: var(--gray); }
+        .hsc-trust span { display: flex; align-items: center; gap: 5px; }
+        .hsc-trust i { color: var(--success); }
 
-        /* ========== DESTINATIONS : cartes "route" avec tilt 3D + filtre ========== */
-        .dest-filters { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 36px; }
-        .dest-filter-btn {
-            border: 2px solid #e2e8f0; background: white; color: var(--gray); font-weight: 600; font-size: 0.82rem;
-            padding: 8px 18px; border-radius: 50px; cursor: pointer; transition: all 0.25s;
+        @media (max-width: 1180px) {
+            .hero-search-wrap { position: static; height: auto; margin-top: -60px; padding-bottom: 30px; justify-content: center; }
+            .hero { min-height: 0; overflow: visible; }
+            .hero .swiper, .hero .swiper-wrapper, .hero .swiper-slide { height: 640px; overflow: hidden; }
         }
-        .dest-filter-btn:hover { border-color: var(--secondary); color: var(--secondary); }
-        .dest-filter-btn.is-active { background: var(--primary); border-color: var(--primary); color: white; }
+        @media (max-width: 480px) {
+            .hero-slide-text h1 { font-size: 2rem; }
+            .hero-search-card { width: 90vw; max-width: 340px; }
+        }
 
-        .dest-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; perspective: 1200px; }
-        .route-card {
-            background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden;
-            transition: transform 0.15s ease, box-shadow 0.3s ease, opacity .25s ease;
-            transform-style: preserve-3d; will-change: transform;
+        /* ========== BANDEAU 4 ICÔNES ========== */
+        .feature-strip { background: white; padding: 40px 0; border-bottom: 1px solid #eef1f5; }
+        .feature-strip-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+        .feature-strip-item { display: flex; align-items: center; gap: 16px; }
+        .feature-strip-icon {
+            width: 54px; height: 54px; border-radius: 50%; background: var(--gray-light); color: var(--primary);
+            display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
         }
-        .route-card.is-filtered-out { opacity: 0; transform: scale(.92) !important; pointer-events: none; }
-        .route-card:hover { box-shadow: var(--shadow-lg); }
-        .route-card-top { height: 6px; }
-        .route-card-body { padding: 22px 24px; }
-        .route-card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-        .route-card-badge { font-size: 0.7rem; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
-        .route-card-price { font-weight: 800; font-size: 0.85rem; color: white; padding: 5px 14px; border-radius: 20px; white-space: nowrap; }
-        .route-card-cities { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
-        .rc-city { font-weight: 700; font-size: 1rem; color: var(--dark); }
-        .rc-path { flex: 1; display: flex; align-items: center; position: relative; min-width: 40px; }
-        .rc-path .rc-dash { flex: 1; border-top: 2px dashed #dbe2ea; }
-        .rc-path i.fa-bus { font-size: 0.85rem; margin: 0 7px; color: var(--secondary); transition: transform 0.3s ease; }
-        .route-card:hover .rc-path i.fa-bus { transform: translateX(3px); }
-        .rc-heures-label { font-size: 0.72rem; color: var(--gray); display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
-        .dest-heures { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
-        .heure-badge { font-size: 0.76rem; font-weight: 600; color: var(--primary); background: var(--gray-light); padding: 4px 10px; border-radius: 20px; }
-        .route-card-cta {
-            display: flex; align-items: center; justify-content: space-between; padding-top: 16px;
-            border-top: 1px dashed #eef1f5; text-decoration: none; color: var(--primary); font-weight: 700; font-size: 0.85rem;
-        }
-        .route-card-cta i { transition: transform 0.3s ease; }
-        .route-card:hover .route-card-cta i { transform: translateX(5px); }
+        .feature-strip-item h4 { font-size: .92rem; margin-bottom: 2px; }
+        .feature-strip-item p { font-size: .78rem; color: var(--gray); margin: 0; }
 
-        .dest-tab-empty { text-align: center; padding: 40px; color: var(--gray); }
+        /* ========== DESTINATIONS POPULAIRES ========== */
+        .dest-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .dest-header h2 { font-size: 1.5rem; margin: 0; position: relative; padding-bottom: 10px; }
+        .dest-header h2::after { content: ''; position: absolute; left: 0; bottom: 0; width: 46px; height: 3px; background: var(--secondary); border-radius: 2px; }
+        .dest-header a { font-size: .85rem; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 6px; }
+        .dest-header a:hover { color: var(--secondary); }
 
-        /* ========== POURQUOI NOUS CHOISIR ========== */
-        .why-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-        .why-card { text-align: center; padding: 30px 20px; border-radius: var(--radius-lg); transition: all 0.3s; }
-        .why-card:hover { background: white; box-shadow: var(--shadow-lg); transform: translateY(-6px); }
-        .why-icon {
-            width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 18px; font-size: 1.5rem; color: white;
+        .dest-scroll-wrap { position: relative; }
+        .dest-scroll {
+            display: grid; grid-auto-flow: column; grid-auto-columns: 220px;
+            gap: 18px; overflow-x: auto; padding-bottom: 6px; scroll-behavior: smooth; scrollbar-width: none;
         }
-        .why-card h4 { font-size: 1rem; margin-bottom: 8px; }
-        .why-card p { font-size: 0.85rem; color: var(--gray); line-height: 1.5; }
+        .dest-scroll::-webkit-scrollbar { display: none; }
+        .dest-card {
+            position: relative; height: 280px; border-radius: var(--radius-lg); overflow: hidden;
+            display: flex; align-items: flex-end; text-decoration: none; color: white;
+            background-size: cover; background-position: center;
+            box-shadow: var(--shadow-md); transition: transform .25s ease;
+        }
+        .dest-card:hover { transform: translateY(-4px); }
+        .dest-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,42,68,0) 35%, rgba(9,20,33,.55) 100%); }
+        .dest-card-watermark { position: absolute; top: 18px; right: 14px; font-size: 2.2rem; color: rgba(255,255,255,.25); z-index: 1; }
+        .dest-card-body { position: relative; z-index: 2; padding: 16px; width: 100%; }
+        .dest-card-from { display: block; font-size: .75rem; opacity: .85; margin-bottom: 2px; }
+        .dest-card-to { display: block; font-size: 1.15rem; font-weight: 800; margin-bottom: 10px; }
+        .dest-card-price { display: flex; align-items: center; gap: 6px; font-size: .72rem; opacity: .9; }
+        .dest-card-price strong { display: block; font-size: .92rem; color: white; }
+        .dest-scroll-next {
+            position: absolute; top: 50%; right: -10px; transform: translateY(-50%);
+            width: 42px; height: 42px; border-radius: 50%; background: white; border: 1px solid #e2e8f0;
+            color: var(--primary); display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: var(--shadow-md); z-index: 3;
+        }
+        @media (max-width: 640px) { .dest-scroll-next { display: none; } }
 
-        /* ========== TRACKING SECTION avec mini timeline animée ========== */
-        .tracking-section { background: linear-gradient(135deg, #0f3b5e 0%, #0a2a44 100%); border-radius: var(--radius-lg); padding: 48px; position: relative; overflow: hidden; color: white; }
-        .tracking-section .deco-pattern { opacity: 0.35; }
-        .tracking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; position: relative; z-index: 2; }
-        .tracking-info h3 { font-size: 1.8rem; margin-bottom: 16px; }
-        .tracking-info p { opacity: 0.85; }
-        .tracking-features { display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap; }
-        .tracking-features span { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; opacity: 0.85; }
-        .tracking-box { background: white; border-radius: var(--radius-lg); padding: 32px; color: var(--dark); }
-        .tracking-form { display: flex; flex-direction: column; gap: 12px; }
-        .input-group { display: flex; gap: 12px; }
-        .input-group input { flex: 1; padding: 14px 20px; border: 1px solid #ddd; border-radius: var(--radius); font-size: 0.9rem; }
-
-        .mini-timeline { display: flex; justify-content: space-between; margin-top: 26px; padding: 0 4px; }
-        .mini-step { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; position: relative; }
-        .mini-step::before {
-            content: ''; position: absolute; top: 13px; left: -50%; width: 100%; height: 2px; background: #e2e8f0; z-index: 0;
-        }
-        .mini-step:first-child::before { display: none; }
-        .mini-step.is-done::before { background: var(--success); transition: background 0.4s ease; }
-        .mini-dot {
-            width: 26px; height: 26px; border-radius: 50%; background: #f1f5f9; border: 2px solid #e2e8f0;
-            display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--gray);
-            position: relative; z-index: 1; transition: all 0.4s ease;
-        }
-        .mini-step.is-done .mini-dot { background: var(--success); border-color: var(--success); color: white; }
-        .mini-step.is-active .mini-dot { background: var(--secondary); border-color: var(--secondary); color: white; animation: pulseDot 1.4s infinite; }
-        .mini-step span.mini-label { font-size: 0.65rem; color: var(--gray); text-align: center; }
-
-        /* ========== COMMENT ÇA MARCHE (stepper interactif) ========== */
-        .stepper { display: grid; grid-template-columns: 320px 1fr; gap: 50px; align-items: center; }
-        .stepper-list { display: flex; flex-direction: column; gap: 6px; }
-        .stepper-item {
-            display: flex; align-items: center; gap: 16px; padding: 16px 18px; border-radius: var(--radius-lg);
-            cursor: pointer; transition: all 0.25s; border: 2px solid transparent;
-        }
-        .stepper-item:hover { background: var(--gray-light); }
-        .stepper-item.is-active { background: white; border-color: rgba(230, 126, 34, 0.25); box-shadow: var(--shadow-md); }
-        .stepper-num {
-            width: 38px; height: 38px; border-radius: 50%; background: var(--gray-light); color: var(--primary);
-            display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; transition: all 0.25s;
-        }
-        .stepper-item.is-active .stepper-num { background: var(--secondary); color: white; }
-        .stepper-item h4 { font-size: 0.95rem; margin-bottom: 2px; }
-        .stepper-item p { font-size: 0.78rem; color: var(--gray); margin: 0; }
-        .stepper-panel {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: var(--radius-xl);
-            color: white; padding: 44px; min-height: 300px; position: relative; overflow: hidden;
-        }
-        .stepper-panel .deco-pattern { opacity: 0.4; }
-        .stepper-panel-inner { position: relative; z-index: 2; }
-        .stepper-panel-icon { font-size: 2.6rem; color: var(--secondary); margin-bottom: 20px; }
-        .stepper-panel h3 { font-size: 1.5rem; margin-bottom: 12px; }
-        .stepper-panel p { opacity: 0.85; max-width: 440px; line-height: 1.6; }
-
-        /* ========== STATS BAR ========== */
-        .stats-bar { background: var(--primary); color: white; padding: 56px 0; position: relative; overflow: hidden; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; gap: 32px; position: relative; z-index: 2; }
-        .stats-grid h3 { font-size: 2.2rem; margin-bottom: 8px; }
-        .stats-grid p { font-size: 0.85rem; opacity: 0.7; }
-
-        /* ========== CTA FINALE ========== */
-        .final-cta {
-            background: linear-gradient(120deg, var(--secondary) 0%, var(--secondary-dark) 100%);
-            border-radius: var(--radius-xl); padding: 56px; text-align: center; color: white;
+        /* ========== APPLICATION + CHIFFRES CLÉS ========== */
+        .promo-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; align-items: stretch; }
+        .app-card {
+            background: var(--primary-dark); border-radius: var(--radius-lg); color: white;
+            padding: 34px; display: flex; flex-direction: column; justify-content: center;
             position: relative; overflow: hidden;
         }
-        .final-cta h2 { font-size: 2rem; margin-bottom: 12px; }
-        .final-cta p { opacity: 0.9; max-width: 520px; margin: 0 auto 28px; }
-        .final-cta .cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 2; }
+        .app-card h3 { font-size: 1.3rem; margin-bottom: 8px; }
+        .app-card p { font-size: .85rem; opacity: .8; margin-bottom: 22px; max-width: 320px; }
+        .app-store-badges { display: flex; gap: 12px; flex-wrap: wrap; }
+        .app-store-badge {
+            display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,.08);
+            border: 1px solid rgba(255,255,255,.15); border-radius: 10px; padding: 8px 14px;
+            color: white; text-decoration: none; cursor: pointer;
+        }
+        .app-store-badge i { font-size: 1.5rem; }
+        .app-store-badge span { display: block; line-height: 1.2; }
+        .app-store-badge small { font-size: .62rem; opacity: .75; display: block; }
+        .app-store-badge strong { font-size: .82rem; }
 
-        /* ========== RESPONSIVE ========== */
+        .stats-card { background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow); padding: 34px; display: flex; flex-direction: column; justify-content: center; }
+        .stats-card h3 { font-size: 1.2rem; margin-bottom: 22px; }
+        .stats-card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+        .stats-card-item { text-align: left; }
+        .stats-card-icon {
+            width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.05rem; margin-bottom: 10px;
+        }
+        .stats-card-item h4 { font-size: 1.35rem; margin-bottom: 2px; }
+        .stats-card-item p { font-size: .74rem; color: var(--gray); margin: 0; line-height: 1.3; }
+
         @media (max-width: 992px) {
-            .search-grid { grid-template-columns: repeat(3, 1fr); }
-            .dest-grid, .stats-grid, .why-grid { grid-template-columns: repeat(2, 1fr); }
-            .tracking-grid { grid-template-columns: 1fr; }
-            .tracking-section { padding: 30px; }
-            .stepper { grid-template-columns: 1fr; }
+            .promo-grid { grid-template-columns: 1fr; }
+            .stats-card-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 768px) {
-            .search-grid { grid-template-columns: 1fr; }
-            .dest-grid, .stats-grid, .why-grid { grid-template-columns: 1fr; }
-            .input-group { flex-direction: column; }
-            .final-cta { padding: 36px 24px; }
-            .final-cta h2 { font-size: 1.5rem; }
+            .feature-strip-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .stats-card-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -203,363 +225,275 @@
 
 @include('site.partials.nav', ['compagnie' => $compagnie])
 
-<!-- HERO : carousel Swiper (3 messages), pas de banque photo — dégradés de marque,
-     motif "route" et la seule photo de bus authentique du projet, présentée sans
-     prétendre à un lieu précis (voir décision du 2026-08-26). -->
-<section class="hero-carousel">
+<!-- HERO : carrousel Swiper en fond plein cadre (texte propre à chaque diapositive) +
+     carte de recherche flottante persistante (ne tourne pas avec le carrousel). -->
+<section class="hero hero-carousel">
     <div class="swiper heroSwiper">
         <div class="swiper-wrapper">
 
             <!-- Slide 1 : identité / recherche -->
-            <div class="swiper-slide hero-slide hero-slide--1">
-                <span class="deco-blob blob-1"></span>
-                <span class="deco-blob blob-2"></span>
-                <div class="deco-pattern"></div>
+            <div class="swiper-slide hero-slide" style="background-image:url('{{ asset('assets_site/img/hero-bg.jpg') }}');">
                 <div class="container">
-                    <div class="hero-slide-inner">
-                        <div class="hero-slide-text">
-                            <div class="hero-badge">✓ Compagnie agréée</div>
-                            <h1>{{ $compagnie->nom_compagnie }}<br><span>Votre voyage commence ici</span></h1>
-                            <p class="hero-lead">{{ $compagnie->slogant ?: "La plateforme qui simplifie vos déplacements et l'envoi de vos colis au Mali." }} Réservez en ligne, embarquez l'esprit tranquille.</p>
-                            <div class="deco-route">
-                                <span class="deco-dot start"></span>
-                                <span class="deco-line"></span>
-                                <i class="fas fa-bus deco-bus"></i>
-                                <span class="deco-line"></span>
-                                <span class="deco-dot end"></span>
-                            </div>
-                            <div class="hero-stats">
-                                <div class="hero-stat">
-                                    <h3 class="js-count" data-count="{{ $heroStats['destinations'] }}">0</h3>
-                                    <p>Destinations</p>
-                                </div>
-                                <div class="hero-stat">
-                                    <h3 class="js-count" data-count="{{ $heroStats['trajets'] }}">0</h3>
-                                    <p>Trajets</p>
-                                </div>
-                                <div class="hero-stat">
-                                    <h3 class="js-count" data-count="{{ $heroStats['clients'] }}">0</h3>
-                                    <p>Clients</p>
-                                </div>
-                            </div>
+                    <div class="hero-slide-text">
+                        <div class="hero-eyebrow">{{ $compagnie->nom_compagnie }}</div>
+                        <h1>Voyagez en toute<span class="accent">confiance</span></h1>
+                        <p class="hero-lead">{{ $compagnie->slogant ?: "Des bus confortables et des départs à l'heure pour un voyage sans stress, du premier au dernier kilomètre." }}</p>
+                        <div class="hero-feature-row">
+                            <div class="hero-feature"><i class="fas fa-couch"></i> <span>Confort<br>Premium</span></div>
+                            <div class="hero-feature"><i class="fas fa-shield-alt"></i> <span>Sécurité<br>Garantie</span></div>
+                            <div class="hero-feature"><i class="far fa-clock"></i> <span>Ponctualité<br>Assurée</span></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Slide 2 : suivi de colis -->
-            <div class="swiper-slide hero-slide hero-slide--2">
-                <span class="deco-blob blob-1"></span>
-                <span class="deco-blob blob-2"></span>
-                <div class="deco-pattern"></div>
+            <!-- Slide 2 : suivi de colis — background-color en repli si la photo n'existe
+                 pas encore (déposer le fichier à public/assets_site/img/hero-bg-colis.jpg
+                 pour qu'elle s'affiche, même traitement que hero-bg.jpg de la slide 1). -->
+            <div class="swiper-slide hero-slide" style="background-color: var(--primary-dark); background-image: linear-gradient(120deg, rgba(15,59,94,.35), rgba(10,42,68,.55)), url('{{ asset('assets_site/img/hero-bg-colis.jpg') }}');">
                 <div class="container">
-                    <div class="hero-slide-inner">
-                        <div class="hero-slide-text">
-                            <div class="hero-badge"><i class="fas fa-box"></i> Suivi 24/7</div>
-                            <h1>Un colis à envoyer ?<br><span>On s'occupe du trajet</span></h1>
-                            <p class="hero-lead">Déposez-le en gare, recevez un code, suivez-le en direct jusqu'à sa livraison. Simple comme bonjour.</p>
-                            <a href="{{ route('site.suivi-colis') }}" class="btn btn-secondary"><i class="fas fa-search-location"></i> Suivre un colis</a>
-                        </div>
+                    <div class="hero-slide-text">
+                        <div class="hero-eyebrow"><i class="fas fa-box"></i> Suivi 24/7</div>
+                        <h1>Un colis à envoyer ?<span class="accent">On s'en charge</span></h1>
+                        <p class="hero-lead">Déposez-le en gare, recevez un code, suivez-le en direct jusqu'à sa livraison.</p>
+                        <a href="{{ route('site.suivi-colis') }}" class="btn btn-secondary"><i class="fas fa-search-location"></i> Suivre un colis</a>
                     </div>
                 </div>
             </div>
 
-            <!-- Slide(s) 3 : photos réelles des cars de la compagnie (une slide par photo,
-                 uploadées depuis Configuration → Compagnie → Photos). À défaut, on retombe
-                 sur l'unique photo de démonstration du projet. -->
-            @forelse ($compagnie->photos->take(5) as $photo)
-                <div class="swiper-slide hero-slide hero-slide--3">
-                    <div class="deco-pattern"></div>
+            <!-- Slide(s) 3+ : photos réelles des cars de la compagnie (une par photo, uploadées
+                 depuis Configuration → Compagnie → Photos). -->
+            @foreach ($compagnie->photos->take(5) as $photo)
+                <div class="swiper-slide hero-slide" style="background-image:url('{{ asset('images/compagnies_photos/'.$photo->chemin) }}');">
                     <div class="container">
-                        <div class="hero-slide-inner has-visual">
-                            <div class="hero-slide-text">
-                                <div class="hero-badge"><i class="fas fa-shield-alt"></i> Voyagez sereinement</div>
-                                <h1>Confort, ponctualité<br><span>et sécurité à chaque trajet</span></h1>
-                                <p class="hero-lead">Des bus confortables et des départs à l'heure pour un voyage sans stress, du premier au dernier kilomètre.</p>
-                                <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="btn btn-secondary">Voir nos trajets <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                            <div>
-                                <div class="hero-visual-card">
-                                    <img src="{{ asset('images/compagnies_photos/'.$photo->chemin) }}" alt="Car {{ $compagnie->nom_compagnie }}">
-                                </div>
-                                <div class="hero-visual-caption"><i class="fas fa-check-circle" style="color:#4ade80;"></i> Confort à bord, à chaque trajet</div>
-                            </div>
+                        <div class="hero-slide-text">
+                            <div class="hero-eyebrow"><i class="fas fa-bus"></i> À bord</div>
+                            <h1>Confort, ponctualité<span class="accent">à chaque trajet</span></h1>
+                            <p class="hero-lead">Des bus confortables et des départs à l'heure pour un voyage sans stress.</p>
+                            <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="btn btn-secondary">Voir nos trajets <i class="fas fa-arrow-right"></i></a>
                         </div>
                     </div>
                 </div>
-            @empty
-                <div class="swiper-slide hero-slide hero-slide--3">
-                    <div class="deco-pattern"></div>
-                    <div class="container">
-                        <div class="hero-slide-inner has-visual">
-                            <div class="hero-slide-text">
-                                <div class="hero-badge"><i class="fas fa-shield-alt"></i> Voyagez sereinement</div>
-                                <h1>Confort, ponctualité<br><span>et sécurité à chaque trajet</span></h1>
-                                <p class="hero-lead">Des bus confortables et des départs à l'heure pour un voyage sans stress, du premier au dernier kilomètre.</p>
-                                <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="btn btn-secondary">Voir nos trajets <i class="fas fa-arrow-right"></i></a>
-                            </div>
-                            <div>
-                                <div class="hero-visual-card">
-                                    <img src="{{ asset('assets_site/img/hero-slides/slide-1.jpg') }}" alt="Confort à bord">
-                                </div>
-                                <div class="hero-visual-caption"><i class="fas fa-check-circle" style="color:#4ade80;"></i> Confort à bord, à chaque trajet</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endforelse
+            @endforeach
 
         </div>
         <div class="swiper-pagination"></div>
         <div class="swiper-button-prev"></div>
         <div class="swiper-button-next"></div>
     </div>
-</section>
 
-<!-- RECHERCHE -->
-<section class="search-section">
-    <div class="container">
-        <div class="search-card" data-aos="fade-up">
-            <form action="{{ route('site.recherche') }}" method="GET" class="search-grid" id="homeSearchForm">
-                <div class="form-group">
+    <div class="hero-search-wrap">
+        <div class="hero-search-card">
+            <h3>Réservez votre billet</h3>
+            <p class="hero-search-sub">Rapide • Simple • Sécurisé</p>
+
+            <div class="trip-toggle">
+                <button type="button" class="is-active" id="tripSimple"><i class="fas fa-circle-dot"></i> Aller simple</button>
+                <button type="button" id="tripRetour"><i class="far fa-circle"></i> Aller-retour</button>
+            </div>
+
+            <form action="{{ route('site.recherche') }}" method="GET" id="homeSearchForm">
+                <div class="hsc-field">
                     <label>Départ</label>
-                    <select name="depart" class="form-select" required>
-                        <option value="">Choisissez la ville</option>
-                        @foreach ($villes as $ville)
-                            <option value="{{ $ville }}">{{ $ville }}</option>
-                        @endforeach
-                    </select>
+                    <div class="hsc-input-wrap">
+                        <select name="depart" required>
+                            <option value="">Choisissez la ville</option>
+                            @foreach ($villes as $ville)
+                                <option value="{{ $ville }}">{{ $ville }}</option>
+                            @endforeach
+                        </select>
+                        <i class="fas fa-location-dot field-icon"></i>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label><i class="fas fa-flag-checkered"></i> Destination</label>
-                    <select name="destination" id="homeDestSelect" class="form-select" required>
-                        <option value="">Choisissez la destination</option>
-                        @foreach ($villes as $ville)
-                            <option value="{{ $ville }}">{{ $ville }}</option>
-                        @endforeach
-                    </select>
+                <div class="hsc-field">
+                    <label>Arrivée</label>
+                    <div class="hsc-input-wrap">
+                        <select name="destination" id="homeDestSelect" required>
+                            <option value="">Choisissez la destination</option>
+                            @foreach ($villes as $ville)
+                                <option value="{{ $ville }}">{{ $ville }}</option>
+                            @endforeach
+                        </select>
+                        <i class="fas fa-flag-checkered field-icon"></i>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label><i class="fas fa-calendar"></i> Date</label>
-                    <input type="date" name="date" class="form-control" value="{{ date('Y-m-d') }}" min="{{ date('Y-m-d') }}">
+                <div class="hsc-row">
+                    <div class="hsc-field">
+                        <label>Date de départ</label>
+                        <div class="hsc-input-wrap">
+                            <input type="date" name="date" value="{{ date('Y-m-d') }}" min="{{ date('Y-m-d') }}">
+                        </div>
+                    </div>
+                    <div class="hsc-field" id="hscDateRetourField" hidden>
+                        <label>Date de retour</label>
+                        <div class="hsc-input-wrap">
+                            <input type="date" name="date_retour" value="{{ date('Y-m-d', strtotime('+1 day')) }}" min="{{ date('Y-m-d') }}" disabled>
+                        </div>
+                    </div>
+                    <div class="hsc-field" id="hscPassagersField">
+                        <label>Passagers</label>
+                        <div class="hsc-input-wrap">
+                            <select name="passagers">
+                                @for ($i = 1; $i <= 6; $i++)
+                                    <option value="{{ $i }}">{{ $i }} passager{{ $i > 1 ? 's' : '' }}</option>
+                                @endfor
+                            </select>
+                            <i class="fas fa-user field-icon"></i>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-search"></i> Rechercher</button>
-                </div>
+                <button type="submit" class="btn btn-secondary btn-block"><i class="fas fa-search"></i> Rechercher un billet</button>
             </form>
 
-            @if ($villes->isNotEmpty())
-                <div class="quick-chips">
-                    <span class="label">Populaires :</span>
-                    @foreach ($villes->take(5) as $ville)
-                        <button type="button" class="quick-chip" data-ville="{{ $ville }}">{{ $ville }}</button>
-                    @endforeach
-                </div>
-            @endif
+            <div class="hsc-trust">
+                <span><i class="fas fa-lock"></i> Paiement sécurisé</span>
+                <span><i class="fas fa-circle-check"></i> Confirmation instantanée</span>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- MARQUEE DES VILLES DESSERVIES -->
-@if ($villes->isNotEmpty())
-    <section class="marquee-section">
-        <div class="marquee-track" id="villesMarquee">
-            @foreach ($villes as $ville)
-                <span class="marquee-item"><i class="fas fa-map-marker-alt"></i> {{ $ville }}</span>
-            @endforeach
+<!-- BANDEAU 4 ICÔNES -->
+<section class="feature-strip">
+    <div class="container">
+        <div class="feature-strip-grid">
+            <div class="feature-strip-item">
+                <div class="feature-strip-icon"><i class="fas fa-route"></i></div>
+                <div><h4>Trajets réguliers</h4><p>Des départs quotidiens vers vos destinations</p></div>
+            </div>
+            <div class="feature-strip-item">
+                <div class="feature-strip-icon"><i class="fas fa-box"></i></div>
+                <div><h4>Suivi de colis</h4><p>Expédiez et suivez vos colis en toute simplicité</p></div>
+            </div>
+            <div class="feature-strip-item">
+                <div class="feature-strip-icon"><i class="fas fa-headset"></i></div>
+                <div><h4>Service client 24/7</h4><p>Une équipe à votre écoute à tout moment</p></div>
+            </div>
+            <div class="feature-strip-item">
+                <div class="feature-strip-icon"><i class="fas fa-credit-card"></i></div>
+                <div><h4>Paiement sécurisé</h4><p>Payez en ligne en toute sécurité</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DESTINATIONS POPULAIRES -->
+@if (! empty($destinations))
+    <section>
+        <div class="container">
+            <div class="dest-header" data-aos="fade-up">
+                <h2>Nos destinations populaires</h2>
+                <a href="{{ route('site.compagnie.trajets', $compagnie) }}">Voir toutes les destinations <i class="fas fa-arrow-right"></i></a>
+            </div>
+
+            <div class="dest-scroll-wrap" data-aos="fade-up">
+                <div class="dest-scroll" id="destScroll">
+                    @php
+                        // Dégradé de marque par défaut (voir note site-common.css "DÉCOR SANS
+                        // PHOTO") : reste le repli pour toute localité sans photo dédiée —
+                        // aucune compagnie/ville ne doit dépendre d'une photo pour s'afficher
+                        // correctement (multi-tenant : chaque compagnie a ses propres villes).
+                        $degrades = [
+                            'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
+                            'linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%)',
+                            'linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%)',
+                        ];
+
+                        // Quelques villes maliennes ont désormais une vraie photo (voir
+                        // public/assets_site/img/destinations/). Reconnaissance par mot-clé
+                        // (insensible aux accents/casse) plutôt que par nom de gare exact, pour
+                        // couvrir "Sogoniko" (gare de Bamako), "Kayes N'di"/"Kayes Ba", etc.
+                        $photosVilles = [
+                            'bamako' => 'bamako.jpg',
+                            'sogoniko' => 'bamako.jpg',
+                            'kayes' => 'kayes.jpg',
+                            'kita' => 'kita.jpg',
+                            'diema' => 'diema.jpg',
+                            'yelimane' => 'yelimane.jpg',
+                        ];
+                        $trouverPhoto = function (string $localite) use ($photosVilles) {
+                            $normalise = strtolower(str_replace(
+                                ['é', 'è', 'ê', 'à', 'â', 'î', 'ï', 'ô', 'ù', 'û'],
+                                ['e', 'e', 'e', 'a', 'a', 'i', 'i', 'o', 'u', 'u'],
+                                $localite
+                            ));
+                            foreach ($photosVilles as $motCle => $fichier) {
+                                if (str_contains($normalise, $motCle)) {
+                                    return $fichier;
+                                }
+                            }
+                            return null;
+                        };
+                    @endphp
+                    @foreach ($destinations as $i => $d)
+                        @php $photo = $trouverPhoto($d->destinationLocalite); @endphp
+                        <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="dest-card"
+                           style="background-image: {{ $photo
+                                ? "linear-gradient(180deg, rgba(15,42,68,.15) 0%, rgba(9,20,33,.25) 100%), url('" . asset('assets_site/img/destinations/' . $photo) . "')"
+                                : $degrades[$i % 3] }};">
+                            <span class="dest-card-watermark"><i class="fas fa-map-location-dot"></i></span>
+                            @if (! $photo)
+                                <div class="deco-pattern"></div>
+                            @endif
+                            <div class="dest-card-body">
+                                <span class="dest-card-from">{{ $d->departLocalite }}</span>
+                                <span class="dest-card-to">{{ $d->destinationLocalite }}</span>
+                                <span class="dest-card-price"><i class="fas fa-route"></i> à partir de <strong>{{ number_format((float) $d->prix, 0, ',', ' ') }} FCFA</strong></span>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+                <button type="button" class="dest-scroll-next" id="destScrollNext" aria-label="Suivant"><i class="fas fa-chevron-right"></i></button>
+            </div>
         </div>
     </section>
 @endif
 
-<!-- DESTINATIONS -->
-<section style="background: var(--gray-light);">
+<!-- APPLICATION + CHIFFRES CLÉS -->
+<section style="padding-top: 0;">
     <div class="container">
-        <div class="section-header" data-aos="fade-up">
-            <span class="eyebrow">Nos trajets</span>
-            <h2>Où voulez-vous aller ?</h2>
-            <p>{{ $compagnie->nom_compagnie }} dessert ces destinations, avec plusieurs départs par jour.</p>
-        </div>
-
-        @if (! empty($destinations))
-            <div class="dest-filters" data-aos="fade-up">
-                <button type="button" class="dest-filter-btn is-active" data-max="">Tous les trajets</button>
-                <button type="button" class="dest-filter-btn" data-max="5000">Moins de 5 000 FCFA</button>
-                <button type="button" class="dest-filter-btn" data-max="999999" data-min="5000">5 000 FCFA et plus</button>
-            </div>
-
-            <div class="dest-grid" id="destGrid" data-aos="fade-up">
-                @foreach ($destinations as $i => $p)
-                    @php $accent = ['var(--primary)', 'var(--secondary)', 'var(--accent)'][$i % 3]; @endphp
-                    <div class="route-card js-tilt" data-aos="fade-up" data-aos-delay="{{ ($i % 3 + 1) * 100 }}" data-prix="{{ (float) $p->prix }}">
-                        <div class="route-card-top" style="background: {{ $accent }};"></div>
-                        <div class="route-card-body">
-                            <div class="route-card-head">
-                                <span class="route-card-badge"><i class="fas fa-bus"></i> Trajet direct</span>
-                                <span class="route-card-price" style="background: {{ $accent }};">{{ number_format((float) $p->prix, 0, ',', ' ') }} FCFA</span>
-                            </div>
-                            <div class="route-card-cities">
-                                <span class="rc-city">{{ $p->departLocalite }}</span>
-                                <span class="rc-path"><span class="rc-dash"></span><i class="fas fa-bus"></i><span class="rc-dash"></span></span>
-                                <span class="rc-city">{{ $p->destinationLocalite }}</span>
-                            </div>
-                            <p class="rc-heures-label"><i class="far fa-clock"></i> {{ count($p->heures) }} départ{{ count($p->heures) > 1 ? 's' : '' }} par jour</p>
-                            <div class="dest-heures">
-                                @foreach ($p->heures as $h)
-                                    <span class="heure-badge">{{ substr($h, 0, 5) }}</span>
-                                @endforeach
-                            </div>
-                            <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="route-card-cta">Voir ce trajet <i class="fas fa-arrow-right"></i></a>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-            <div id="destEmptyFilter" style="display:none;text-align:center;padding:40px 20px;color:var(--gray);" data-aos="fade-up">
-                <i class="fas fa-filter" style="font-size:2rem;color:#ccc;margin-bottom:12px;display:block;"></i>
-                Aucun trajet dans cette tranche de prix pour le moment.
-            </div>
-            <div style="text-align: center; margin-top: 36px;" data-aos="fade-up">
-                <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="btn btn-primary">Voir tous nos trajets <i class="fas fa-arrow-right"></i></a>
-            </div>
-        @else
-            <div class="dest-tab-empty">Aucun trajet programmé pour le moment.</div>
-        @endif
-    </div>
-</section>
-
-<!-- POURQUOI NOUS CHOISIR -->
-<section>
-    <div class="container">
-        <div class="section-header" data-aos="fade-up">
-            <span class="eyebrow">Nos engagements</span>
-            <h2>Pourquoi voyager avec nous</h2>
-            <p>Quatre raisons pour lesquelles nos clients nous font confiance, trajet après trajet.</p>
-        </div>
-        <div class="why-grid">
-            <div class="why-card" data-aos="fade-up" data-aos-delay="100">
-                <div class="why-icon" style="background: var(--primary);"><i class="fas fa-clock"></i></div>
-                <h4>Ponctualité</h4>
-                <p>Des départs respectés à l'heure annoncée, tous les jours.</p>
-            </div>
-            <div class="why-card" data-aos="fade-up" data-aos-delay="200">
-                <div class="why-icon" style="background: var(--secondary);"><i class="fas fa-shield-alt"></i></div>
-                <h4>Sécurité</h4>
-                <p>Des véhicules entretenus et des conducteurs expérimentés.</p>
-            </div>
-            <div class="why-card" data-aos="fade-up" data-aos-delay="300">
-                <div class="why-icon" style="background: var(--accent);"><i class="fas fa-credit-card"></i></div>
-                <h4>Paiement en ligne</h4>
-                <p>Réservez et payez par Orange Money, sans passer par la gare.</p>
-            </div>
-            <div class="why-card" data-aos="fade-up" data-aos-delay="400">
-                <div class="why-icon" style="background: var(--success);"><i class="fas fa-headset"></i></div>
-                <h4>Support 24/7</h4>
-                <p>Une équipe disponible pour répondre à toutes vos questions.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- SUIVI COLIS -->
-<section>
-    <div class="container">
-        <div class="tracking-section" data-aos="fade-up">
-            <div class="deco-pattern"></div>
-            <div class="tracking-grid">
-                <div class="tracking-info">
-                    <div class="hero-badge">Suivi 24/7</div>
-                    <h3>Suivez vos colis en temps réel</h3>
-                    <p>Entrez votre numéro de suivi et connaissez à tout moment l'emplacement exact de votre colis.</p>
-                    <div class="tracking-features">
-                        <span><i class="fas fa-check-circle" style="color: #4ade80;"></i> Livraison garantie</span>
-                        <span><i class="fas fa-shield-alt" style="color: #ffd9a8;"></i> Colis assurés</span>
-                        <span><i class="fas fa-clock" style="color: #ffd9a8;"></i> Mise à jour en direct</span>
-                    </div>
-
-                    <!-- Mini démo animée du parcours d'un colis (purement illustrative) -->
-                    <div class="mini-timeline" id="miniTimeline">
-                        <div class="mini-step is-done"><div class="mini-dot"><i class="fas fa-box"></i></div><span class="mini-label">Pris en charge</span></div>
-                        <div class="mini-step"><div class="mini-dot"><i class="fas fa-truck"></i></div><span class="mini-label">En route</span></div>
-                        <div class="mini-step"><div class="mini-dot"><i class="fas fa-warehouse"></i></div><span class="mini-label">Arrivé</span></div>
-                        <div class="mini-step"><div class="mini-dot"><i class="fas fa-check"></i></div><span class="mini-label">Livré</span></div>
-                    </div>
-                </div>
-                <div class="tracking-box">
-                    <form action="{{ route('site.suivi-colis') }}" method="GET" class="tracking-form">
-                        <input type="hidden" name="id_compagnie" value="{{ $compagnie->id_compagnie }}">
-                        <div class="input-group">
-                            <input type="text" name="code_colis" placeholder="Ex: BL-2024-001234" required>
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Suivre</button>
-                        </div>
-                    </form>
-                    <p style="font-size: 0.7rem; color: var(--gray); margin-top: 16px;">Exemple : BL-2024-001234, BL-2024-567890</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- COMMENT ÇA MARCHE (stepper interactif) -->
-<section style="background: var(--gray-light);">
-    <div class="container">
-        <div class="section-header" data-aos="fade-up">
-            <span class="eyebrow">Simple et rapide</span>
-            <h2>Comment ça marche ?</h2>
-            <p>Réservez votre billet en 3 étapes, sans passer par la gare.</p>
-        </div>
-
-        <div class="stepper" data-aos="fade-up">
-            <div class="stepper-list" id="stepperList">
-                <div class="stepper-item is-active" data-step="0">
-                    <div class="stepper-num">1</div>
-                    <div><h4>Recherchez</h4><p>Trouvez votre trajet en quelques secondes</p></div>
-                </div>
-                <div class="stepper-item" data-step="1">
-                    <div class="stepper-num">2</div>
-                    <div><h4>Réservez & payez</h4><p>Choisissez vos places, payez en ligne</p></div>
-                </div>
-                <div class="stepper-item" data-step="2">
-                    <div class="stepper-num">3</div>
-                    <div><h4>Voyagez</h4><p>Présentez votre billet et embarquez</p></div>
-                </div>
-            </div>
-
-            <div class="stepper-panel" id="stepperPanel">
+        <div class="promo-grid" data-aos="fade-up">
+            <div class="app-card">
                 <div class="deco-pattern"></div>
-                <div class="stepper-panel-inner">
-                    <div class="stepper-panel-icon"><i class="fas fa-search"></i></div>
-                    <h3>1. Recherchez votre trajet</h3>
-                    <p>Indiquez votre ville de départ, votre destination et la date de voyage : nous affichons tous les départs disponibles avec leurs horaires et leurs prix.</p>
+                <div style="position:relative;z-index:2;">
+                    <h3>Téléchargez notre application</h3>
+                    <p>Réservez vos billets, suivez vos trajets et profitez d'une meilleure expérience.</p>
+                    <div class="app-store-badges">
+                        <a href="#" class="app-store-badge" onclick="tgBientot(event)">
+                            <i class="fab fa-google-play"></i>
+                            <span><small>Disponible sur</small><strong>Google Play</strong></span>
+                        </a>
+                        <a href="#" class="app-store-badge" onclick="tgBientot(event)">
+                            <i class="fab fa-apple"></i>
+                            <span><small>Télécharger dans</small><strong>l'App Store</strong></span>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
 
-<!-- STATS -->
-<section class="stats-bar">
-    <div class="deco-pattern"></div>
-    <div class="container">
-        <div class="stats-grid">
-            <div data-aos="zoom-in"><h3 class="js-count" data-count="{{ $heroStats['destinations'] }}">0</h3><p>Destinations</p></div>
-            <div data-aos="zoom-in" data-aos-delay="100"><h3 class="js-count" data-count="{{ $heroStats['clients'] }}">0</h3><p>Clients satisfaits</p></div>
-            <div data-aos="zoom-in" data-aos-delay="200"><h3 class="js-count" data-count="{{ $heroStats['trajets'] }}">0</h3><p>Trajets quotidiens</p></div>
-            <div data-aos="zoom-in" data-aos-delay="300"><h3>24/7</h3><p>Support client</p></div>
-        </div>
-    </div>
-</section>
-
-<!-- CTA FINALE -->
-<section>
-    <div class="container">
-        <div class="final-cta" data-aos="zoom-in">
-            <span class="deco-blob blob-1"></span>
-            <span class="deco-blob blob-2"></span>
-            <div style="position:relative;z-index:2;">
-                <h2>Prêt à embarquer ?</h2>
-                <p>Réservez votre billet en ligne dès maintenant ou suivez un colis en quelques secondes.</p>
-                <div class="cta-buttons">
-                    <a href="{{ route('site.compagnie.trajets', $compagnie) }}" class="btn btn-outline-light"><i class="fas fa-bus"></i> Voir nos trajets</a>
-                    <a href="{{ route('site.suivi-colis') }}" class="btn" style="background:white;color:var(--secondary-dark);"><i class="fas fa-box"></i> Suivre un colis</a>
+            <div class="stats-card">
+                <h3>Pourquoi choisir {{ $compagnie->nom_compagnie }} ?</h3>
+                <div class="stats-card-grid">
+                    <div class="stats-card-item">
+                        <div class="stats-card-icon" style="background: var(--secondary);"><i class="fas fa-users"></i></div>
+                        <h4 class="js-count" data-count="{{ $heroStats['clients'] }}">0</h4>
+                        <p>Voyageurs satisfaits</p>
+                    </div>
+                    <div class="stats-card-item">
+                        <div class="stats-card-icon" style="background: var(--primary);"><i class="fas fa-bus"></i></div>
+                        <h4 class="js-count" data-count="{{ $heroStats['destinations'] }}">0</h4>
+                        <p>Destinations desservies</p>
+                    </div>
+                    <div class="stats-card-item">
+                        <div class="stats-card-icon" style="background: var(--secondary);"><i class="fas fa-calendar-check"></i></div>
+                        <h4 class="js-count" data-count="{{ $heroStats['trajets'] }}">0</h4>
+                        <p>Trajets programmés</p>
+                    </div>
+                    <div class="stats-card-item">
+                        <div class="stats-card-icon" style="background: var(--primary);"><i class="fas fa-headset"></i></div>
+                        <h4>24/7</h4>
+                        <p>Support client</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -616,113 +550,38 @@
         counters.forEach(function (el) { observer.observe(el); });
     })();
 
-    // Marquee des villes desservies : on double le contenu pour une boucle infinie fluide
+    // Toggle "Aller simple / Aller-retour" : bascule vers "Aller-retour" affiche un champ
+    // date de retour ; la recherche revient avec deux listes de trajets (aller + retour,
+    // voir RechercheController), chacune réservable séparément — pas de billet combiné,
+    // comme le legacy.
     (function () {
-        const track = document.getElementById('villesMarquee');
-        if (!track) return;
-        track.innerHTML += track.innerHTML;
+        const simple = document.getElementById('tripSimple');
+        const retour = document.getElementById('tripRetour');
+        const dateRetourField = document.getElementById('hscDateRetourField');
+        const dateRetourInput = dateRetourField ? dateRetourField.querySelector('input') : null;
+        if (!simple || !retour) return;
+
+        function setMode(isRetour) {
+            simple.classList.toggle('is-active', !isRetour);
+            simple.querySelector('i').className = isRetour ? 'far fa-circle' : 'fas fa-circle-dot';
+            retour.classList.toggle('is-active', isRetour);
+            retour.querySelector('i').className = isRetour ? 'fas fa-circle-dot' : 'far fa-circle';
+            if (dateRetourField) dateRetourField.hidden = !isRetour;
+            if (dateRetourInput) dateRetourInput.disabled = !isRetour;
+        }
+
+        simple.addEventListener('click', function () { setMode(false); });
+        retour.addEventListener('click', function () { setMode(true); });
     })();
 
-    // Chips "populaires" : pré-remplissent le champ destination de la recherche
+    // Défilement horizontal des destinations au clic sur la flèche
     (function () {
-        const destSelect = document.getElementById('homeDestSelect');
-        if (!destSelect) return;
-        document.querySelectorAll('.quick-chip').forEach(function (chip) {
-            chip.addEventListener('click', function () {
-                destSelect.value = chip.dataset.ville;
-                document.querySelectorAll('.quick-chip').forEach(function (c) { c.classList.remove('is-active'); });
-                chip.classList.add('is-active');
-                destSelect.focus();
-            });
+        const scroller = document.getElementById('destScroll');
+        const next = document.getElementById('destScrollNext');
+        if (!scroller || !next) return;
+        next.addEventListener('click', function () {
+            scroller.scrollBy({ left: 240, behavior: 'smooth' });
         });
-    })();
-
-    // Tilt 3D léger sur les cartes destinations, au mouvement de la souris
-    (function () {
-        if (window.matchMedia('(pointer: coarse)').matches) return; // pas de tilt tactile
-        document.querySelectorAll('.js-tilt').forEach(function (card) {
-            card.addEventListener('mousemove', function (e) {
-                const rect = card.getBoundingClientRect();
-                const x = (e.clientX - rect.left) / rect.width - 0.5;
-                const y = (e.clientY - rect.top) / rect.height - 0.5;
-                card.style.transform = 'rotateY(' + (x * 8) + 'deg) rotateX(' + (y * -8) + 'deg) translateY(-4px)';
-            });
-            card.addEventListener('mouseleave', function () {
-                card.style.transform = '';
-            });
-        });
-    })();
-
-    // Filtre des destinations par tranche de prix
-    (function () {
-        const buttons = document.querySelectorAll('.dest-filter-btn');
-        const cards = document.querySelectorAll('#destGrid .route-card');
-        const empty = document.getElementById('destEmptyFilter');
-        if (!buttons.length) return;
-
-        buttons.forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                buttons.forEach(function (b) { b.classList.remove('is-active'); });
-                btn.classList.add('is-active');
-
-                const min = parseFloat(btn.dataset.min || '0');
-                const max = btn.dataset.max ? parseFloat(btn.dataset.max) : Infinity;
-                let visible = 0;
-
-                cards.forEach(function (card) {
-                    const prix = parseFloat(card.dataset.prix);
-                    const match = prix >= min && prix <= max;
-                    card.classList.toggle('is-filtered-out', !match);
-                    if (match) visible++;
-                });
-
-                if (empty) empty.style.display = visible === 0 ? 'block' : 'none';
-            });
-        });
-    })();
-
-    // Mini timeline de suivi de colis : petite démo qui boucle automatiquement (illustrative)
-    (function () {
-        const steps = document.querySelectorAll('#miniTimeline .mini-step');
-        if (!steps.length) return;
-        let active = 0;
-        setInterval(function () {
-            active = (active + 1) % steps.length;
-            steps.forEach(function (step, i) {
-                step.classList.toggle('is-done', i < active);
-                step.classList.toggle('is-active', i === active);
-            });
-        }, 2200);
-    })();
-
-    // Stepper "Comment ça marche" : clic sur une étape -> change le panneau détaillé
-    (function () {
-        const items = document.querySelectorAll('#stepperList .stepper-item');
-        const panel = document.getElementById('stepperPanel');
-        if (!items.length || !panel) return;
-
-        const details = [
-            { icon: 'fa-search', title: '1. Recherchez votre trajet', text: "Indiquez votre ville de départ, votre destination et la date de voyage : nous affichons tous les départs disponibles avec leurs horaires et leurs prix." },
-            { icon: 'fa-credit-card', title: '2. Réservez et payez en ligne', text: "Choisissez votre horaire, indiquez le nombre de passagers et réglez directement par Orange Money, sans vous déplacer." },
-            { icon: 'fa-ticket-alt', title: '3. Voyagez l’esprit tranquille', text: "Recevez votre billet par email, présentez-le à l’embarquement et profitez du trajet." },
-        ];
-
-        items.forEach(function (item) {
-            item.addEventListener('click', function () {
-                items.forEach(function (i) { i.classList.remove('is-active'); });
-                item.classList.add('is-active');
-                const d = details[parseInt(item.dataset.step, 10)] || details[0];
-                panel.style.opacity = 0;
-                setTimeout(function () {
-                    panel.innerHTML = '<div class="deco-pattern"></div>' +
-                        '<div class="stepper-panel-inner">' +
-                        '<div class="stepper-panel-icon"><i class="fas ' + d.icon + '"></i></div>' +
-                        '<h3>' + d.title + '</h3><p>' + d.text + '</p></div>';
-                    panel.style.opacity = 1;
-                }, 200);
-            });
-        });
-        panel.style.transition = 'opacity 0.2s ease';
     })();
 </script>
 </body>

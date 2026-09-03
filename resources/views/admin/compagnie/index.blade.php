@@ -65,7 +65,13 @@
                                                         data-libele="{{ $c->libele }}"
                                                         data-slogant="{{ $c->slogant }}"
                                                         data-logo="{{ $c->logo ? asset('images/logos/'.$c->logo) : '' }}"
-                                                        data-logofilename="{{ $c->logo }}">
+                                                        data-logofilename="{{ $c->logo }}"
+                                                        data-telephone="{{ $c->telephone }}"
+                                                        data-email="{{ $c->email }}"
+                                                        data-whatsapp="{{ $c->whatsapp }}"
+                                                        data-adresse="{{ $c->adresse }}"
+                                                        data-facebook="{{ $c->facebook }}"
+                                                        data-instagram="{{ $c->instagram }}">
                                                         <i class="fas fa-pen me-2"></i>Modifier
                                                     </a>
                                                 </li>
@@ -130,6 +136,36 @@
 
                         <hr class="my-3">
 
+                        <p class="text-muted small mb-2"><i class="fas fa-address-card me-1"></i> Coordonnées affichées sur le site public (toutes facultatives)</p>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Téléphone</label>
+                                <input type="text" class="form-control" name="telephone" value="{{ old('telephone') }}" placeholder="Ex : 77 41 37 57">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" value="{{ old('email') }}" placeholder="contact@compagnie.com">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">WhatsApp</label>
+                                <input type="text" class="form-control" name="whatsapp" value="{{ old('whatsapp') }}" placeholder="Ex : 77 41 37 57">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Adresse</label>
+                                <input type="text" class="form-control" name="adresse" value="{{ old('adresse') }}" placeholder="Ville, quartier...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Facebook</label>
+                                <input type="url" class="form-control" name="facebook" value="{{ old('facebook') }}" placeholder="https://facebook.com/...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Instagram</label>
+                                <input type="url" class="form-control" name="instagram" value="{{ old('instagram') }}" placeholder="https://instagram.com/...">
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+
                         <label class="form-label d-flex align-items-center justify-content-between">
                             <span><i class="fas fa-images me-1"></i> Photos des cars (carrousel connexion &amp; site public)</span>
                             <button type="button" class="btn btn-sm btn-outline-primary tg-add-photo-row" data-target="photoRowsCreate">
@@ -180,6 +216,37 @@
                                 <input type="file" class="form-control" name="logo" accept="image/png, image/jpeg, image/webp">
                             </div>
                         </div>
+
+                        <hr class="my-3">
+
+                        <p class="text-muted small mb-2"><i class="fas fa-address-card me-1"></i> Coordonnées affichées sur le site public (toutes facultatives)</p>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Téléphone</label>
+                                <input type="text" class="form-control" name="telephone" id="inputtelephone" placeholder="Ex : 77 41 37 57">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" id="inputemail" placeholder="contact@compagnie.com">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">WhatsApp</label>
+                                <input type="text" class="form-control" name="whatsapp" id="inputwhatsapp" placeholder="Ex : 77 41 37 57">
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Adresse</label>
+                                <input type="text" class="form-control" name="adresse" id="inputadresse" placeholder="Ville, quartier...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Facebook</label>
+                                <input type="url" class="form-control" name="facebook" id="inputfacebook" placeholder="https://facebook.com/...">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Instagram</label>
+                                <input type="url" class="form-control" name="instagram" id="inputinstagram" placeholder="https://instagram.com/...">
+                            </div>
+                        </div>
+
                         <input type="hidden" name="id_compagnie" id="inputidCompagnie">
                     </div>
                     <div class="modal-footer">

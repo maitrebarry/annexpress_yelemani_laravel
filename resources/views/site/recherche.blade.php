@@ -3,6 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <script>
+        // Applique le mode sombre / la couleur de theme AVANT le premier rendu (pas de
+        // flash de theme par defaut) - meme mecanique que resources/views/admin/partials/header.blade.php.
+        (function () {
+            try {
+                if (localStorage.getItem('tgSiteDarkMode') === 'true') {
+                    document.documentElement.classList.add('dark-mode');
+                }
+                var theme = localStorage.getItem('tgSiteTheme');
+                if (theme && theme !== 'default') {
+                    document.documentElement.setAttribute('data-theme', theme);
+                }
+            } catch (e) {}
+        })();
+    </script>
     <title>Résultats de recherche - TransGest</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
@@ -10,6 +25,16 @@
     <link rel="stylesheet" href="{{ asset('assets_site/css/all.min.css') }}">
     <link href="{{ asset('assets_site/css/aos.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/site-common.css') }}" rel="stylesheet">
+    <link rel="manifest" href="{{ route('site.manifest') }}">
+    <meta name="theme-color" content="#0f3b5e">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw-site.js', { scope: '/' }).catch(function () {});
+            });
+        }
+    </script>
+    <script defer src="{{ asset('assets_site/js/site-transitions.js') }}"></script>
     <style>
         .search-card {
             background: white;
@@ -37,6 +62,8 @@
         .form-control:focus, .form-select:focus { outline: none; border-color: var(--secondary); }
 
         .results-count { margin: 32px 0 16px; color: var(--gray); font-size: 0.9rem; }
+        .results-section-title { font-size: 1.15rem; display: flex; align-items: center; gap: 10px; color: var(--dark); }
+        .results-section-title i { color: var(--secondary); }
 
         .results-grid {
             display: grid;
@@ -146,6 +173,9 @@
             </form>
         </div>
 
+        @if ($resultatsRetour !== null)
+            <h2 class="results-section-title"><i class="fas fa-arrow-right"></i> Aller — {{ $date ?: 'toutes dates' }}</h2>
+        @endif
         <p class="results-count">{{ $resultats->count() }} trajet(s) trouvé(s)</p>
 
         @if ($resultats->isNotEmpty())
@@ -174,6 +204,39 @@
                 <i class="fas fa-route"></i>
                 Aucun trajet ne correspond à votre recherche.<br>Essayez une autre ville ou une autre compagnie.
             </div>
+        @endif
+
+        @if ($resultatsRetour !== null)
+            <h2 class="results-section-title mt-5"><i class="fas fa-arrow-left"></i> Retour — {{ $dateRetour }}</h2>
+            <p class="results-count">{{ $resultatsRetour->count() }} trajet(s) trouvé(s)</p>
+
+            @if ($resultatsRetour->isNotEmpty())
+                <div class="results-grid">
+                    @foreach ($resultatsRetour as $r)
+                        <div class="result-card" data-aos="fade-up">
+                            <div class="result-card-top">
+                                <span class="result-compagnie">
+                                    @if ($r->logo)
+                                        <img src="{{ asset('images/logos/'.$r->logo) }}" alt="">
+                                    @endif
+                                    {{ $r->nom_compagnie }}
+                                </span>
+                                <span class="result-price">{{ number_format((float) $r->prix, 0, ',', ' ') }} FCFA</span>
+                            </div>
+                            <div class="result-route">
+                                {{ $r->departLocalite }} <i class="fas fa-long-arrow-alt-right"></i> {{ $r->destinationLocalite }}
+                            </div>
+                            <p class="result-heure"><i class="far fa-clock"></i> Départ à {{ substr($r->heureDepart, 0, 5) }}</p>
+                            <a href="#" onclick="openReservationModal({{ $r->idProgrammer }}); return false;" class="result-book">Réserver <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="no-results">
+                    <i class="fas fa-route"></i>
+                    Aucun trajet retour ne correspond à votre recherche.
+                </div>
+            @endif
         @endif
     </div>
 </section>

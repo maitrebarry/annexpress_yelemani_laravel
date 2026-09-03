@@ -93,6 +93,7 @@
                                                         data-telephone="{{ $u->telephone }}"
                                                         data-droit="{{ $u->droit }}"
                                                         data-profile="{{ $u->profile }}"
+                                                        data-id_agence="{{ $u->id_agence }}"
                                                         data-photo="{{ $u->photo ? asset('storage/profiles/'.$u->photo) : '' }}">
                                                         <i class="fas fa-pen me-2"></i>Modifier
                                                     </a>
@@ -260,6 +261,15 @@
                                     <option value="colis">Colis / Courrier</option>
                                 </select>
                             </div>
+                            <div class="col-md-6" id="edit_gareField">
+                                <label class="form-label fw-semibold">Gare <span class="text-danger">*</span></label>
+                                <select class="form-select" id="edit_id_agence" name="id_agence">
+                                    <option value="">Choisissez une gare</option>
+                                    @foreach ($listeGares as $gare)
+                                        <option value="{{ $gare->idAgence }}">{{ $gare->localite }} — {{ $gare->numeroGare }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Nouveau mot de passe</label>
                                 <input type="password" class="form-control" id="edit_motPasse" name="motPasse" placeholder="Laisser vide pour ne pas modifier" minlength="6">
@@ -376,13 +386,23 @@
                 toggleAddFields();
             }
 
-            // --- Modal Modification : préremplissage + toggle du champ service
+            // --- Modal Modification : préremplissage + toggle des champs service/gare
             var editDroit = document.getElementById('edit_droit');
             var editServiceField = document.getElementById('edit_serviceField');
             var editProfile = document.getElementById('edit_profile');
+            var editGareField = document.getElementById('edit_gareField');
+            var editIdAgence = document.getElementById('edit_id_agence');
 
             function toggleEditService() {
                 editServiceField.classList.toggle('d-none', editDroit.value !== 'Utilisateur');
+                // Même règle que pour la création : Admin/PDG/secrétaire général sont
+                // rattachés à la compagnie entière, pas à une gare précise.
+                var estAdminOuPdg = ['Admin', 'PDG', 'secretaire'].includes(editDroit.value);
+                editGareField.classList.toggle('d-none', estAdminOuPdg);
+                editIdAgence.required = !estAdminOuPdg;
+            }
+            if (editDroit) {
+                editDroit.addEventListener('change', toggleEditService);
             }
 
             document.querySelectorAll('.edit-utilisateur-btn').forEach(function(btn) {
@@ -393,6 +413,7 @@
                     document.getElementById('edit_telephone').value = this.dataset.telephone || '';
                     editDroit.value = this.dataset.droit;
                     document.getElementById('edit_motPasse').value = '';
+                    editIdAgence.value = this.dataset.id_agence || '';
                     toggleEditService();
                     if (this.dataset.profile) {
                         editProfile.value = this.dataset.profile;

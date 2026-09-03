@@ -3,6 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <script>
+        // Applique le mode sombre / la couleur de theme AVANT le premier rendu (pas de
+        // flash de theme par defaut) - meme mecanique que resources/views/admin/partials/header.blade.php.
+        (function () {
+            try {
+                if (localStorage.getItem('tgSiteDarkMode') === 'true') {
+                    document.documentElement.classList.add('dark-mode');
+                }
+                var theme = localStorage.getItem('tgSiteTheme');
+                if (theme && theme !== 'default') {
+                    document.documentElement.setAttribute('data-theme', theme);
+                }
+            } catch (e) {}
+        })();
+    </script>
     <title>{{ $compagnie->nom_compagnie }} - TransGest</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
@@ -10,6 +25,16 @@
     <link href="{{ asset('assets_site/css/all.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/aos.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/site-common.css') }}" rel="stylesheet">
+    <link rel="manifest" href="{{ route('site.manifest') }}">
+    <meta name="theme-color" content="#0f3b5e">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw-site.js', { scope: '/' }).catch(function () {});
+            });
+        }
+    </script>
+    <script defer src="{{ asset('assets_site/js/site-transitions.js') }}"></script>
     <style>
         /* ========== PAGE HEADER (variante avec blobs animés + stats) ==========
            Le motif de fond (points + blobs flottants) vit désormais dans site-common.css

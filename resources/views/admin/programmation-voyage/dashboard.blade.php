@@ -188,16 +188,16 @@
                                     <td>{{ $c->destination }}</td>
                                     <td>{{ \Illuminate\Support\Carbon::parse($c->date_enregistre)->format('d/m/Y') }}</td>
                                     <td>
-                                        <form method="post" action="{{ route('admin.programmation-voyage.debloquer-arrive') }}" class="d-inline"
-                                            onsubmit="return confirm('Confirmer : ce car est bien arrivé à {{ addslashes($c->destination) }} ?');">
+                                        <form method="post" action="{{ route('admin.programmation-voyage.debloquer-arrive') }}" class="d-inline confirm-arrivee-form"
+                                            data-confirm-text="Confirmer : ce car est bien arrivé à {{ $c->destination }} ?">
                                             @csrf
                                             <input type="hidden" name="id_programmation_bloque" value="{{ $c->id_programmation }}">
                                             <button type="submit" class="btn btn-sm btn-success shadow-sm rounded-pill px-2 mb-1">
                                                 <i class="fas fa-check-double me-1"></i> Arrivé à destination
                                             </button>
                                         </form>
-                                        <form method="post" action="{{ route('admin.programmation-voyage.debloquer-jamais-parti') }}" class="d-inline"
-                                            onsubmit="return confirm('Confirmer : ce car n\'a jamais quitté {{ addslashes($c->origine) }} ?');">
+                                        <form method="post" action="{{ route('admin.programmation-voyage.debloquer-jamais-parti') }}" class="d-inline confirm-arrivee-form"
+                                            data-confirm-text="Confirmer : ce car n'a jamais quitté {{ $c->origine }} ?">
                                             @csrf
                                             <input type="hidden" name="id_programmation_bloque" value="{{ $c->id_programmation }}">
                                             <button type="submit" class="btn btn-sm btn-outline-secondary shadow-sm rounded-pill px-2 mb-1">
@@ -218,6 +218,34 @@
 
 @section('scripts')
     <script>
+        // Confirmation SweetAlert (au lieu du confirm() natif du navigateur) pour les 2
+        // actions de déblocage d'anomalie "Cars bloqués" — même style que le reste de
+        // l'admin (voir mon_js/alert_delete.js).
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.confirm-arrivee-form').forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    Swal.fire({
+                        title: 'Confirmation',
+                        text: form.dataset.confirmText,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Oui, confirmer',
+                        cancelButtonText: 'Annuler',
+                        customClass: {
+                            confirmButton: 'btn btn-success',
+                            cancelButton: 'btn btn-light',
+                        },
+                        buttonsStyling: false,
+                    }).then(function (result) {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', function () {
             var dateInput = document.getElementById('jourVoyage');
             var today = new Date().toISOString().slice(0, 10);

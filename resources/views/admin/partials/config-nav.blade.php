@@ -87,6 +87,22 @@
             </a>
           </li>
         @endif
+        @if (in_array($authUser->droit, ['Admin', 'PDG', 'secretaire'], true))
+          <li class="nav-item mt-2">
+            <a class="nav-link {{ $active === 'actualite' ? 'active' : '' }} text-break" role="tab"
+              aria-current="page" href="{{ url('/admin/Actualites') }}"
+              aria-selected="true">
+              <i class="fas fa-newspaper me-2 align-middle d-inline-block"></i>Actualités
+            </a>
+          </li>
+          <li class="nav-item mt-2">
+            <a class="nav-link {{ $active === 'messages' ? 'active' : '' }} text-break" role="tab"
+              aria-current="page" href="{{ url('/admin/Messages_contact') }}"
+              aria-selected="true">
+              <i class="fas fa-envelope-open-text me-2 align-middle d-inline-block"></i>Messages reçus
+            </a>
+          </li>
+        @endif
       </ul>
     </div>
   </div>

@@ -3,6 +3,7 @@
 @php
     $authUser = auth('staff')->user();
     $montantTotal = $listeHistorique->sum(fn ($b) => (float) preg_replace('/[^\d.]/', '', (string) $b->montant_payer));
+    $peutImprimer = $authUser->userHasPermission('Billets_impression');
 @endphp
 
 @section('title', 'Historique des billets · TransGest Admin')
@@ -84,6 +85,9 @@
                         <th class="border-0">Heure</th>
                         <th class="border-0">Statut</th>
                         <th class="border-0 text-end">Montant</th>
+                        @if ($peutImprimer)
+                            <th class="border-0 text-center">Action</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -104,6 +108,27 @@
                                 @endif
                             </td>
                             <td class="text-end fw-bold text-success">{{ number_format((float) preg_replace('/[^\d.]/', '', (string) $b->montant_payer), 0, ',', ' ') }} F</td>
+                            @if ($peutImprimer)
+                                <td class="text-center">
+                                    <div class="dropdown">
+                                        <a href="#" class="text-dark fs-5" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-vertical"></i>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                            <li>
+                                                <a class="dropdown-item thermal-print-btn" href="#" data-id="{{ $b->idBillets }}">
+                                                    <i class="fas fa-print me-2"></i>Imprimer (thermique)
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{{ url('/admin/Liste_du_jours/recu/' . $b->idBillets) }}" target="_blank">
+                                                    <i class="fas fa-file-pdf me-2"></i>Ouvrir PDF
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>
@@ -111,4 +136,10 @@
         </div>
     </div>
 
+@endsection
+
+@section('scripts')
+    @if ($peutImprimer)
+        <script src="{{ asset('mon_js/thermal-print.js') }}"></script>
+    @endif
 @endsection

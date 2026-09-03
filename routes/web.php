@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BanqueController;
 use App\Http\Controllers\Admin\BilletController;
 use App\Http\Controllers\Admin\CaisseController;
+use App\Http\Controllers\Admin\ActualiteController;
 use App\Http\Controllers\Admin\CarController;
 use App\Http\Controllers\Admin\ChauffeurController;
 use App\Http\Controllers\Admin\ColisPriseEnChargeController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Admin\GaresController;
 use App\Http\Controllers\Admin\HistoriqueColisController;
 use App\Http\Controllers\Admin\HomeController;
 use App\Http\Controllers\Admin\HoraireController;
+use App\Http\Controllers\Admin\MessageContactController;
 use App\Http\Controllers\Admin\ListeEntenteController;
 use App\Http\Controllers\Admin\LivraisonColisController;
 use App\Http\Controllers\Admin\LocationCarController;
@@ -33,12 +35,16 @@ use App\Http\Controllers\Admin\ReclamationColisController;
 use App\Http\Controllers\Admin\TransfertGareController;
 use App\Http\Controllers\Admin\ProfilController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Site\ActualiteController as SiteActualiteController;
 use App\Http\Controllers\Site\CompagnieController as SiteCompagnieController;
 use App\Http\Controllers\Site\ContactController as SiteContactController;
 use App\Http\Controllers\Site\HomeController as SiteHomeController;
+use App\Http\Controllers\Site\ManifestController as SiteManifestController;
+use App\Http\Controllers\Site\MonCompteController as SiteMonCompteController;
 use App\Http\Controllers\Site\PartenaireController as SitePartenaireController;
 use App\Http\Controllers\Site\RechercheController as SiteRechercheController;
 use App\Http\Controllers\Site\ReservationController as SiteReservationController;
+use App\Http\Controllers\Site\ServiceController as SiteServiceController;
 use App\Http\Controllers\Site\SuiviColisController as SiteSuiviColisController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,10 +59,23 @@ Route::name('site.')->middleware('site.compagnie.configured')->group(function ()
     Route::get('/compagnies/{compagnie}', [SiteCompagnieController::class, 'show'])->name('compagnie.trajets');
     Route::get('/recherche', [SiteRechercheController::class, 'index'])->name('recherche');
     Route::get('/suivi-colis', [SiteSuiviColisController::class, 'index'])->name('suivi-colis');
-    Route::get('/reservation/{id}/donnees', [SiteReservationController::class, 'donnees'])->name('reservation.donnees');
+    Route::post('/reservation/{id}/donnees', [SiteReservationController::class, 'donnees'])->name('reservation.donnees');
     Route::post('/reservation', [SiteReservationController::class, 'store'])->name('reservation.store');
     Route::get('/billet/{numeroBillets}', [SiteReservationController::class, 'billet'])->name('billet');
     Route::get('/contact', [SiteContactController::class, 'index'])->name('contact');
+    Route::post('/contact', [SiteContactController::class, 'store'])->middleware('throttle:10,1')->name('contact.store');
+    Route::get('/services', [SiteServiceController::class, 'index'])->name('services');
+    Route::get('/actualites', [SiteActualiteController::class, 'index'])->name('actualites');
+    Route::get('/actualites/{actualite}', [SiteActualiteController::class, 'show'])->name('actualites.show');
+    Route::get('/mon-compte', [SiteMonCompteController::class, 'index'])->name('mon-compte');
+    // Pas d'extension dans l'URL (/manifest, pas /manifest.webmanifest ou .json) : le
+    // serveur de ce projet intercepte apparemment toute URL se terminant par une extension
+    // de fichier "connue" (.json/.xml/.webmanifest...) avant même d'atteindre Laravel,
+    // renvoyant un 404 générique du serveur plutôt que la route — contourné en gardant
+    // une URL sans extension, comme toutes les autres routes du site. Le header
+    // Content-Type (voir ManifestController) suffit pour que le navigateur reconnaisse
+    // le manifeste PWA, l'extension de l'URL n'a pas d'importance pour la spec.
+    Route::get('/manifest', [SiteManifestController::class, 'index'])->name('manifest');
 
     // Espace partenaire (guard `partenaire`, voir config/auth.php).
     Route::middleware('guest:partenaire')->group(function () {
@@ -104,6 +123,17 @@ Route::middleware(['auth:staff', 'super_admin'])->prefix('admin')->group(functio
 Route::middleware(['auth:staff', 'super_admin'])->prefix('admin')->group(function () {
     Route::get('/Partenariats', [PartenariatController::class, 'index'])->name('admin.partenariat.index');
     Route::post('/Partenariats/repondre', [PartenariatController::class, 'repondre'])->name('admin.partenariat.repondre');
+});
+
+Route::middleware('auth:staff')->prefix('admin')->group(function () {
+    Route::get('/Actualites', [ActualiteController::class, 'index'])->name('admin.actualite.index');
+    Route::post('/Actualites/store', [ActualiteController::class, 'store'])->name('admin.actualite.store');
+    Route::post('/Actualites/edit', [ActualiteController::class, 'update'])->name('admin.actualite.update');
+    Route::get('/Actualites/delete/{id}', [ActualiteController::class, 'destroy'])->name('admin.actualite.destroy');
+
+    Route::get('/Messages_contact', [MessageContactController::class, 'index'])->name('admin.message-contact.index');
+    Route::post('/Messages_contact/traiter/{id}', [MessageContactController::class, 'marquerTraite'])->name('admin.message-contact.traiter');
+    Route::get('/Messages_contact/delete/{id}', [MessageContactController::class, 'destroy'])->name('admin.message-contact.destroy');
 });
 
 Route::middleware(['auth:staff', 'permission:Configuration_gestion_escale'])->prefix('admin')->group(function () {

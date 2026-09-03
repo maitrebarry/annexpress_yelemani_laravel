@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Toute la plateforme (admin + site public) est en Bootstrap 5 : sans ceci
+        // {{ $x->links() }} rendrait la pagination par défaut de Laravel (Tailwind, jamais
+        // chargé ici), non stylée.
+        Paginator::useBootstrapFive();
+
         // Par défaut, un utilisateur déjà connecté qui retombe sur une route "guest"
         // (ex: /admin, protégée par `guest:staff`) est renvoyé vers '/' faute de route
         // nommée `home`/`dashboard` — sur ce site, '/' est la vitrine publique, pas

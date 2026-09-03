@@ -21,6 +21,17 @@ class CompagnieController extends Controller
     private const PHOTOS_RULES = ['nullable', 'array', 'max:12'];
     private const PHOTO_RULES = ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096'];
 
+    // Coordonnées affichées sur le site public (barre du haut, footer) — toutes
+    // facultatives : une compagnie peut ne pas encore les avoir renseignées.
+    private const CONTACT_RULES = [
+        'telephone' => ['nullable', 'string', 'max:30'],
+        'email' => ['nullable', 'email', 'max:150'],
+        'adresse' => ['nullable', 'string', 'max:255'],
+        'facebook' => ['nullable', 'url', 'max:255'],
+        'instagram' => ['nullable', 'url', 'max:255'],
+        'whatsapp' => ['nullable', 'string', 'max:30'],
+    ];
+
     public function index()
     {
         $liste = Compagnie::with('photos')->orderBy('nom_compagnie')->get();
@@ -30,14 +41,14 @@ class CompagnieController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
+        $data = $request->validate(array_merge([
             'nom_compagnie' => ['required', 'string', 'max:250'],
             'libele' => ['required', 'string', 'max:250'],
             'slogant' => ['required', 'string', 'max:250'],
             'logo' => self::LOGO_RULES,
             'photos' => self::PHOTOS_RULES,
             'photos.*' => self::PHOTO_RULES,
-        ]);
+        ], self::CONTACT_RULES));
 
         $logoName = $request->hasFile('logo') ? $this->enregistrerLogo($request->file('logo')) : null;
 
@@ -47,6 +58,12 @@ class CompagnieController extends Controller
                 'libele' => $data['libele'],
                 'slogant' => $data['slogant'],
                 'logo' => $logoName,
+                'telephone' => $data['telephone'] ?? null,
+                'email' => $data['email'] ?? null,
+                'adresse' => $data['adresse'] ?? null,
+                'facebook' => $data['facebook'] ?? null,
+                'instagram' => $data['instagram'] ?? null,
+                'whatsapp' => $data['whatsapp'] ?? null,
             ]);
 
             // Chaque compagnie a besoin de sa propre limite de places (réservations "demain").
@@ -67,14 +84,14 @@ class CompagnieController extends Controller
     {
         $compagnie = Compagnie::findOrFail($request->input('id_compagnie'));
 
-        $data = $request->validate([
+        $data = $request->validate(array_merge([
             'nom_compagnie' => ['required', 'string', 'max:250'],
             'libele' => ['required', 'string', 'max:250'],
             'slogant' => ['required', 'string', 'max:250'],
             'logo' => self::LOGO_RULES,
             'photos' => self::PHOTOS_RULES,
             'photos.*' => self::PHOTO_RULES,
-        ]);
+        ], self::CONTACT_RULES));
 
         $logoName = $compagnie->logo;
         if ($request->hasFile('logo')) {
@@ -90,6 +107,12 @@ class CompagnieController extends Controller
             'libele' => $data['libele'],
             'slogant' => $data['slogant'],
             'logo' => $logoName,
+            'telephone' => $data['telephone'] ?? null,
+            'email' => $data['email'] ?? null,
+            'adresse' => $data['adresse'] ?? null,
+            'facebook' => $data['facebook'] ?? null,
+            'instagram' => $data['instagram'] ?? null,
+            'whatsapp' => $data['whatsapp'] ?? null,
         ]);
 
         $this->enregistrerPhotos($compagnie, $request->file('photos', []));

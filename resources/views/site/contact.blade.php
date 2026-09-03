@@ -3,12 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <script>
+        // Applique le mode sombre / la couleur de theme AVANT le premier rendu (pas de
+        // flash de theme par defaut) - meme mecanique que resources/views/admin/partials/header.blade.php.
+        (function () {
+            try {
+                if (localStorage.getItem('tgSiteDarkMode') === 'true') {
+                    document.documentElement.classList.add('dark-mode');
+                }
+                var theme = localStorage.getItem('tgSiteTheme');
+                if (theme && theme !== 'default') {
+                    document.documentElement.setAttribute('data-theme', theme);
+                }
+            } catch (e) {}
+        })();
+    </script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>À propos & Contact - TransGest</title>
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/all.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/aos.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/site-common.css') }}" rel="stylesheet">
+    <link rel="manifest" href="{{ route('site.manifest') }}">
+    <meta name="theme-color" content="#0f3b5e">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw-site.js', { scope: '/' }).catch(function () {});
+            });
+        }
+    </script>
+    <script defer src="{{ asset('assets_site/js/site-transitions.js') }}"></script>
     <style>
         /* ========== SECTION À PROPOS ========== */
         .about-section {
@@ -344,27 +370,33 @@
                 <h3>Contactez-nous</h3>
                 <p>Notre équipe est à votre disposition pour toute question ou assistance.</p>
                 <div class="contact-details">
-                    <div class="contact-item">
-                        <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
-                        <div class="contact-text">
-                            <h4>Adresse</h4>
-                            <p>Pelegana, Segou, Mali</p>
+                    @if ($compagnie->adresse)
+                        <div class="contact-item">
+                            <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                            <div class="contact-text">
+                                <h4>Adresse</h4>
+                                <p>{{ $compagnie->adresse }}</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="contact-icon"><i class="fas fa-phone-alt"></i></div>
-                        <div class="contact-text">
-                            <h4>Téléphone</h4>
-                            <p>+223 90 25 94 38</p>
+                    @endif
+                    @if ($compagnie->telephone)
+                        <div class="contact-item">
+                            <div class="contact-icon"><i class="fas fa-phone-alt"></i></div>
+                            <div class="contact-text">
+                                <h4>Téléphone</h4>
+                                <p><a href="tel:{{ preg_replace('/\s+/', '', $compagnie->telephone) }}">{{ $compagnie->telephone }}</a></p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="contact-icon"><i class="fas fa-envelope"></i></div>
-                        <div class="contact-text">
-                            <h4>Email</h4>
-                            <p>annexpress@gmail.com</p>
+                    @endif
+                    @if ($compagnie->email)
+                        <div class="contact-item">
+                            <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+                            <div class="contact-text">
+                                <h4>Email</h4>
+                                <p><a href="mailto:{{ $compagnie->email }}">{{ $compagnie->email }}</a></p>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                     <div class="contact-item">
                         <div class="contact-icon"><i class="fas fa-clock"></i></div>
                         <div class="contact-text">
@@ -374,30 +406,31 @@
                     </div>
                 </div>
                 <div class="social-links">
-                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="{{ $compagnie->facebook ?: '#' }}" @if(! $compagnie->facebook) onclick="tgBientot(event)" @else target="_blank" rel="noopener" @endif class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="{{ $compagnie->instagram ?: '#' }}" @if(! $compagnie->instagram) onclick="tgBientot(event)" @else target="_blank" rel="noopener" @endif class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href="{{ $compagnie->whatsapp ? 'https://wa.me/'.preg_replace('/\D+/', '', $compagnie->whatsapp) : '#' }}" @if(! $compagnie->whatsapp) onclick="tgBientot(event)" @else target="_blank" rel="noopener" @endif class="social-link"><i class="fab fa-whatsapp"></i></a>
                 </div>
             </div>
             <div class="contact-form" data-aos="fade-left">
                 <h3>Envoyez-nous un message</h3>
-                <form onsubmit="tgBientot(event)">
+                <form method="POST" action="{{ route('site.contact.store') }}">
+                    @csrf
+                    <input type="hidden" name="origine" value="contact">
                     <div class="form-group">
                         <label>Nom complet</label>
-                        <input type="text" class="form-control" placeholder="Votre nom">
+                        <input type="text" name="nom" class="form-control" placeholder="Votre nom" value="{{ old('nom') }}" required>
                     </div>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" class="form-control" placeholder="votre@email.com">
+                        <input type="email" name="email" class="form-control" placeholder="votre@email.com" value="{{ old('email') }}">
                     </div>
                     <div class="form-group">
                         <label>Téléphone</label>
-                        <input type="tel" class="form-control" placeholder="77 78 88 99">
+                        <input type="tel" name="telephone" class="form-control" placeholder="77 78 88 99" value="{{ old('telephone') }}">
                     </div>
                     <div class="form-group">
                         <label>Message</label>
-                        <textarea class="form-control" placeholder="Votre message..."></textarea>
+                        <textarea name="message" class="form-control" placeholder="Votre message..." required>{{ old('message') }}</textarea>
                     </div>
                     <button type="submit" class="btn-submit">Envoyer le message <i class="fas fa-paper-plane"></i></button>
                 </form>

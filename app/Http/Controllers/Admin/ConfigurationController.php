@@ -139,10 +139,19 @@ class ConfigurationController extends Controller
             'emailUser' => ['required', 'email', 'max:250', Rule::unique('utilisateur', 'emailUser')->ignore($cible->idUser, 'idUser')],
             'telephone' => ['nullable', 'regex:'.self::TELEPHONE_REGEX],
             'droit' => ['required', Rule::in($droitsAutorises)],
+            'id_agence' => ['nullable', 'string'],
             'profile' => ['nullable', Rule::in(['billet', 'colis'])],
             'motPasse' => ['nullable', 'string', 'min:6'],
             'photo' => ['nullable', 'image', 'max:5120'],
         ]);
+
+        // Même règle qu'à la création : un chef d'escale ou un simple Utilisateur doit être
+        // rattaché à une gare ; seuls Admin/PDG/secrétaire général (compagnie entière) y
+        // échappent. Sans ce champ dans le formulaire de modification (avant ce correctif),
+        // la gare d'un chef d'escale n'était ni visible ni modifiable une fois le compte créé.
+        if (! in_array($data['droit'], ['Admin', 'PDG', 'secretaire'], true) && empty($data['id_agence'])) {
+            return back()->withErrors(['id_agence' => 'La gare est obligatoire pour ce type de compte.'])->withInput();
+        }
 
         $profile = $data['droit'] === 'Utilisateur' ? ($data['profile'] ?? null) : null;
 
@@ -150,6 +159,7 @@ class ConfigurationController extends Controller
         $cible->emailUser = $data['emailUser'];
         $cible->telephone = $data['telephone'] ?: null;
         $cible->droit = $data['droit'];
+        $cible->id_agence = in_array($data['droit'], ['Admin', 'PDG', 'secretaire'], true) ? null : $data['id_agence'];
         $cible->profile = $profile;
 
         if (! empty($data['motPasse'])) {

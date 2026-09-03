@@ -1,0 +1,15 @@
+{
+    "name": "TransGest Admin",
+    "short_name": "TransGest",
+    "description": "Espace de gestion TransGest — billets, colis, caisses, configuration.",
+    "start_url": "/admin/Homes/home",
+    "scope": "/admin",
+    "display": "standalone",
+    "background_color": "#eef2f8",
+    "theme_color": "#0f3b5e",
+    "orientation": "any",
+    "icons": [
+        { "src": "/pwa/icon-transgest-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+        { "src": "/pwa/icon-transgest-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    ]
+}

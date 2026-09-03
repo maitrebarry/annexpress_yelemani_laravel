@@ -11,8 +11,8 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: #f5f7fb;
-    color: #1a1f2e;
+    background: var(--body-bg);
+    color: var(--dark);
     line-height: 1.5;
     overflow-x: hidden;
     min-height: 100vh;
@@ -24,8 +24,8 @@ body {
     --primary: #0f3b5e;
     --primary-dark: #0a2a44;
     --primary-light: #1a5276;
-    --secondary: #e67e22;
-    --secondary-dark: #c0392b;
+    --secondary: #dc2626;
+    --secondary-dark: #b91c1c;
     --accent: #3498db;
     --success: #27ae60;
     --warning: #f39c12;
@@ -33,12 +33,160 @@ body {
     --gray: #7f8c8d;
     --dark: #2c3e50;
     --white: #ffffff;
+    --body-bg: #f5f7fb;
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
     --shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 5px 20px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.1);
     --radius: 8px;
     --radius-lg: 16px;
     --radius-xl: 24px;
+}
+
+/* ========== THÈMES (data-theme, sélecteur nav) — mêmes 5 palettes que l'admin
+   (resources/views/admin/partials/theme.blade.php), mécanique identique : localStorage
+   'tgSiteTheme'/'tgSiteDarkMode', script anti-flash dans chaque <head>. ========== */
+:root[data-theme="orange"] {
+    --primary: #9a3412; --primary-dark: #7c2d12; --primary-light: #c2410c;
+    --secondary: #ea580c; --secondary-dark: #c2410c;
+}
+:root[data-theme="green"] {
+    --primary: #0f766e; --primary-dark: #0b5c55; --primary-light: #14958a;
+    --secondary: #10b981; --secondary-dark: #059669;
+}
+:root[data-theme="red"] {
+    --primary: #7f1d1d; --primary-dark: #601515; --primary-light: #9f2929;
+    --secondary: #ef4444; --secondary-dark: #dc2626;
+}
+:root[data-theme="indigo"] {
+    --primary: #3730a3; --primary-dark: #2e2a87; --primary-light: #4338ca;
+    --secondary: #6366f1; --secondary-dark: #4f46e5;
+}
+
+/* ========== MODE SOMBRE ========== */
+html.dark-mode {
+    --body-bg: #0b1120;
+    --card-bg: #111827;
+    --card-border: #1f2937;
+    --gray-light: #16202f;
+    --dark: #e2e8f0;
+    --gray: #94a3b8;
+    --white: #111827;
+}
+html.dark-mode body { color: var(--dark); }
+html.dark-mode .header,
+html.dark-mode .hero-search-card,
+html.dark-mode .stats-card,
+html.dark-mode .news-card,
+html.dark-mode .svc-card,
+html.dark-mode .account-box,
+html.dark-mode .contact-form,
+html.dark-mode .why-card:hover,
+html.dark-mode .route-card,
+html.dark-mode .tracking-box,
+html.dark-mode .help-panel,
+html.dark-mode .search-card,
+html.dark-mode .feature-strip,
+html.dark-mode .trip-toggle button,
+html.dark-mode .dest-scroll-next,
+html.dark-mode .about-image-badge,
+html.dark-mode .value-card,
+html.dark-mode .contact-info,
+html.dark-mode .tracking-card,
+html.dark-mode .colis-card,
+html.dark-mode .filters-card,
+html.dark-mode .ticket-card,
+html.dark-mode .result-card,
+html.dark-mode .no-results,
+html.dark-mode .timeline-dot,
+html.dark-mode .sort-select {
+    background: var(--card-bg) !important;
+    color: var(--dark) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,.4);
+}
+html.dark-mode .form-control:focus,
+html.dark-mode .filter-select:focus,
+html.dark-mode .filter-input:focus {
+    background: var(--gray-light) !important;
+    color: var(--dark) !important;
+}
+html.dark-mode .values-section,
+html.dark-mode .map-section {
+    background: var(--body-bg) !important;
+}
+html.dark-mode .feature-strip { border-bottom-color: var(--card-border) !important; }
+html.dark-mode .trip-toggle button.is-active { background: var(--primary-dark) !important; color: white !important; }
+html.dark-mode .feature-strip-icon { background: var(--gray-light) !important; }
+html.dark-mode .logo-text,
+html.dark-mode .nav-link,
+html.dark-mode .rc-city,
+html.dark-mode h1, html.dark-mode h2, html.dark-mode h3, html.dark-mode h4, html.dark-mode h5 {
+    color: var(--dark);
+}
+html.dark-mode .btn-account { background: var(--card-bg); color: var(--dark); border-color: var(--card-border); }
+html.dark-mode .form-control,
+html.dark-mode .form-select,
+html.dark-mode .hsc-field select,
+html.dark-mode .hsc-field input,
+html.dark-mode .account-box input,
+html.dark-mode .contact-form input,
+html.dark-mode .contact-form textarea,
+html.dark-mode .help-panel-form input,
+html.dark-mode .help-panel-form textarea {
+    background: var(--gray-light) !important;
+    color: var(--dark) !important;
+    border-color: var(--card-border) !important;
+}
+html.dark-mode .form-control::placeholder,
+html.dark-mode .account-box input::placeholder,
+html.dark-mode .contact-form textarea::placeholder { color: var(--gray); }
+html.dark-mode .swal2-popup { background: var(--card-bg) !important; color: var(--dark) !important; }
+html.dark-mode .swal2-title, html.dark-mode .swal2-html-container { color: var(--dark) !important; }
+* { transition: background-color .3s, color .3s, border-color .3s; }
+@media (prefers-reduced-motion: reduce) { * { transition: none; } }
+
+/* ========== SÉLECTEUR DE THÈME / MODE SOMBRE (bandeau du haut) ========== */
+.theme-toggle-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(255,255,255,.12); border: none; color: white; cursor: pointer;
+    font-size: .78rem; transition: background .2s;
+}
+.theme-toggle-btn:hover { background: rgba(255,255,255,.22); }
+.theme-picker { position: relative; display: inline-flex; }
+.theme-picker-menu {
+    position: absolute; top: calc(100% + 10px); right: 0; z-index: 2000;
+    background: var(--card-bg); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+    padding: 8px; display: flex; gap: 8px; align-items: center;
+}
+/* Le sélecteur de classe ci-dessus a la même spécificité que la règle par défaut du
+   navigateur [hidden]{display:none} et charge après elle : sans ce correctif, l'attribut
+   hidden n'a plus aucun effet et le menu reste visible en permanence. */
+.theme-picker-menu[hidden] { display: none; }
+.theme-picker-swatches { display: flex; gap: 8px; }
+.theme-picker-menu .theme-picker-swatches button {
+    width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0;
+}
+.theme-picker-menu .theme-picker-swatches button.is-active { border-color: var(--dark); }
+
+/* ========== TRANSITIONS DE PAGE (site-transitions.js) ========== */
+.tg-progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: linear-gradient(90deg, var(--secondary), var(--primary));
+    z-index: 99999; opacity: 0; pointer-events: none;
+    box-shadow: 0 0 8px rgba(220, 38, 38, .5);
+}
+body.tg-page-leaving {
+    opacity: 0;
+    transform: translateY(6px);
+}
+body {
+    transition: opacity .16s ease, transform .16s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+    body { transition: none; }
+    .tg-progress-bar { transition: none !important; }
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -205,6 +353,7 @@ section {
     height: 3px;
     background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
 }
+.footer-brand-col { display: flex; flex-direction: column; }
 .footer-brand {
     display: flex;
     align-items: center;
@@ -221,11 +370,15 @@ section {
     font-weight: 800;
     font-size: 1.05rem;
 }
+.footer-copyright {
+    font-size: 0.78rem;
+    margin: 0;
+}
 .footer-grid {
     display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr 1fr;
-    gap: 48px;
-    margin-bottom: 40px;
+    grid-template-columns: 1.3fr 1fr 1fr 1fr 0.9fr;
+    gap: 32px;
+    margin-bottom: 8px;
 }
 .footer h4 {
     color: white;
@@ -246,7 +399,7 @@ section {
 .footer-socials {
     display: flex;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 4px;
 }
 .footer-socials a {
     width: 36px;
@@ -263,13 +416,13 @@ section {
     background: var(--secondary);
     color: white;
 }
-.footer-bottom {
-    text-align: center;
-    padding-top: 24px;
-    border-top: 1px solid #334155;
-    font-size: 0.75rem;
-}
 
+@media (max-width: 1100px) {
+    .footer-grid {
+        grid-template-columns: repeat(3, 1fr);
+        row-gap: 36px;
+    }
+}
 @media (max-width: 992px) {
     .footer-grid {
         grid-template-columns: repeat(2, 1fr);

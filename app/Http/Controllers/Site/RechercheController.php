@@ -25,12 +25,22 @@ class RechercheController extends Controller
         $depart = trim((string) $request->query('depart', ''));
         $destination = trim((string) $request->query('destination', ''));
         $date = trim((string) $request->query('date', ''));
+        $dateRetour = trim((string) $request->query('date_retour', ''));
+
+        // "Aller-retour" : pas de billet combiné, juste une seconde recherche affichée à
+        // côté (trajet retour = destination -> départ), réservable indépendamment via la
+        // même modale — le legacy ne gère pas non plus les billets aller-retour combinés.
+        $resultatsRetour = $dateRetour !== ''
+            ? Programme::rechercher($destination, $depart, (string) $compagnie->id_compagnie)
+            : null;
 
         return view('site.recherche', [
             'resultats' => Programme::rechercher($depart, $destination, (string) $compagnie->id_compagnie),
+            'resultatsRetour' => $resultatsRetour,
             'depart' => $depart,
             'destination' => $destination,
             'date' => $date,
+            'dateRetour' => $dateRetour,
             'compagnie' => $compagnie,
             'villes' => Programme::villesDisponibles($compagnie->id_compagnie),
         ]);

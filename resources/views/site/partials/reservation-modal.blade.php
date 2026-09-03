@@ -47,6 +47,9 @@
                     <div class="resa-group">
                         <label><i class="fas fa-calendar-alt"></i> Date du voyage</label>
                         <input type="date" name="jourVoyage" id="resaJourVoyage" class="resa-control" required>
+                        <p class="resa-hint" id="resaAvisHeurePassee" style="display:none;">
+                            <i class="fas fa-info-circle"></i> Départ d'aujourd'hui déjà passé — date ajustée au prochain jour disponible.
+                        </p>
                     </div>
                     <div class="resa-group">
                         <label><i class="fas fa-clock"></i> Heure de départ</label>
@@ -125,6 +128,7 @@
     .resa-group { margin-bottom: 16px; }
     .resa-group label { display: block; font-weight: 600; font-size: .8rem; margin-bottom: 6px; color: var(--dark, #2c3e50); }
     .resa-group label i { color: var(--secondary, #e67e22); margin-right: 5px; }
+    .resa-hint { display: flex; align-items: center; gap: 6px; font-size: .74rem; color: var(--secondary-dark, #c0392b); margin: 6px 2px 0; }
     .resa-control {
         width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: var(--radius, 8px);
         font-size: .88rem; font-family: inherit; background: #f8fafc; transition: all .2s;
@@ -161,7 +165,12 @@
         let prixUnitaireActuel = 0;
 
         function csrfToken() {
-            return document.querySelector('meta[name="csrf-token"]').content;
+            // Défensif : si jamais cette balise venait à manquer sur une page (elle doit
+            // être présente dans le <head> de CHAQUE page du site, y compris pour le
+            // moteur de transitions qui ne remplace jamais le <head>), on ne bloque pas
+            // silencieusement le modal sur "Chargement..." pour toujours.
+            var meta = document.querySelector('meta[name="csrf-token"]');
+            return meta ? meta.content : '';
         }
 
         function formatPhoneInput(el) {
@@ -190,7 +199,8 @@
             form.style.display = 'none';
 
             fetch("{{ url('/reservation') }}/" + idProgramme + "/donnees", {
-                headers: { 'Accept': 'application/json' },
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken() },
             })
                 .then(function (res) { return res.json(); })
                 .then(function (trajet) {
@@ -211,12 +221,25 @@
                     document.getElementById('resaDestinationDisplay').value = trajet.destinationLocalite + ' ( ' + (trajet.numeroGare2 || '-') + ' )';
                     document.getElementById('resaHeureDisplay').value = trajet.heureDepart;
 
-                    const today = new Date().toISOString().slice(0, 10);
+                    // La date sert de garde-fou horaire : si le départ (ex. 05:00) est déjà
+                    // passé aujourd'hui, "aujourd'hui" ne doit plus être sélectionnable pour
+                    // CE trajet précis — sinon on pourrait réserver un départ déjà parti.
+                    const now = new Date();
+                    const [depH, depM] = (trajet.heureDepart || '00:00').split(':').map(Number);
+                    const departAujourdhuiDejaPasse = now.getHours() > depH || (now.getHours() === depH && now.getMinutes() >= depM);
+
+                    const minDateObj = new Date(Date.now() + (departAujourdhuiDejaPasse ? 1 : 0) * 86400000);
+                    const minDate = minDateObj.toISOString().slice(0, 10);
                     const maxDate = new Date(Date.now() + {{ (int) config('billets.jours_reservation_avance', 6) }} * 86400000).toISOString().slice(0, 10);
                     const dateInput = document.getElementById('resaJourVoyage');
-                    dateInput.min = today;
+                    dateInput.min = minDate;
                     dateInput.max = maxDate;
-                    dateInput.value = today;
+                    dateInput.value = minDate;
+
+                    const avisHeurePassee = document.getElementById('resaAvisHeurePassee');
+                    if (avisHeurePassee) {
+                        avisHeurePassee.style.display = departAujourdhuiDejaPasse ? 'flex' : 'none';
+                    }
 
                     prixUnitaireActuel = parseInt(trajet.prix, 10) || 0;
 

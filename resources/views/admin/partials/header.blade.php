@@ -25,6 +25,14 @@
   <meta name="theme-color" content="#0f3b5e">
   <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any" />
   <link rel="apple-touch-icon" href="{{ asset('images/logos/transgest_icon.png') }}" />
+  <link rel="manifest" href="{{ asset('pwa/admin-manifest.json') }}">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw-admin.js', { scope: '/admin/' }).catch(function () {});
+      });
+    }
+  </script>
 
   <!-- Bootstrap 5.3 + Font Awesome 6.4 + SweetAlert2 (template DojoManager) -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">

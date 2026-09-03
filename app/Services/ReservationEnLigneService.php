@@ -61,6 +61,13 @@ class ReservationEnLigneService
             return ['ok' => false, 'message' => "Date invalide : choisissez une date entre aujourd'hui et dans $joursAvance jours."];
         }
 
+        // Défense en profondeur : le modal ajuste déjà la date min côté client quand
+        // l'heure de départ du jour est dépassée, mais une requête forgée à la main
+        // pourrait poster "aujourd'hui" malgré tout — on rejette aussi ici.
+        if ($jourVoyage === $aujourdhui && $heureDepart !== '' && $heureDepart < now()->format('H:i:s')) {
+            return ['ok' => false, 'message' => "Ce départ d'aujourd'hui à $heureDepart est déjà passé. Merci de choisir une autre date."];
+        }
+
         // Prix recalculé côté serveur : jamais confiance dans un montant posté par le
         // client (falsifiable via les DevTools), fidèle au legacy.
         $prixUnitaire = (int) $programme->prix;

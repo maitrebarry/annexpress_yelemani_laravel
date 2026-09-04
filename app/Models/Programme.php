@@ -127,7 +127,7 @@ class Programme extends Model
             ->where('programmer.idProgrammer', $id)
             ->first([
                 'programmer.*',
-                'a1.localite as departLocalite', 'a1.numeroGare as numeroGare1', 'a1.code as codeDepart',
+                'a1.localite as departLocalite', 'a1.numeroGare as numeroGare1', 'a1.code as codeDepart', 'a1.tel as telOrangeDepart',
                 'a2.localite as destinationLocalite', 'a2.numeroGare as numeroGare2',
                 DB::raw("(SELECT GROUP_CONCAT(CONCAT(e.escales, ' (', lt.prix_escale, ' FCFA)') ORDER BY e.id_escale SEPARATOR ', ')
                           FROM ligneTrajet lt JOIN escale e ON e.id_escale = lt.id_escales

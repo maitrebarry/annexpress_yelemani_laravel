@@ -53,6 +53,8 @@ class ReservationController extends Controller
             'destinationLocalite' => $trajet->destinationLocalite,
             'numeroGare1' => $trajet->numeroGare1,
             'numeroGare2' => $trajet->numeroGare2,
+            'codeMarchand' => $trajet->codeDepart,
+            'numeroOrangeMoney' => $trajet->telOrangeDepart,
             'heureDepart' => $trajet->heureDepart,
             'prix' => (int) $trajet->prix,
             'escales' => $escales,

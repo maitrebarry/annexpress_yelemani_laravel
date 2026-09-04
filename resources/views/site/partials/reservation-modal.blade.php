@@ -84,6 +84,22 @@
                     <input type="text" name="numeroPaiement" id="resaNumeroPaiement" class="resa-control" placeholder="66 77 88 99" required>
                 </div>
 
+                <details class="resa-payment-guide" id="resaPaymentGuide" open>
+                    <summary><i class="fas fa-circle-question"></i> Comment payer avec Orange Money ?</summary>
+                    <div class="resa-payment-guide-body">
+                        <p class="resa-payment-target" id="resaPaymentTarget">Chargement des informations de paiement...</p>
+                        <ol>
+                            <li>Composez <strong>#144#</strong> sur le téléphone qui va payer.</li>
+                            <li>Choisissez <strong>« Paiement marchand »</strong> (ou « Transfert d'argent » si cette option n'apparaît pas).</li>
+                            <li>Entrez le <strong>code marchand</strong> ou le <strong>numéro</strong> indiqué ci-dessus, selon l'option choisie.</li>
+                            <li>Entrez le montant exact : <strong><span id="resaPaymentGuideAmount">0</span> FCFA</strong>.</li>
+                            <li>Validez avec votre <strong>code secret Orange Money</strong>.</li>
+                            <li>Gardez le <strong>SMS de confirmation</strong> reçu — il sert de preuve de paiement.</li>
+                        </ol>
+                        <p class="resa-payment-guide-note"><i class="fas fa-info-circle"></i> Le libellé exact des options peut varier légèrement selon votre téléphone.</p>
+                    </div>
+                </details>
+
                 <div class="resa-price-box">
                     <span><i class="fas fa-calculator"></i> Total à payer</span>
                     <strong><span id="resaTotalPrice">0</span> FCFA</strong>
@@ -136,6 +152,27 @@
     .resa-control:focus { outline: none; border-color: var(--secondary, #e67e22); background: white; box-shadow: 0 0 0 3px rgba(230,126,34,.1); }
     .resa-control[readonly] { background: #f1f5f9; cursor: not-allowed; }
     .resa-escale-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: .85rem; }
+    .resa-payment-guide { border: 2px solid #e2e8f0; border-radius: var(--radius, 8px); overflow: hidden; margin-bottom: 16px; }
+    .resa-payment-guide summary {
+        cursor: pointer; list-style: none; padding: 12px 14px; font-weight: 700; font-size: .84rem;
+        color: var(--primary, #0f3b5e); background: #f8fafc; display: flex; align-items: center; gap: 8px;
+    }
+    .resa-payment-guide summary::-webkit-details-marker { display: none; }
+    .resa-payment-guide summary i:first-child { color: var(--secondary, #e67e22); }
+    .resa-payment-guide summary::after {
+        content: '\f078'; font-family: 'Font Awesome 6 Free'; font-weight: 900; margin-left: auto;
+        font-size: .72rem; color: var(--gray, #7f8c8d); transition: transform .2s;
+    }
+    .resa-payment-guide[open] summary::after { transform: rotate(180deg); }
+    .resa-payment-guide-body { padding: 14px; font-size: .8rem; color: var(--dark, #2c3e50); }
+    .resa-payment-target {
+        background: #eff8ff; border-left: 3px solid var(--accent, #3498db); border-radius: 6px;
+        padding: 10px 12px; margin: 0 0 12px; font-size: .82rem; line-height: 1.5;
+    }
+    .resa-payment-target strong { font-size: 1rem; }
+    .resa-payment-guide-body ol { padding-left: 18px; margin: 0 0 10px; }
+    .resa-payment-guide-body li { margin-bottom: 6px; line-height: 1.45; }
+    .resa-payment-guide-note { display: flex; gap: 6px; align-items: flex-start; font-size: .72rem; color: var(--gray, #7f8c8d); margin: 0; }
     .resa-price-box {
         background: linear-gradient(135deg, #fef3e8, #fff5eb); border-radius: var(--radius-lg, 12px);
         padding: 14px 18px; margin: 6px 0 18px; display: flex; justify-content: space-between; align-items: center;
@@ -188,7 +225,10 @@
 
         function updateTotal() {
             const nb = parseInt(document.getElementById('resaNbPassagers').value, 10) || 1;
-            document.getElementById('resaTotalPrice').textContent = (prixUnitaireActuel * nb).toLocaleString('fr-FR');
+            const total = (prixUnitaireActuel * nb).toLocaleString('fr-FR');
+            document.getElementById('resaTotalPrice').textContent = total;
+            const guideAmount = document.getElementById('resaPaymentGuideAmount');
+            if (guideAmount) guideAmount.textContent = total;
         }
         document.getElementById('resaNbPassagers').addEventListener('input', updateTotal);
 
@@ -220,6 +260,26 @@
                     document.getElementById('resaDepartDisplay').value = trajet.departLocalite + ' ( ' + (trajet.numeroGare1 || '-') + ' )';
                     document.getElementById('resaDestinationDisplay').value = trajet.destinationLocalite + ' ( ' + (trajet.numeroGare2 || '-') + ' )';
                     document.getElementById('resaHeureDisplay').value = trajet.heureDepart;
+
+                    // Informations de paiement de la gare de départ (voir Admin > Gares :
+                    // "Code marchand" + "Numéro Orange (Mobile Money)"), jusqu'ici jamais
+                    // transmises au client alors que le formulaire lui demandait déjà de
+                    // payer — sans jamais lui dire à qui envoyer l'argent.
+                    const paymentTarget = document.getElementById('resaPaymentTarget');
+                    if (paymentTarget) {
+                        if (trajet.codeMarchand || trajet.numeroOrangeMoney) {
+                            let html = '';
+                            if (trajet.numeroOrangeMoney) {
+                                html += 'Numéro à utiliser : <strong>' + trajet.numeroOrangeMoney + '</strong><br>';
+                            }
+                            if (trajet.codeMarchand) {
+                                html += 'Code marchand : <strong>' + trajet.codeMarchand + '</strong>';
+                            }
+                            paymentTarget.innerHTML = html;
+                        } else {
+                            paymentTarget.textContent = "Les informations de paiement de cette gare ne sont pas encore configurées — contactez la compagnie avant de payer.";
+                        }
+                    }
 
                     // La date sert de garde-fou horaire : si le départ (ex. 05:00) est déjà
                     // passé aujourd'hui, "aujourd'hui" ne doit plus être sélectionnable pour

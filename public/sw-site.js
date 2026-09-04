@@ -5,7 +5,7 @@
  * elles-mêmes (network-first strict, jamais de fallback cache) : le contenu (trajets,
  * prix, disponibilités, billets) doit toujours être frais, jamais servi périmé.
  */
-const CACHE = 'tg-site-static-v1';
+const CACHE = 'tg-site-static-v2';
 const STATIC_EXTENSIONS = /\.(css|js|png|jpg|jpeg|webp|svg|gif|woff2?|ttf)$/i;
 
 self.addEventListener('install', (event) => {
@@ -43,18 +43,23 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // Fichiers statiques : cache-first (rapide), avec repli réseau + mise en cache.
+    // Fichiers statiques : stale-while-revalidate — la version en cache est rendue
+    // immédiatement (rapide), mais une requête réseau part toujours en parallèle pour
+    // rafraîchir le cache. Un simple rechargement suffit donc à récupérer une mise à
+    // jour de site-transitions.js/CSS, sans jamais rester bloqué sur une version périmée
+    // (contrairement à un cache-first pur, qui masquait indéfiniment les correctifs tant
+    // que la clé CACHE n'était pas changée à la main).
     if (STATIC_EXTENSIONS.test(url.pathname)) {
         event.respondWith(
             caches.match(req).then((cached) => {
-                if (cached) return cached;
-                return fetch(req).then((res) => {
+                const network = fetch(req).then((res) => {
                     if (res.ok) {
                         const clone = res.clone();
                         caches.open(CACHE).then((c) => c.put(req, clone));
                     }
                     return res;
                 }).catch(() => cached);
+                return cached || network;
             })
         );
     }

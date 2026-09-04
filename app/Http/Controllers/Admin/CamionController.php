@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Camion;
-use App\Models\Compagnie;
 use App\Support\Flash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,30 +20,59 @@ use Illuminate\Validation\Rule;
  */
 class CamionController extends Controller
 {
+    // Port de Camion::saveCamion() : le formulaire envoie numero_camion[]/
+    // matriculle_camion[] ("add to row", plusieurs lignes ajoutées dynamiquement) — chaque
+    // ligne est validée et insérée indépendamment, une erreur sur l'une n'empêche pas
+    // les autres.
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::guard('staff')->user();
 
-        $data = $request->validate([
-            'numero_camion' => ['required', 'integer'],
-            'matriculle' => ['required', 'string', 'max:100'],
+        $request->validate([
             'id_compagnie' => [Rule::requiredIf($user->isSuperAdmin()), 'nullable', 'integer'],
         ]);
+        $idCompagnie = $user->isSuperAdmin() ? $request->input('id_compagnie') : $user->id_compagnie;
 
-        $idCompagnie = $user->isSuperAdmin() ? $data['id_compagnie'] : $user->id_compagnie;
+        $numeros = (array) $request->input('numero_camion', []);
+        $matriculles = (array) $request->input('matriculle_camion', []);
 
-        if (Camion::where('numero_camion', $data['numero_camion'])->exists()) {
-            return back()->withErrors(['numero_camion' => "Le camion « {$data['numero_camion']} » existe déjà."])->withInput();
+        $nbAjoutes = 0;
+        $erreurs = [];
+
+        foreach ($numeros as $i => $numeroCamion) {
+            $numeroCamion = trim((string) $numeroCamion);
+            $matriculle = trim((string) ($matriculles[$i] ?? ''));
+
+            if ($numeroCamion === '' && $matriculle === '') {
+                continue;
+            }
+
+            if ($numeroCamion === '') {
+                $erreurs[] = 'Ligne '.($i + 1).' : le numéro du camion est obligatoire.';
+
+                continue;
+            }
+            if ($matriculle === '') {
+                $erreurs[] = 'Ligne '.($i + 1).' : le matricule est obligatoire.';
+
+                continue;
+            }
+            if (Camion::where('numero_camion', $numeroCamion)->exists()) {
+                $erreurs[] = "Le camion « $numeroCamion » existe déjà.";
+
+                continue;
+            }
+
+            Camion::create([
+                'numero_camion' => $numeroCamion,
+                'matriculle' => $matriculle,
+                'actif' => 'on',
+                'id_compagnie' => $idCompagnie,
+            ]);
+            $nbAjoutes++;
         }
 
-        Camion::create([
-            'numero_camion' => $data['numero_camion'],
-            'matriculle' => $data['matriculle'],
-            'actif' => 'on',
-            'id_compagnie' => $idCompagnie,
-        ]);
-
-        Flash::set('Camion ajouté avec succès.', 'success');
+        $this->flashResultatAjoutMultiple($nbAjoutes, $erreurs, 'camion', 'camions');
 
         return redirect()->route('admin.car.index');
     }

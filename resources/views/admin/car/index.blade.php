@@ -235,7 +235,8 @@
 @endsection
 
 @section('modals')
-    <!-- Modal Ajout cars -->
+    <!-- Modal Ajout cars ("add to row" : plusieurs lignes ajoutées dynamiquement, comme
+         Projets_licence — voir CarController::store()) -->
     <div class="modal fade" id="modalAjouterCar" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
@@ -246,34 +247,37 @@
                 <form method="post" action="{{ route('admin.car.store') }}">
                     @csrf
                     <div class="modal-body">
-                        @if ($errors->any())
-                            <div class="alert alert-danger py-2 px-3 small">
-                                <ul class="mb-0">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
+                        <div id="carsRows">
+                            <div class="row align-items-end mb-2 car-row gx-2">
+                                <div class="col-4">
+                                    <label class="form-label">Numéro de car</label>
+                                    <input type="number" class="form-control" name="numero_car[]" placeholder="Ex: 101">
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label">Matricule</label>
+                                    <input type="text" class="form-control" name="matriculle[]" placeholder="Ex: AB-1234">
+                                </div>
+                                <div class="col-3">
+                                    <label class="form-label">Places</label>
+                                    <input type="number" class="form-control" name="nbr_place[]" placeholder="Ex: 30">
+                                </div>
+                                <div class="col-1">
+                                    <button type="button" class="btn btn-outline-danger remove-row-btn d-none w-100" title="Retirer cette ligne">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
-                        @endif
-                        <div class="mb-3">
-                            <label class="form-label">Numéro de car</label>
-                            <input type="number" class="form-control" name="numero_car" value="{{ old('numero_car') }}" placeholder="Ex: 101" required>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Matricule</label>
-                            <input type="text" class="form-control" name="matriculle" value="{{ old('matriculle') }}" placeholder="Ex: AB-1234" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Nombre de places</label>
-                            <input type="number" class="form-control" name="nbr_place" value="{{ old('nbr_place') }}" placeholder="Ex: 30" required>
-                        </div>
+                        <button type="button" id="addCarRow" class="btn btn-sm btn-outline-primary mb-3">
+                            <i class="fas fa-plus"></i> Ajouter une ligne
+                        </button>
                         @if ($authUser->isSuperAdmin())
                             <div class="mb-3">
                                 <label class="form-label">Compagnie</label>
                                 <select class="form-select" name="id_compagnie" required>
                                     <option value="" disabled selected>Choisissez une compagnie</option>
                                     @foreach ($listeCompagnie as $c)
-                                        <option value="{{ $c->id_compagnie }}" {{ (string) old('id_compagnie') === (string) $c->id_compagnie ? 'selected' : '' }}>{{ $c->nom_compagnie }}</option>
+                                        <option value="{{ $c->id_compagnie }}">{{ $c->nom_compagnie }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -333,14 +337,26 @@
                 <form method="post" action="{{ route('admin.camion.store') }}">
                     @csrf
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Numéro de camion</label>
-                            <input type="number" class="form-control" name="numero_camion" placeholder="Ex: 1" required>
+                        <div id="camionsRows">
+                            <div class="row align-items-end mb-2 camion-row gx-2">
+                                <div class="col-5">
+                                    <label class="form-label">Numéro de camion</label>
+                                    <input type="number" class="form-control" name="numero_camion[]" placeholder="Ex: 1">
+                                </div>
+                                <div class="col-5">
+                                    <label class="form-label">Matricule</label>
+                                    <input type="text" class="form-control" name="matriculle_camion[]" placeholder="Ex: AB-1234">
+                                </div>
+                                <div class="col-2">
+                                    <button type="button" class="btn btn-outline-danger remove-row-btn d-none w-100" title="Retirer cette ligne">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Matricule</label>
-                            <input type="text" class="form-control" name="matriculle" placeholder="Ex: AB-1234" required>
-                        </div>
+                        <button type="button" id="addCamionRow" class="btn btn-sm btn-outline-primary mb-3">
+                            <i class="fas fa-plus"></i> Ajouter une ligne
+                        </button>
                         @if ($authUser->isSuperAdmin())
                             <div class="mb-3">
                                 <label class="form-label">Compagnie</label>
@@ -526,6 +542,39 @@
 @section('scripts')
     <script src="{{ asset('mon_js/alert_delete.js') }}"></script>
     <script>
+        // "Add to row" : permet de saisir plusieurs cars/camions (numéro/matricule/places)
+        // d'un coup, comme Projets_licence — voir CarController::store()/CamionController::store().
+        function setupAddToRow(rowsContainerId, addBtnId, rowClass) {
+            const rowsContainer = document.getElementById(rowsContainerId);
+            const addBtn = document.getElementById(addBtnId);
+            if (! rowsContainer || ! addBtn) return;
+
+            function toggleRemoveButtons() {
+                const rows = rowsContainer.querySelectorAll('.' + rowClass);
+                rows.forEach(function(row) {
+                    row.querySelector('.remove-row-btn').classList.toggle('d-none', rows.length <= 1);
+                });
+            }
+
+            addBtn.addEventListener('click', function() {
+                const firstRow = rowsContainer.querySelector('.' + rowClass);
+                const newRow = firstRow.cloneNode(true);
+                newRow.querySelectorAll('input').forEach(function(input) { input.value = ''; });
+                rowsContainer.appendChild(newRow);
+                toggleRemoveButtons();
+            });
+
+            rowsContainer.addEventListener('click', function(e) {
+                const btn = e.target.closest('.remove-row-btn');
+                if (btn) {
+                    btn.closest('.' + rowClass).remove();
+                    toggleRemoveButtons();
+                }
+            });
+        }
+        setupAddToRow('carsRows', 'addCarRow', 'car-row');
+        setupAddToRow('camionsRows', 'addCamionRow', 'camion-row');
+
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('.edit-car-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {

@@ -54,33 +54,70 @@ class CarController extends Controller
         ]);
     }
 
+    // Port de Cars_chauffeur::saveCare() : le formulaire envoie numero_car[]/matriculle[]/
+    // nbr_place[] ("add to row", plusieurs lignes ajoutées dynamiquement, les 3 champs
+    // alignés par index) — chaque ligne est validée et insérée indépendamment, une
+    // erreur sur l'une n'empêche pas les autres.
     public function store(Request $request): RedirectResponse
     {
         $user = Auth::guard('staff')->user();
 
-        $data = $request->validate([
-            'numero_car' => ['required', 'integer'],
-            'matriculle' => ['required', 'string', 'max:100'],
-            'nbr_place' => ['required', 'integer', 'min:1'],
+        $request->validate([
             'id_compagnie' => [Rule::requiredIf($user->isSuperAdmin()), 'nullable', 'integer'],
         ]);
+        $idCompagnie = $user->isSuperAdmin() ? $request->input('id_compagnie') : $user->id_compagnie;
 
-        $idCompagnie = $user->isSuperAdmin() ? $data['id_compagnie'] : $user->id_compagnie;
+        $numeros = (array) $request->input('numero_car', []);
+        $matriculles = (array) $request->input('matriculle', []);
+        $nbrPlaces = (array) $request->input('nbr_place', []);
 
-        if (Car::where('numero_car', $data['numero_car'])->exists()) {
-            return back()->withErrors(['numero_car' => "Le car « {$data['numero_car']} » existe déjà."])->withInput();
+        $nbAjoutes = 0;
+        $erreurs = [];
+
+        foreach ($numeros as $i => $numeroCar) {
+            $numeroCar = trim((string) $numeroCar);
+            $matriculle = trim((string) ($matriculles[$i] ?? ''));
+            $nbrPlace = trim((string) ($nbrPlaces[$i] ?? ''));
+
+            // Ligne vide (pas remplie par l'agent) : ignorée silencieusement, ce n'est pas
+            // une erreur en soi si d'autres lignes sont valides.
+            if ($numeroCar === '' && $matriculle === '' && $nbrPlace === '') {
+                continue;
+            }
+
+            if ($numeroCar === '') {
+                $erreurs[] = 'Ligne '.($i + 1).' : le numéro du car est obligatoire.';
+
+                continue;
+            }
+            if ($matriculle === '') {
+                $erreurs[] = 'Ligne '.($i + 1).' : le matricule est obligatoire.';
+
+                continue;
+            }
+            if ($nbrPlace === '' || ! is_numeric($nbrPlace)) {
+                $erreurs[] = 'Ligne '.($i + 1).' : le nombre de places doit être un nombre.';
+
+                continue;
+            }
+            if (Car::where('numero_car', $numeroCar)->exists()) {
+                $erreurs[] = "Le car « $numeroCar » existe déjà.";
+
+                continue;
+            }
+
+            Car::create([
+                'numero_car' => $numeroCar,
+                'matriculle' => $matriculle,
+                'nbr_place' => $nbrPlace,
+                'nbr_place_reserve' => 0,
+                'programmer_car' => 'off',
+                'id_compagnie' => $idCompagnie,
+            ]);
+            $nbAjoutes++;
         }
 
-        Car::create([
-            'numero_car' => $data['numero_car'],
-            'matriculle' => $data['matriculle'],
-            'nbr_place' => $data['nbr_place'],
-            'nbr_place_reserve' => 0,
-            'programmer_car' => 'off',
-            'id_compagnie' => $idCompagnie,
-        ]);
-
-        Flash::set('Car ajouté avec succès.', 'success');
+        $this->flashResultatAjoutMultiple($nbAjoutes, $erreurs, 'car', 'cars');
 
         return redirect()->route('admin.car.index');
     }

@@ -238,6 +238,17 @@
     .navbar-actions { display: flex; align-items: center; }
     .navbar-actions .navbar-nav { flex-direction: row; align-items: center; }
 
+    /* Bootstrap force .navbar-nav .dropdown-menu en position:static (pour qu'un dropdown
+       s'étende EN LIGNE dans un menu mobile déplié classique) tant que le <nav> ne porte
+       pas .navbar-expand-*. Ce <nav> ne l'a justement plus (voir commentaire ci-dessus :
+       .navbar-expand-md rendait tout ce bloc inaccessible sur téléphone derrière un
+       .collapse qui ne s'ouvrait jamais) — sans ce correctif, les menus Thème et
+       Notifications, désormais "statiques", s'insèrent dans le flux normal au lieu de
+       flotter par-dessus la page, ce qui pousse toute la barre du haut (logo compris) à
+       passer à la ligne dès qu'on les ouvre. On les remet en position flottante nous-mêmes,
+       à toute taille d'écran. */
+    .navbar-actions .dropdown-menu { position: absolute !important; }
+
     @media (max-width: 575.98px) {
         /* Comportement "application mobile" : la barre du haut reste compacte (icônes
            seules, sans libellé texte) pour que thème/mode sombre/notifications/profil

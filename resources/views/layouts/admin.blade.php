@@ -20,12 +20,20 @@
                             @if($sectionTitle !== '')
                                 <li class="breadcrumb-item">{!! $sectionTitle !!}</li>
                             @endif
-                            <li class="breadcrumb-item active" aria-current="page">{{ $pageTitle }}</li>
+                            {{-- {!! !!} et non {{ }} : la forme "inline" @section('nom', "...")
+                                 (utilisée par la quasi-totalité des vues pour breadcrumb-active)
+                                 échappe déjà son contenu à la capture (comportement Laravel :
+                                 Illuminate\View\Concerns\ManagesLayouts::startSection() appelle
+                                 e($content) sur la forme à 2 arguments) — un {{ }} ici
+                                 échapperait une seconde fois et affichait littéralement
+                                 "d&#039;" au lieu d'une apostrophe dès qu'un titre en contient
+                                 une (ex : "Demandes d'annulation"). --}}
+                            <li class="breadcrumb-item active" aria-current="page">{!! $pageTitle !!}</li>
                         </ol>
                     </nav>
 
                     <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                        <h1 class="mb-0">{{ $pageTitle !== '' ? $pageTitle : strip_tags($sectionTitle) }}</h1>
+                        <h1 class="mb-0">{!! $pageTitle !== '' ? $pageTitle : strip_tags($sectionTitle) !!}</h1>
                         <div class="d-flex gap-2">
                             @yield('breadcrumb-actions')
                             <a href="javascript:history.back()" class="btn btn-outline-primary d-flex align-items-center gap-2">

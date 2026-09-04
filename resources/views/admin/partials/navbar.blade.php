@@ -64,22 +64,27 @@
     $gareAffichee = trim(($ville ?? '') . (!empty($numeroGare) ? ' (' . $numeroGare . ')' : ''));
     $identiteAffichee = $roleAffiche . ($gareAffichee !== '' ? ' — ' . $gareAffichee : '');
 @endphp
-<nav class="navbar navbar-expand-md sticky-top" id="navbar">
+<nav class="navbar sticky-top" id="navbar">
     <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url('/admin/Homes/home') }}">
-            <span class="brand-3d">SIRALI</span>
-        </a>
-
         <button class="navbar-toggler" type="button" id="sidebarToggle">
             <i class="fas fa-bars" style="color: var(--navbar-text);"></i>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url('/admin/Homes/home') }}">
+            <span class="brand-3d">SIRALI</span>
+        </a>
+
+        {{-- Toujours visible, quelle que soit la taille d'écran — sur mobile, le bouton
+             hamburger n'ouvre que la barre latérale (voir foot.blade.php), il ne déplie
+             jamais ce bloc : le mettre dans un <div class="collapse navbar-collapse">
+             Bootstrap (comme avant) le rendait donc totalement inaccessible au téléphone,
+             thème/mode sombre/notifications ET le menu utilisateur (déconnexion !) inclus. --}}
+        <div class="navbar-actions ms-auto">
+            <ul class="navbar-nav">
                 <!-- Sélecteur de couleur -->
                 <li class="nav-item dropdown me-2">
                     <button class="btn btn-sm btn-theme-toggle dropdown-toggle" id="themeSelector" data-bs-toggle="dropdown" title="Changer le thème">
-                        <i class="fas fa-palette"></i> Thème
+                        <i class="fas fa-palette"></i> <span class="btn-text">Thème</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeSelector">
                         <li><a class="dropdown-item" href="#" onclick="setTheme('default'); return false;"><i class="fas fa-circle" style="color:#0f3b5e;"></i> Marine (défaut)</a></li>
@@ -105,7 +110,7 @@
                                 <span class="notify-badge">{{ $notifCount }}</span>
                             @endif
                         </button>
-                        <div class="dropdown-menu dropdown-menu-end p-0" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <div class="dropdown-menu dropdown-menu-end p-0" style="width: min(320px, calc(100vw - 24px)); max-height: 400px; overflow-y: auto;">
                             <div class="p-2">
                                 @if ($notifCount > 0)
                                     @foreach ($billetsEnAttente as $billet)
@@ -156,7 +161,7 @@
                         @else
                             <i class="fas fa-user-circle fs-5"></i>
                         @endif
-                        <span class="d-flex flex-column lh-1 text-start">
+                        <span class="d-none d-sm-flex flex-column lh-1 text-start">
                             <small class="opacity-75" style="font-size: .68rem;">{{ $identiteAffichee }}</small>
                             <span>{{ $authUser->utilisateurs }}</span>
                         </span>
@@ -225,5 +230,24 @@
 
     @media (prefers-reduced-motion: reduce) {
         .brand-3d::before { animation: none; }
+    }
+
+    /* Bloc thème/mode sombre/notifications/utilisateur : plus jamais dans un
+       .collapse Bootstrap (voir commentaire au-dessus du div.navbar-actions) — toujours
+       une ligne horizontale, à toute taille d'écran. */
+    .navbar-actions { display: flex; align-items: center; }
+    .navbar-actions .navbar-nav { flex-direction: row; align-items: center; }
+
+    @media (max-width: 575.98px) {
+        /* Comportement "application mobile" : la barre du haut reste compacte (icônes
+           seules, sans libellé texte) pour que thème/mode sombre/notifications/profil
+           restent tous accessibles d'un seul geste, sans jamais déborder de l'écran. */
+        .navbar .container-fluid { padding-left: 10px; padding-right: 10px; gap: 6px; }
+        .brand-3d { font-size: 14px; padding: 6px 10px; }
+        .navbar-actions .nav-item { margin-left: 0 !important; margin-right: 6px !important; }
+        #themeSelector .btn-text { display: none; }
+        #themeSelector, #darkModeToggle, .btn-theme-toggle { padding: 6px 9px; }
+        .navbar .dropdown-menu { min-width: 180px; }
+        #userDropdown img, #userDropdown .fa-user-circle { width: 26px; height: 26px; }
     }
 </style>

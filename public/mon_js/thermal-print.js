@@ -11,6 +11,14 @@
 // IP réseau (pont installé avec -AllowLan). Cette adresse est donc mémorisée par appareil
 // (localStorage), modifiable depuis l'écran d'erreur "Pont d'impression injoignable".
 (function () {
+    // Garde anti-double-exécution : ce script n'est chargé que sur certaines pages
+    // (billets, colis), donc une navigation douce de l'admin peut le re-déclencher en
+    // repassant par une de ces pages — sans cette garde, chaque ré-exécution ajouterait un
+    // écouteur $(document).on(...) en double, déclenchant l'impression plusieurs fois par
+    // clic (voir mon_js/admin-transitions.js et mon_js/alert_delete.js pour le même piège).
+    if (window.__thermalPrintInit) return;
+    window.__thermalPrintInit = true;
+
     function adresseHotePont() {
         return localStorage.getItem('pontImpressionHote') || '127.0.0.1:9200';
     }

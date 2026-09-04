@@ -217,7 +217,7 @@
     <script src="{{ asset('mon_js/scrip_agence.js') }}"></script>
     <script src="{{ asset('mon_js/alert_delete.js') }}"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        tgReady(function () {
             const modalEl = document.getElementById("modalAjouterGare");
             const ouvrirBtn = document.getElementById("btnOuvrirAjouterGare");
             const form = document.getElementById("formGares");

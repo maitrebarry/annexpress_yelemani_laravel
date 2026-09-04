@@ -43,7 +43,10 @@
                                 <td class="text-end fw-bold text-success">{{ number_format((float) $bulletin->salaire_verse, 0, ',', ' ') }} F</td>
                                 <td>{{ \Illuminate\Support\Carbon::parse($bulletin->date_generation)->format('d/m/Y à H:i') }}</td>
                                 <td>
-                                    <a href="{{ route('admin.salaire.telecharger-bulletin', $bulletin->id_bulletin) }}" class="btn btn-sm btn-outline-primary">
+                                    {{-- data-no-transition : vrai téléchargement de fichier (Content-Disposition:
+                                         attachment), à ne jamais intercepter/fetch par le moteur de navigation
+                                         (voir mon_js/admin-transitions.js). --}}
+                                    <a href="{{ route('admin.salaire.telecharger-bulletin', $bulletin->id_bulletin) }}" class="btn btn-sm btn-outline-primary" data-no-transition>
                                         <i class="fas fa-download me-1"></i> Télécharger
                                     </a>
                                 </td>

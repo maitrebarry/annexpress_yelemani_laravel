@@ -77,7 +77,7 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        tgReady(function () {
             @if ($errors->any())
                 new bootstrap.Modal(document.getElementById('modalAjouterPermission')).show();
             @endif

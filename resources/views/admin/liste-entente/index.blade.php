@@ -89,7 +89,7 @@
          l'utilisateur le rechercher dans la liste. --}}
     @if (request('billet'))
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
+            tgReady(function () {
                 var modalEl = document.getElementById('modalValider{{ (int) request('billet') }}');
                 if (modalEl && window.bootstrap) {
                     new bootstrap.Modal(modalEl).show();

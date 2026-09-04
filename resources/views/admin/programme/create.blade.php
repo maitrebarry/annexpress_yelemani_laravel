@@ -246,12 +246,12 @@
             // (Itinéraire/Horaire/Tarification) restent toutes masquées puisqu'aucune
             // n'obtient jamais la classe "active", et les boutons Suivant/Précédent
             // échouent (stepper1 non défini) : la page semblait ne "rien" afficher.
-            document.addEventListener('DOMContentLoaded', function () {
+            tgReady(function () {
                 window.stepper1 = new Stepper(document.querySelector('#stepper1'));
             });
 
             // Synchronise les champs de tarif par escale avec les cases cochées.
-            document.addEventListener('DOMContentLoaded', function () {
+            tgReady(function () {
                 const prixInput = document.getElementById('prix');
                 const fraixEscaleField = document.getElementById('fraixEscaleField');
                 const fraixEscaleContainer = document.getElementById('fraixEscaleContainer');
@@ -297,7 +297,7 @@
         <script>
             // Filtre la destination selon le départ choisi : masque les gares de la même
             // localité que le départ, pour éviter d'enregistrer un voyage interne.
-            document.addEventListener('DOMContentLoaded', function () {
+            tgReady(function () {
                 const departSelect = document.getElementById('choixAgence');
                 const destinationSelect = document.getElementById('choixAgences');
                 if (!departSelect || !destinationSelect) return;

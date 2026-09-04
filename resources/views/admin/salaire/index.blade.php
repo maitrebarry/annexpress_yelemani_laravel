@@ -333,7 +333,7 @@
                 });
             });
 
-            document.addEventListener('DOMContentLoaded', function() {
+            tgReady(function () {
                 document.querySelectorAll('.edit-btn').forEach(function(button) {
                     button.addEventListener('click', function() {
                         document.getElementById('edit_id_employe').value = this.dataset.id;

@@ -184,7 +184,7 @@
 @section('scripts')
     <script src="{{ asset('mon_js/alert_delete.js') }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        tgReady(function () {
             @if ($errors->any())
                 new bootstrap.Modal(document.getElementById('modalAjouterActualite')).show();
             @endif

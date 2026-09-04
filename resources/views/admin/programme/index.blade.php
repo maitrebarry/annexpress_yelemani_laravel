@@ -150,7 +150,7 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        tgReady(function () {
             var heureSelect = document.getElementById('editProgrammeHeureDepart');
             var rdvInput = document.getElementById('editProgrammeRdv');
 

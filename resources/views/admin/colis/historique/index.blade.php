@@ -133,7 +133,7 @@
 
 @section('scripts')
     <script>
-        $(function () {
+        tgReady(function () {
             var tEnregistres = $('#tableEnregistres').DataTable();
             var tLivres;
 

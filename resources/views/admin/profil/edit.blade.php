@@ -162,7 +162,7 @@
 
 @if ($errors->any() && old('section') === 'mot_de_passe')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        tgReady(function () {
             new bootstrap.Tab(document.querySelector('[data-bs-target="#tabMotPasse"]')).show();
         });
     </script>

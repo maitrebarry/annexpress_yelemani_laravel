@@ -165,7 +165,7 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        tgReady(function () {
             // Filtre client-side, instantané, sans rechargement.
             var filtre = document.getElementById('filtreBilan');
             var items = document.querySelectorAll('.bilan-item');

@@ -67,7 +67,7 @@
 @section('scripts')
     <script src="{{ asset('mon_js/thermal-print.js') }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        tgReady(function () {
             // Deux tables sur la même page (onglets) : id="example" (init globale via
             // table-datatable.js) ne convient qu'à une table par page, donc initialisées ici
             // explicitement. La table de l'onglet "Autre jour", caché au chargement, a ses

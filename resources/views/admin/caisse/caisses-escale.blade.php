@@ -313,7 +313,7 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        tgReady(function () {
             document.querySelectorAll('.reject-versement-btn').forEach(function (btn) {
                 btn.addEventListener('click', function () {
                     var form = btn.closest('form');

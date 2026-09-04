@@ -1,54 +1,44 @@
-// $(document).ready(function() {
-//     $('.edit-btn').click(function(e) {
-//         e.preventDefault();
+// Délégation sur document + garde anti-double-exécution : même raison que
+// mon_js/alert_delete.js (voir ce fichier pour le détail).
+(function () {
+    if (window.__scripCompagnieInit) return;
+    window.__scripCompagnieInit = true;
 
-//         var idCompagnie = $(this).data('id_compagnie');
-//         var nomCompagnie = $(this).data('nom_compagnie');
-//         var libele = $(this).data('libele');
-//         var slogant = $(this).data('slogant');
+    $(document).on('click', '.edit-btn', function (e) {
+        e.preventDefault();
 
-//         $('#inputidCompagnie').val(idCompagnie);
-//         $('#inputnomCompagnie').val(nomCompagnie);
-//         $('#inputlibele').val(libele);
-//         $('#inputslogant').val(slogant);
+        let id       = $(this).data('id_compagnie');
+        let nom      = $(this).data('nom_compagnie');
+        let libele   = $(this).data('libele');
+        let slogant  = $(this).data('slogant');
+        let logo     = $(this).data('logo'); // full URL for preview
+        let logoFilename = $(this).data('logofilename'); // just the filename
+        let telephone = $(this).data('telephone');
+        let email     = $(this).data('email');
+        let whatsapp  = $(this).data('whatsapp');
+        let adresse   = $(this).data('adresse');
+        let facebook  = $(this).data('facebook');
+        let instagram = $(this).data('instagram');
 
-//         $('#exampleDangerModal1').modal('show');
-//     });
-// });
-$('.edit-btn').click(function (e) {
-    e.preventDefault();
+        $('#inputidCompagnie').val(id);
+        $('#inputnomCompagnie').val(nom);
+        $('#inputlibele').val(libele);
+        $('#inputslogant').val(slogant);
+        $('#inputtelephone').val(telephone);
+        $('#inputemail').val(email);
+        $('#inputwhatsapp').val(whatsapp);
+        $('#inputadresse').val(adresse);
+        $('#inputfacebook').val(facebook);
+        $('#inputinstagram').val(instagram);
 
-    let id       = $(this).data('id_compagnie');
-    let nom      = $(this).data('nom_compagnie');
-    let libele   = $(this).data('libele');
-    let slogant  = $(this).data('slogant');
-    let logo     = $(this).data('logo'); // full URL for preview
-    let logoFilename = $(this).data('logofilename'); // just the filename
-    let telephone = $(this).data('telephone');
-    let email     = $(this).data('email');
-    let whatsapp  = $(this).data('whatsapp');
-    let adresse   = $(this).data('adresse');
-    let facebook  = $(this).data('facebook');
-    let instagram = $(this).data('instagram');
+        if (logo) {
+            $('#logoPreview').attr('src', logo).show();
+            $('#ancienLogo').val(logoFilename);
+        } else {
+            $('#logoPreview').hide();
+            $('#ancienLogo').val('');
+        }
 
-    $('#inputidCompagnie').val(id);
-    $('#inputnomCompagnie').val(nom);
-    $('#inputlibele').val(libele);
-    $('#inputslogant').val(slogant);
-    $('#inputtelephone').val(telephone);
-    $('#inputemail').val(email);
-    $('#inputwhatsapp').val(whatsapp);
-    $('#inputadresse').val(adresse);
-    $('#inputfacebook').val(facebook);
-    $('#inputinstagram').val(instagram);
-
-    if (logo) {
-        $('#logoPreview').attr('src', logo).show();
-        $('#ancienLogo').val(logoFilename);
-    } else {
-        $('#logoPreview').hide();
-        $('#ancienLogo').val('');
-    }
-
-    $('#exampleDangerModal1').modal('show');
-});
+        $('#exampleDangerModal1').modal('show');
+    });
+})();

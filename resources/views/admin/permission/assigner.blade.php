@@ -94,7 +94,7 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        tgReady(function () {
             const globalSelectAll = document.getElementById('select_all_permissions');
             const allPermCb = document.querySelectorAll('.permission-checkbox');
 

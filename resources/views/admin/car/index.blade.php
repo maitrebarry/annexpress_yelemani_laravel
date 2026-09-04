@@ -575,7 +575,7 @@
         setupAddToRow('carsRows', 'addCarRow', 'car-row');
         setupAddToRow('camionsRows', 'addCamionRow', 'camion-row');
 
-        document.addEventListener('DOMContentLoaded', function() {
+        tgReady(function () {
             document.querySelectorAll('.edit-car-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     document.getElementById('edit_id_car').value = this.dataset.id;

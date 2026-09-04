@@ -322,7 +322,7 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        tgReady(function () {
             var montantCompte = document.getElementById('montantCompte');
             if (!montantCompte) return;
             var preview = document.getElementById('ecartPreview');

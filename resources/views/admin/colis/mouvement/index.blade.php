@@ -512,7 +512,7 @@
             });
         });
 
-        $(document).ready(function() {
+        tgReady(function () {
             const tables = {};
             ['table-attente', 'table-recu', 'table-livre'].forEach(function(id) {
                 if ($('#' + id).find('tbody tr').length > 0) {

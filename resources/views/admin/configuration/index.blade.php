@@ -365,7 +365,7 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        tgReady(function () {
             // --- Modal Ajout : afficher/masquer gare, compagnie, service selon le droit choisi
             var addDroit = document.getElementById('add_droit');
             var addGareField = document.getElementById('add_gareField');

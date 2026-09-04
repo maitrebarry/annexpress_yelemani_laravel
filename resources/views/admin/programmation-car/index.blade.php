@@ -205,7 +205,7 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        tgReady(function () {
             if (window.jQuery && $.fn.select2) {
                 $('.select-trajet-programmer').select2({ theme: 'bootstrap4', width: '100%', dropdownParent: $('#modalProgrammerCar'), placeholder: 'Choisissez un ou plusieurs trajets' });
                 $('.select-trajet-ajouter').select2({ theme: 'bootstrap4', width: '100%', dropdownParent: $('#modalAjouterTrajet'), placeholder: 'Choisissez un ou plusieurs trajets' });

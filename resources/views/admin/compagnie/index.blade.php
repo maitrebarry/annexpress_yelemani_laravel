@@ -329,7 +329,7 @@
         .tg-photo-row input[type="file"] { flex: 1; }
     </style>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        tgReady(function () {
             @if ($errors->any())
                 new bootstrap.Modal(document.getElementById('modalAjouterCompagnie')).show();
             @endif

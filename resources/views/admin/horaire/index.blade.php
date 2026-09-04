@@ -128,7 +128,7 @@
 @section('scripts')
     <script src="{{ asset('mon_js/alert_delete.js') }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        tgReady(function () {
             document.querySelectorAll('.edit-horaire-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     document.getElementById('edit_id_heure').value = this.dataset.id;

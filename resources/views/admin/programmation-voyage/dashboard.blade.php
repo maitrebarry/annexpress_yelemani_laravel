@@ -221,7 +221,7 @@
         // Confirmation SweetAlert (au lieu du confirm() natif du navigateur) pour les 2
         // actions de déblocage d'anomalie "Cars bloqués" — même style que le reste de
         // l'admin (voir mon_js/alert_delete.js).
-        document.addEventListener('DOMContentLoaded', function () {
+        tgReady(function () {
             document.querySelectorAll('.confirm-arrivee-form').forEach(function (form) {
                 form.addEventListener('submit', function (event) {
                     event.preventDefault();
@@ -246,7 +246,7 @@
             });
         });
 
-        document.addEventListener('DOMContentLoaded', function () {
+        tgReady(function () {
             var dateInput = document.getElementById('jourVoyage');
             var today = new Date().toISOString().slice(0, 10);
             dateInput.value = today;

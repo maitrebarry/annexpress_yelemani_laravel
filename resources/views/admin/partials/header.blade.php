@@ -21,6 +21,23 @@
         }
       } catch (e) {}
     })();
+
+    // Défini ici (tout début de <head>) et non dans mon_js/admin-transitions.js (chargé
+    // en toute fin de <body> par admin/partials/foot.blade.php) : admin/partials/set_flash
+    // est inclus dans le layout AVANT foot.blade.php, et son script inline appelle
+    // tgReady(...) immédiatement (pas en argument d'un addEventListener) — s'il fallait
+    // attendre que admin-transitions.js soit atteint plus bas dans <body>, cet appel
+    // planterait avec "tgReady is not defined" et le toast de succès/erreur ne s'afficherait
+    // jamais après une action admin (create/update/delete...). En le définissant ici, tout
+    // script de la page, à n'importe quel endroit du document, peut l'utiliser sans risque
+    // d'ordre de chargement.
+    window.tgReady = function (fn) {
+      if (document.readyState !== 'loading') {
+        fn();
+      } else {
+        document.addEventListener('DOMContentLoaded', fn);
+      }
+    };
   </script>
   <meta name="theme-color" content="#0f3b5e">
   <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any" />

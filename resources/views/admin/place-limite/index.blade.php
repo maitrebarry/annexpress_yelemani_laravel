@@ -63,7 +63,7 @@
 
 @section('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        tgReady(function () {
             document.querySelectorAll('.edit-place-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     document.getElementById('edit_place_minumale').value = this.dataset.place;

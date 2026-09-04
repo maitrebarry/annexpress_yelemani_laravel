@@ -118,7 +118,7 @@
 @section('scripts')
     @unless ($authUser->estLectureSeule())
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
+            tgReady(function () {
                 var csrfToken = @json(csrf_token());
 
                 document.querySelectorAll('.transfer-btn').forEach(function (btn) {

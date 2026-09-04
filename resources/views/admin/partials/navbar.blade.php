@@ -103,13 +103,18 @@
                 </li>
 
                 @if ($authUser->userHasPermission('Billets_notification'))
-                    <li class="nav-item dropdown me-2">
+                    <li class="nav-item dropdown me-2" id="notifDropdownLi">
                         <button class="btn btn-sm btn-theme-toggle position-relative" data-bs-toggle="dropdown" title="Notifications">
                             <i class="fas fa-bell"></i>
                             @if ($notifCount > 0)
                                 <span class="notify-badge">{{ $notifCount }}</span>
                             @endif
                         </button>
+                        {{-- Ancré à .navbar-actions (voir #notifDropdownLi/.navbar-actions dans le
+                             <style> plus bas), pas à ce <li> lui-même : à 320px de large, un
+                             ancrage sur ce <li> (une simple icône, pas forcément près du bord
+                             droit de l'écran) faisait déborder le menu hors de l'écran à gauche
+                             sur mobile. --}}
                         <div class="dropdown-menu dropdown-menu-end p-0" style="width: min(320px, calc(100vw - 24px)); max-height: 400px; overflow-y: auto;">
                             <div class="p-2">
                                 @if ($notifCount > 0)
@@ -248,6 +253,20 @@
        passer à la ligne dès qu'on les ouvre. On les remet en position flottante nous-mêmes,
        à toute taille d'écran. */
     .navbar-actions .dropdown-menu { position: absolute !important; }
+
+    /* Le menu Notifications (320px de large, voir plus haut) déborde de l'écran à
+       gauche si on le laisse s'ancrer à son propre <li> (une simple icône de ~30px,
+       pas forcément près du bord droit — sur cet écran-ci il y a encore le profil après
+       elle) : "position: absolute; right: 0" se cale sur le bord DROIT de ce <li>, donc
+       un menu large qui s'étend vers la gauche depuis un point situé au milieu de l'écran
+       peut aisément dépasser le bord gauche. Sans Popper pour recalculer une position
+       sûre (Bootstrap n'utilise JAMAIS Popper pour un dropdown situé dans .navbar — codé
+       en dur dans son JS, indépendant de tout CSS), on ancre nous-mêmes ce menu au bord
+       droit de .navbar-actions (qui, lui, correspond au bord droit réel de la barre) en
+       neutralisant le position:relative que Bootstrap pose sur ce <li> précis (classe
+       .dropdown), pour que le calcul "right: 0" remonte jusqu'à .navbar-actions. */
+    .navbar-actions { position: relative; }
+    #notifDropdownLi { position: static; }
 
     @media (max-width: 575.98px) {
         /* Comportement "application mobile" : la barre du haut reste compacte (icônes

@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\CompagnieController;
 use App\Http\Controllers\Admin\ConfigurationController;
 use App\Http\Controllers\Admin\DepenseController;
 use App\Http\Controllers\Admin\DepotBanqueController;
+use App\Http\Controllers\Admin\DocumentationController;
 use App\Http\Controllers\Admin\EmployeController;
 use App\Http\Controllers\Admin\EnvoiColisController;
 use App\Http\Controllers\Admin\EscaleController;
@@ -136,6 +137,12 @@ Route::middleware('auth:staff')->prefix('admin')->group(function () {
     Route::get('/Messages_contact', [MessageContactController::class, 'index'])->name('admin.message-contact.index');
     Route::post('/Messages_contact/traiter/{id}', [MessageContactController::class, 'marquerTraite'])->name('admin.message-contact.traiter');
     Route::get('/Messages_contact/delete/{id}', [MessageContactController::class, 'destroy'])->name('admin.message-contact.destroy');
+
+    // Manuel d'utilisation : accessible à tout compte connecté quel que soit son rôle ou
+    // ses permissions (contrairement aux autres écrans admin) — c'est de la documentation,
+    // pas un écran métier, donc aucune restriction n'a de sens ici.
+    Route::get('/Documentations', [DocumentationController::class, 'index'])->name('admin.documentation.index');
+    Route::get('/Documentations/pdf', [DocumentationController::class, 'pdf'])->name('admin.documentation.pdf');
 });
 
 Route::middleware(['auth:staff', 'permission:Configuration_gestion_escale'])->prefix('admin')->group(function () {

@@ -340,15 +340,33 @@
                 </div>
             @endif
 
-            {{-- ========== PERSONNEL (item unique — pas de dropdown pour un seul lien) ========== --}}
+            {{-- ========== GROUPE : PERSONNEL ========== --}}
             @php
                 $peutVoirUtilisateurs = $authUser->userHasPermission('utilisateur_apercu');
                 $peutVoirChauffeurs = $authUser->userHasPermission('Configuration_gestion_car/chauffeur');
+                $peutVoirSalaires = $authUser->userHasPermission('Salaire_apercu');
+                $personnelPaths = ['admin/Employes', 'admin/Salaires', 'admin/Salaires/liste_bulletins'];
+                $personnelOuvert = $groupActive($personnelPaths);
             @endphp
-            @if ($peutVoirUtilisateurs || $peutVoirChauffeurs)
-                <a class="nav-link {{ $isActive('admin/Employes') }}" href="{{ url('/admin/Employes') }}">
-                    <i class="fas fa-id-card"></i> <span class="nav-text">Employés</span>
+            @if ($peutVoirUtilisateurs || $peutVoirChauffeurs || $peutVoirSalaires)
+                <a class="nav-link nav-link-group {{ $personnelOuvert ? '' : 'collapsed' }}" href="#groupPersonnel" data-bs-toggle="collapse" role="button" aria-expanded="{{ $personnelOuvert ? 'true' : 'false' }}">
+                    <i class="fas fa-id-card"></i> <span class="nav-text flex-grow-1">Personnel</span>
+                    <i class="fas fa-chevron-down nav-caret"></i>
                 </a>
+                <div class="collapse {{ $personnelOuvert ? 'show' : '' }}" id="groupPersonnel">
+                    <div class="nav flex-column nav-subgroup">
+                        @if ($peutVoirUtilisateurs || $peutVoirChauffeurs)
+                            <a class="nav-link {{ $isActive('admin/Employes') }}" href="{{ url('/admin/Employes') }}">
+                                <i class="fas fa-users"></i> <span class="nav-text">Employés</span>
+                            </a>
+                        @endif
+                        @if ($peutVoirSalaires)
+                            <a class="nav-link {{ $isActive('admin/Salaires') }}" href="{{ url('/admin/Salaires') }}">
+                                <i class="fas fa-money-bill-wave"></i> <span class="nav-text">Salaires</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
             @endif
         @endif{{-- fin du if !== 'super_admin' --}}
 

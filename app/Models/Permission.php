@@ -57,6 +57,7 @@ class Permission extends Model
         'Programme_programmer_car',
         'Programme_programmation_voyage',
         'Programme_hors_programme',
+        'Salaire_apercu',
     ];
 
     // Chef d'escale : toutes les permissions par défaut SAUF la programmation fixe et

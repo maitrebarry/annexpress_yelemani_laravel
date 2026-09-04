@@ -23,25 +23,47 @@
             @csrf
             <div class="card-body border-top border-4 border-primary">
 
-                <!-- Sélection du car -->
-                <div class="mb-4 col-12 col-md-4">
-                    <label for="id_car_selectionner" class="form-label fw-bold">Sélectionner un car</label>
-                    <select id="id_car_selectionner" name="id_car_selectionner" class="form-select shadow-sm">
-                        <option value="">-- Choisir un car --</option>
-                        @foreach ($listeCars as $car)
-                            <option value="{{ $car['id_car_programmer'] }}"
-                                {{ $carSelectionne && $car['id_car_programmer'] == $carSelectionne->id_car_programmer ? 'selected' : '' }}>
-                                Car N°{{ $car['id_car_programmer'] }} —
-                                Départ: {{ $car['id_horaire'] }} —
-                                Destination: {{ $car['id_trajet'] }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @if ($carSelectionne)
-                        <div class="form-text text-success">
-                            <i class="fas fa-circle-check"></i> Car N°{{ $carSelectionne->id_car_programmer }} présélectionné (départ {{ $carSelectionne->id_horaire }} vers {{ $carSelectionne->id_trajet }}).
-                        </div>
-                    @endif
+                <!-- Sélection du véhicule : car (programmé aujourd'hui) OU camion (actif),
+                     mutuellement exclusifs -- voir GESTION_CAMIONS_COLIS.md. -->
+                <div class="mb-4 row">
+                    <div class="col-12 col-md-5">
+                        <label for="id_car_selectionner" class="form-label fw-bold">Sélectionner un car</label>
+                        <select id="id_car_selectionner" name="id_car_selectionner" class="form-select shadow-sm">
+                            <option value="">-- Choisir un car --</option>
+                            @foreach ($listeCars as $car)
+                                <option value="{{ $car['id_car_programmer'] }}"
+                                    {{ $carSelectionne && $car['id_car_programmer'] == $carSelectionne->id_car_programmer ? 'selected' : '' }}>
+                                    Car N°{{ $car['id_car_programmer'] }} —
+                                    Départ: {{ $car['id_horaire'] }} —
+                                    Destination: {{ $car['id_trajet'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if ($carSelectionne)
+                            <div class="form-text text-success">
+                                <i class="fas fa-circle-check"></i> Car N°{{ $carSelectionne->id_car_programmer }} présélectionné (départ {{ $carSelectionne->id_horaire }} vers {{ $carSelectionne->id_trajet }}).
+                            </div>
+                        @endif
+                    </div>
+                    <div class="col-12 col-md-2 text-center d-flex align-items-center justify-content-center">
+                        <span class="text-muted fw-semibold">— OU —</span>
+                    </div>
+                    <div class="col-12 col-md-5">
+                        <label for="id_camion_selectionner" class="form-label fw-bold">Sélectionner un camion</label>
+                        <select id="id_camion_selectionner" name="id_camion_selectionner" class="form-select shadow-sm">
+                            <option value="">-- Choisir un camion --</option>
+                            @foreach ($listeCamions as $camion)
+                                <option value="{{ $camion['id_camion'] }}" {{ $camionSelectionne && $camion['id_camion'] == $camionSelectionne->id_camion ? 'selected' : '' }}>
+                                    Camion N°{{ $camion['numero_camion'] }} — {{ $camion['matriculle'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if ($camionSelectionne)
+                            <div class="form-text text-success">
+                                <i class="fas fa-circle-check"></i> Camion N°{{ $camionSelectionne->numero_camion }} présélectionné.
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
                 <!-- Table des colis -->
@@ -91,6 +113,16 @@
             document.querySelectorAll('.checkbox-car').forEach(function(checkbox) {
                 checkbox.checked = isChecked;
             });
+        });
+
+        // Sélection car / camion mutuellement exclusive : choisir l'un vide l'autre.
+        const selectCarEnvoi = document.getElementById('id_car_selectionner');
+        const selectCamionEnvoi = document.getElementById('id_camion_selectionner');
+        selectCarEnvoi.addEventListener('change', function() {
+            if (this.value) selectCamionEnvoi.value = '';
+        });
+        selectCamionEnvoi.addEventListener('change', function() {
+            if (this.value) selectCarEnvoi.value = '';
         });
     </script>
 @endsection

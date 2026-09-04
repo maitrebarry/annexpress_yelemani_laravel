@@ -14,6 +14,7 @@ class LigneEnvoi extends Model
 
     protected $fillable = [
         'numero_car',
+        'numero_camion',
         'dates',
         'id_compagnie',
     ];

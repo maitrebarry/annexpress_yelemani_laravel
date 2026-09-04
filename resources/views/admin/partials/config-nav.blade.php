@@ -63,7 +63,7 @@
             <a class="nav-link {{ $active === 'cars' ? 'active' : '' }} text-break" role="tab"
               aria-current="page" href="{{ url('/admin/Cars_chauffeurs') }}"
               aria-selected="true">
-              <i class="fas fa-car me-2 align-middle d-inline-block"></i>Cars & Chauffeurs
+              <i class="fas fa-car me-2 align-middle d-inline-block"></i>Cars & Camions & Chauffeurs
             </a>
           </li>
         @endif

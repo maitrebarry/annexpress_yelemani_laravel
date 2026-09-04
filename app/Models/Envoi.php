@@ -15,6 +15,7 @@ class Envoi extends Model
     protected $fillable = [
         'id_coli',
         'id_car',
+        'id_camion',
         'date_enregistre',
         'id_compagnie',
     ];

@@ -2,14 +2,17 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Cars & Chauffeurs · TransGest Admin')
+@section('title', 'Cars & Camions & Chauffeurs · TransGest Admin')
 @section('breadcrumb-title', 'Configuration')
-@section('breadcrumb-active', 'Cars & Chauffeurs')
+@section('breadcrumb-active', 'Cars & Camions & Chauffeurs')
 
 @section('breadcrumb-actions')
     @unless ($authUser->estLectureSeule())
         <button type="button" class="btn btn-success d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjouterCar">
             <i class="fas fa-circle-plus fs-5"></i> Ajouter un car
+        </button>
+        <button type="button" class="btn btn-success d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjouterCamion">
+            <i class="fas fa-circle-plus fs-5"></i> Ajouter un camion
         </button>
         <button type="button" class="btn btn-success d-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAjouterChauffeur">
             <i class="fas fa-circle-plus fs-5"></i> Ajouter un chauffeur
@@ -25,7 +28,7 @@
 
         <div class="card config-card">
             <div class="card-header">
-                <h5 class="mb-0 fw-bold"><i class="fas fa-bus me-2"></i>Cars & Chauffeurs</h5>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-bus me-2"></i>Cars & Camions & Chauffeurs</h5>
             </div>
             <div class="card-body p-4">
                 <ul class="nav nav-pills nav-pills-primary mb-3" role="tablist">
@@ -34,6 +37,14 @@
                             <div class="d-flex align-items-center">
                                 <div class="tab-icon"><i class='fas fa-bus font-18 me-1'></i></div>
                                 <div class="tab-title">Cars</div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" data-bs-toggle="tab" href="#tabCamions" role="tab" aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="tab-icon"><i class='fas fa-truck font-18 me-1'></i></div>
+                                <div class="tab-title">Camions</div>
                             </div>
                         </a>
                     </li>
@@ -96,6 +107,60 @@
                         </div>
                     </div>
 
+                    <div class="tab-pane fade" id="tabCamions" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-hover-effect table-custom-header text-center mobile-card-table" style="width:100%">
+                                <thead class="table-light text-center">
+                                    <tr>
+                                        <th>Numéro du camion</th>
+                                        <th>Matricule</th>
+                                        <th>Statut</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($listeCamion as $cam)
+                                        <tr>
+                                            <td data-label="Numéro du camion">{{ $cam->numero_camion }}</td>
+                                            <td data-label="Matricule">{{ $cam->matriculle }}</td>
+                                            <td data-label="Statut">
+                                                @if (($cam->actif ?? 'on') === 'on')
+                                                    <span class="badge bg-success">Actif</span>
+                                                @else
+                                                    <span class="badge bg-secondary">Inactif</span>
+                                                @endif
+                                            </td>
+                                            <td data-label="Action">
+                                                <div class="dropdown">
+                                                    <a href="#" class="text-dark fs-5" data-bs-toggle="dropdown" aria-expanded="false">&#8943;</a>
+                                                    <ul class="dropdown-menu shadow-sm">
+                                                        @unless ($authUser->estLectureSeule())
+                                                            <li>
+                                                                <a class="dropdown-item edit-camion-btn" href="javascript:;"
+                                                                    data-bs-toggle="modal" data-bs-target="#modalModifierCamion"
+                                                                    data-id="{{ $cam->id_camion }}"
+                                                                    data-numero="{{ $cam->numero_camion }}"
+                                                                    data-matricule="{{ $cam->matriculle }}"
+                                                                    data-actif="{{ $cam->actif ?? 'on' }}">
+                                                                    <i class="fas fa-pen me-2"></i>Modifier
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item text-danger delete-button" href="{{ route('admin.camion.destroy', $cam->id_camion) }}">
+                                                                    <i class="fas fa-trash me-2"></i>Supprimer
+                                                                </a>
+                                                            </li>
+                                                        @endunless
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="tab-pane fade" id="tabChauffeurs" role="tabpanel">
                         <div class="table-responsive">
                             <table class="table table-striped table-bordered table-hover-effect table-custom-header text-center mobile-card-table" style="width:100%">
@@ -104,7 +169,7 @@
                                         <th>Photo</th>
                                         <th>Nom & prénom</th>
                                         <th>Téléphone</th>
-                                        <th>Car</th>
+                                        <th>Véhicule</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -122,7 +187,13 @@
                                             </td>
                                             <td data-label="Nom & prénom">{{ $ch->nom_prenom }}</td>
                                             <td data-label="Téléphone">{{ $ch->numero }}</td>
-                                            <td data-label="Car">{{ $ch->numero_car }}</td>
+                                            <td data-label="Véhicule">
+                                                @if ($ch->type_vehicule === 'camion')
+                                                    <span class="badge bg-info-subtle text-info-emphasis"><i class="fas fa-truck me-1"></i>Camion {{ $ch->numero_camion }}</span>
+                                                @else
+                                                    <span class="badge bg-primary-subtle text-primary-emphasis"><i class="fas fa-bus me-1"></i>Car {{ $ch->numero_car }}</span>
+                                                @endif
+                                            </td>
                                             <td data-label="Action">
                                                 <div class="dropdown">
                                                     <a href="#" class="text-dark fs-5" data-bs-toggle="dropdown" aria-expanded="false">&#8943;</a>
@@ -135,6 +206,8 @@
                                                                     data-nom="{{ $ch->nom_prenom }}"
                                                                     data-numero="{{ $ch->numero }}"
                                                                     data-idcar="{{ $ch->id_car }}"
+                                                                    data-idcamion="{{ $ch->id_camion }}"
+                                                                    data-type="{{ $ch->type_vehicule }}"
                                                                     data-photo="{{ $ch->photo ? asset('storage/profiles/'.$ch->photo) : '' }}">
                                                                     <i class="fas fa-pen me-2"></i>Modifier
                                                                 </a>
@@ -249,6 +322,83 @@
         </div>
     </div>
 
+    <!-- Modal Ajout camion -->
+    <div class="modal fade" id="modalAjouterCamion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white">Ajout de camions</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{{ route('admin.camion.store') }}">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Numéro de camion</label>
+                            <input type="number" class="form-control" name="numero_camion" placeholder="Ex: 1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Matricule</label>
+                            <input type="text" class="form-control" name="matriculle" placeholder="Ex: AB-1234" required>
+                        </div>
+                        @if ($authUser->isSuperAdmin())
+                            <div class="mb-3">
+                                <label class="form-label">Compagnie</label>
+                                <select class="form-select" name="id_compagnie" required>
+                                    <option value="" disabled selected>Choisissez une compagnie</option>
+                                    @foreach ($listeCompagnie as $c)
+                                        <option value="{{ $c->id_compagnie }}">{{ $c->nom_compagnie }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary fw-semibold">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Modification camion -->
+    <div class="modal fade" id="modalModifierCamion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary">
+                    <h5 class="modal-title text-white">Modifier le camion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{{ route('admin.camion.update') }}">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" name="id_camion" id="edit_id_camion">
+                        <div class="mb-3">
+                            <label class="form-label">Numéro</label>
+                            <input type="text" class="form-control" name="numero_camion" id="edit_numero_camion">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Matricule</label>
+                            <input type="text" class="form-control" name="matriculle" id="edit_matricule_camion">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Statut</label>
+                            <select class="form-select" name="actif" id="edit_actif_camion">
+                                <option value="on">Actif</option>
+                                <option value="off">Inactif</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary fw-semibold">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Ajout chauffeur -->
     <div class="modal fade" id="modalAjouterChauffeur" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -277,12 +427,25 @@
                             <label class="form-label">Téléphone</label>
                             <input type="text" class="form-control" name="numero" maxlength="8" value="{{ old('numero') }}" placeholder="Ex: 78907812" required>
                         </div>
-                        <div class="mb-3">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="estCamionCheck" name="est_camion" value="1">
+                            <label class="form-check-label" for="estCamionCheck">Chauffeur de camion (au lieu d'un car)</label>
+                        </div>
+                        <div class="mb-3" id="carField">
                             <label class="form-label">Car</label>
-                            <select class="form-select" name="id_car" required>
+                            <select class="form-select" name="id_car" id="selectCar" required>
                                 <option value="" disabled selected>Choisissez un car</option>
                                 @foreach ($listeCar as $c)
                                     <option value="{{ $c->id_car }}" {{ (string) old('id_car') === (string) $c->id_car ? 'selected' : '' }}>{{ $c->numero_car }} — {{ $c->matriculle }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3 d-none" id="camionField">
+                            <label class="form-label">Camion</label>
+                            <select class="form-select" name="id_camion" id="selectCamion">
+                                <option value="" disabled selected>Choisissez un camion</option>
+                                @foreach ($listeCamion as $cam)
+                                    <option value="{{ $cam->id_camion }}" {{ (string) old('id_camion') === (string) $cam->id_camion ? 'selected' : '' }}>{{ $cam->numero_camion }} — {{ $cam->matriculle }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -323,11 +486,25 @@
                             <label class="form-label">Téléphone</label>
                             <input type="text" class="form-control" name="numero" id="edit_numero_chauffeur" maxlength="8">
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Car</label>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="editEstCamionCheck" name="est_camion" value="1">
+                            <label class="form-check-label" for="editEstCamionCheck">Chauffeur de camion (au lieu d'un car)</label>
+                        </div>
+                        <div class="mb-3" id="editCarField">
+                            <label class="form-label">Car attribué</label>
                             <select class="form-select" name="id_car" id="edit_id_car_chauffeur">
+                                <option value=""></option>
                                 @foreach ($listeCar as $c)
                                     <option value="{{ $c->id_car }}">{{ $c->numero_car }} — {{ $c->matriculle }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3 d-none" id="editCamionField">
+                            <label class="form-label">Camion attribué</label>
+                            <select class="form-select" name="id_camion" id="edit_id_camion_chauffeur">
+                                <option value=""></option>
+                                @foreach ($listeCamion as $cam)
+                                    <option value="{{ $cam->id_camion }}">{{ $cam->numero_camion }} — {{ $cam->matriculle }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -359,12 +536,68 @@
                 });
             });
 
+            document.querySelectorAll('.edit-camion-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    document.getElementById('edit_id_camion').value = this.dataset.id;
+                    document.getElementById('edit_numero_camion').value = this.dataset.numero;
+                    document.getElementById('edit_matricule_camion').value = this.dataset.matricule;
+                    document.getElementById('edit_actif_camion').value = this.dataset.actif;
+                });
+            });
+
+            // Bascule entre le select Car et le select Camion selon la checkbox "Chauffeur
+            // de camion" — même principe pour le modal d'ajout et d'édition (voir
+            // GESTION_CAMIONS_COLIS.md).
+            function toggleVehiculeFields(checkbox, carField, camionField, carSelect, camionSelect) {
+                var estCamion = checkbox.checked;
+                carField.classList.toggle('d-none', estCamion);
+                camionField.classList.toggle('d-none', !estCamion);
+                carSelect.required = !estCamion;
+                camionSelect.required = estCamion;
+                if (estCamion) {
+                    carSelect.value = '';
+                } else {
+                    camionSelect.value = '';
+                }
+            }
+
+            var estCamionCheck = document.getElementById('estCamionCheck');
+            var carField = document.getElementById('carField');
+            var camionField = document.getElementById('camionField');
+            var selectCar = document.getElementById('selectCar');
+            var selectCamion = document.getElementById('selectCamion');
+            estCamionCheck.addEventListener('change', function() {
+                toggleVehiculeFields(this, carField, camionField, selectCar, selectCamion);
+            });
+
+            var editEstCamionCheck = document.getElementById('editEstCamionCheck');
+            var editCarField = document.getElementById('editCarField');
+            var editCamionField = document.getElementById('editCamionField');
+            var editCar = document.getElementById('edit_id_car_chauffeur');
+            var editCamion = document.getElementById('edit_id_camion_chauffeur');
+            editEstCamionCheck.addEventListener('change', function() {
+                toggleVehiculeFields(this, editCarField, editCamionField, editCar, editCamion);
+            });
+
             document.querySelectorAll('.edit-chauffeur-btn').forEach(function(btn) {
                 btn.addEventListener('click', function() {
                     document.getElementById('edit_id_chauffeur').value = this.dataset.id;
                     document.getElementById('edit_nom_prenom').value = this.dataset.nom;
                     document.getElementById('edit_numero_chauffeur').value = this.dataset.numero;
-                    document.getElementById('edit_id_car_chauffeur').value = this.dataset.idcar;
+                    document.getElementById('edit_id_car_chauffeur').value = this.dataset.idcar || '';
+                    document.getElementById('edit_id_camion_chauffeur').value = this.dataset.idcamion || '';
+
+                    var estCamion = this.dataset.type === 'camion';
+                    editEstCamionCheck.checked = estCamion;
+                    toggleVehiculeFields(editEstCamionCheck, editCarField, editCamionField, editCar, editCamion);
+                    // toggleVehiculeFields() vide le select inutilisé : on rétablit la bonne
+                    // valeur juste après selon le type réel du chauffeur.
+                    if (estCamion) {
+                        editCamion.value = this.dataset.idcamion || '';
+                    } else {
+                        editCar.value = this.dataset.idcar || '';
+                    }
+
                     var preview = document.getElementById('edit_photo_preview');
                     if (this.dataset.photo) {
                         preview.src = this.dataset.photo;

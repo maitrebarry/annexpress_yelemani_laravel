@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BanqueController;
 use App\Http\Controllers\Admin\BilletController;
 use App\Http\Controllers\Admin\CaisseController;
 use App\Http\Controllers\Admin\ActualiteController;
+use App\Http\Controllers\Admin\CamionController;
 use App\Http\Controllers\Admin\CarController;
 use App\Http\Controllers\Admin\ChauffeurController;
 use App\Http\Controllers\Admin\ColisPriseEnChargeController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\Admin\ProgrammationVoyageController;
 use App\Http\Controllers\Admin\ProgrammeController;
 use App\Http\Controllers\Admin\RapportBilletController;
 use App\Http\Controllers\Admin\ReclamationColisController;
+use App\Http\Controllers\Admin\SalaireController;
 use App\Http\Controllers\Admin\TransfertGareController;
 use App\Http\Controllers\Admin\ProfilController;
 use App\Http\Controllers\Auth\LoginController;
@@ -156,6 +158,10 @@ Route::middleware(['auth:staff', 'permission:Configuration_gestion_car/chauffeur
     Route::post('/Cars_chauffeurs/update', [CarController::class, 'update'])->name('admin.car.update');
     Route::get('/Cars_chauffeurs/delete/{idCar}', [CarController::class, 'destroy'])->name('admin.car.destroy');
 
+    Route::post('/Camions/store', [CamionController::class, 'store'])->name('admin.camion.store');
+    Route::post('/Camions/update', [CamionController::class, 'update'])->name('admin.camion.update');
+    Route::get('/Camions/delete/{idCamion}', [CamionController::class, 'destroy'])->name('admin.camion.destroy');
+
     Route::post('/Chauffeurs_cars/store', [ChauffeurController::class, 'store'])->name('admin.chauffeur.store');
     Route::post('/Chauffeurs_cars/update', [ChauffeurController::class, 'update'])->name('admin.chauffeur.update');
     Route::get('/Chauffeurs_cars/delete/{idChauffeur}', [ChauffeurController::class, 'destroy'])->name('admin.chauffeur.destroy');
@@ -209,6 +215,15 @@ Route::middleware(['auth:staff', 'permission:Programme_programmation_voyage'])->
     Route::post('/Programmation_voyages/edit/{idProgrammation}', [ProgrammationVoyageController::class, 'update'])->name('admin.programmation-voyage.update');
 });
 
+Route::middleware(['auth:staff', 'permission:Salaire_apercu'])->prefix('admin')->group(function () {
+    Route::get('/Salaires', [SalaireController::class, 'index'])->name('admin.salaire.index');
+    Route::post('/Salaires', [SalaireController::class, 'store'])->name('admin.salaire.store');
+    Route::post('/Salaires/update', [SalaireController::class, 'update'])->name('admin.salaire.update');
+    Route::post('/Salaires/generer_bulletin', [SalaireController::class, 'genererBulletin'])->name('admin.salaire.generer-bulletin');
+    Route::get('/Salaires/liste_bulletins', [SalaireController::class, 'listeBulletins'])->name('admin.salaire.liste-bulletins');
+    Route::get('/Salaires/telecharger_bulletin/{id}', [SalaireController::class, 'telechargerBulletin'])->name('admin.salaire.telecharger-bulletin');
+});
+
 Route::middleware('auth:staff')->prefix('admin')->group(function () {
     Route::get('/Flotte', [FlotteController::class, 'index'])->name('admin.flotte.index');
     Route::get('/Profils', [ProfilController::class, 'edit'])->name('admin.profil.edit');
@@ -245,6 +260,7 @@ Route::middleware('auth:staff')->prefix('admin')->group(function () {
         Route::get('/Envoi_colis/liste_colis_envoyer', [EnvoiColisController::class, 'index'])->name('admin.colis.envoi.index');
         Route::get('/Envoi_colis/details_colis_envoyer', [EnvoiColisController::class, 'details'])->name('admin.colis.envoi.details');
         Route::post('/Envoi_colis/changer_car', [EnvoiColisController::class, 'changerCar'])->name('admin.colis.envoi.changer-car');
+        Route::post('/Envoi_colis/changer_camion', [EnvoiColisController::class, 'changerCamion'])->name('admin.colis.envoi.changer-camion');
         Route::get('/Envoi_colis/annuler_envoi', [EnvoiColisController::class, 'annuler'])->name('admin.colis.envoi.annuler');
     });
 

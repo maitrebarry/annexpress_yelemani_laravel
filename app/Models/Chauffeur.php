@@ -12,11 +12,16 @@ class Chauffeur extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['nom_prenom', 'numero', 'id_car', 'id_compagnie', 'photo'];
+    protected $fillable = ['nom_prenom', 'numero', 'id_car', 'id_camion', 'type_vehicule', 'id_compagnie', 'photo'];
 
     public function car()
     {
         return $this->belongsTo(Car::class, 'id_car', 'id_car');
+    }
+
+    public function camion()
+    {
+        return $this->belongsTo(Camion::class, 'id_camion', 'id_camion');
     }
 
     public function compagnie()

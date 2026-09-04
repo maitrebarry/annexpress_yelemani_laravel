@@ -25,37 +25,55 @@
                     <thead class="table-primary text-center">
                         <tr>
                             <th>Date d'envoi</th>
-                            <th>Numéro du car</th>
+                            <th>Véhicule</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody class="text-center">
                         @foreach ($listeColisEnvoyer as $colis)
+                            @php
+                                $estCamion = $colis->type_vehicule === 'camion';
+                            @endphp
                             <tr>
                                 <td>{{ $colis->dates }}</td>
-                                <td>Car n°{{ $colis->numero_car }}</td>
+                                <td>
+                                    @if ($estCamion)
+                                        <span class="badge bg-info-subtle text-info-emphasis"><i class="fas fa-truck me-1"></i>Camion n°{{ $colis->id_vehicule }}</span>
+                                    @else
+                                        <span class="badge bg-primary-subtle text-primary-emphasis"><i class="fas fa-bus me-1"></i>Car n°{{ $colis->id_vehicule }}</span>
+                                    @endif
+                                </td>
                                 <td>
                                     <div class="dropdown">
                                         <a href="#" class="text-dark fs-5" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="fas fa-ellipsis-vertical"></i>
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                            @if ($authUser->droit !== 'PDG')
+                                            @if ($authUser->droit !== 'PDG' && ! $estCamion)
                                                 <li>
-                                                    <a class="dropdown-item" href="{{ route('admin.colis.envoi.create') }}?id_car={{ $colis->numero_car }}">
+                                                    <a class="dropdown-item" href="{{ route('admin.colis.envoi.create', ['id_car' => $colis->id_vehicule]) }}">
+                                                        <i class="fas fa-plus me-2"></i> Ajouter
+                                                    </a>
+                                                </li>
+                                            @endif
+                                            @if ($authUser->droit !== 'PDG' && $estCamion)
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('admin.colis.envoi.create', ['id_camion' => $colis->id_vehicule]) }}">
                                                         <i class="fas fa-plus me-2"></i> Ajouter
                                                     </a>
                                                 </li>
                                             @endif
                                             <li>
-                                                <a class="dropdown-item" href="{{ route('admin.colis.envoi.details') }}?id_car={{ $colis->numero_car }}&date={{ $colis->dates }}">
-                                                    <i class="fas fa-circle-info me-2"></i> Détails / Changer de car
+                                                {{-- route(..., [...]) URL-encode chaque valeur (nécessaire : $colis->dates
+                                                     contient un espace, ex. "2026-09-04 13:43:46"). --}}
+                                                <a class="dropdown-item" href="{{ route('admin.colis.envoi.details', array_filter(['id_vehicule' => $colis->id_vehicule, 'date' => $colis->dates, 'type' => $estCamion ? 'camion' : null])) }}">
+                                                    <i class="fas fa-circle-info me-2"></i> Détails / Changer de véhicule
                                                 </a>
                                             </li>
                                             @if ($authUser->droit !== 'PDG')
                                                 <li>
                                                     <a class="dropdown-item text-danger annuler-envoi-btn"
-                                                        href="{{ route('admin.colis.envoi.annuler') }}?id_car={{ $colis->numero_car }}&date={{ $colis->dates }}">
+                                                        href="{{ route('admin.colis.envoi.annuler', array_filter(['id_vehicule' => $colis->id_vehicule, 'date' => $colis->dates, 'type' => $estCamion ? 'camion' : null])) }}">
                                                         <i class="fas fa-trash me-2"></i> Annuler l'envoi
                                                     </a>
                                                 </li>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Agence;
 use App\Models\Compagnie;
+use App\Models\Employe;
 use App\Models\Permission;
 use App\Models\Utilisateur;
 use App\Support\Flash;
@@ -110,6 +111,12 @@ class ConfigurationController extends Controller
         ]);
 
         Permission::assignPermissionsParDefautPourRole($nouvelUtilisateur->idUser, $data['droit'], $profile);
+
+        // Hook additif du module Salaire (voir GESTION_SALAIRES.md) : crée directement la
+        // fiche de paie du nouveau compte (salaire à 0, à renseigner ensuite par l'Admin
+        // depuis "Salaires") — rien à faire manuellement pour le personnel qui vient de
+        // recevoir un compte.
+        Employe::creerEmployePourUtilisateur($nouvelUtilisateur->idUser, $data['droit'], $data['id_agence'] ?? null, $idCompagnie);
 
         Flash::set(
             'Utilisateur ajouté avec succès. Mot de passe par défaut : '.self::MOT_DE_PASSE_PAR_DEFAUT.' (à communiquer, modifiable après la première connexion).',

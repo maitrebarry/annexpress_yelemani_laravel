@@ -62,10 +62,12 @@ class Employe extends Model
 
     // Liste des employés visibles pour l'utilisateur connecté, calquée sur
     // DepenseService::getDepenses() : un chef d'escale (ou tout rôle rattaché à une gare
-    // précise via id_agence) ne voit que le personnel de SA gare (lui compris, puisque sa
-    // propre fiche employe partage le même id_agence) ; un Admin/PDG (id_agence NULL) voit
-    // toute la compagnie. Le contrôleur garantit déjà que cette méthode n'est jamais
-    // atteinte sans la permission Salaire_apercu.
+    // précise via id_agence) ne voit QUE le personnel de SA gare, jamais celui d'une autre
+    // gare ni le personnel compagnie-entière (chauffeurs, Admin/PDG, hors-système sans
+    // gare) — ces derniers n'ont d'ailleurs pas vocation à être "ses" employés. Un
+    // Admin/PDG/secretaire (id_agence NULL) voit toute la compagnie. Le contrôleur
+    // garantit déjà que cette méthode n'est jamais atteinte sans la permission
+    // Salaire_apercu.
     public static function getEmployesVisibles(Utilisateur $user)
     {
         $query = self::selectAvecNoms();
@@ -77,13 +79,7 @@ class Employe extends Model
         $query->where('employe.id_compagnie', $user->id_compagnie);
 
         if (! empty($user->id_agence)) {
-            // Le personnel sans gare précise (chauffeur -- pas de colonne id_agence, ou
-            // employé hors-système rattaché à "toute la compagnie") doit rester visible
-            // par tous ceux qui ont la permission, pas seulement Admin/PDG :
-            // employe.id_agence = X ne matche jamais NULL en SQL, d'où le orWhereNull.
-            $query->where(function ($q) use ($user) {
-                $q->where('employe.id_agence', $user->id_agence)->orWhereNull('employe.id_agence');
-            });
+            $query->where('employe.id_agence', $user->id_agence);
         }
 
         return $query->orderBy('nom_affiche')->get();
@@ -99,9 +95,7 @@ class Employe extends Model
             $query->where('employe.id_compagnie', $user->id_compagnie);
 
             if (! empty($user->id_agence)) {
-                $query->where(function ($q) use ($user) {
-                    $q->where('employe.id_agence', $user->id_agence)->orWhereNull('employe.id_agence');
-                });
+                $query->where('employe.id_agence', $user->id_agence);
             }
         }
 

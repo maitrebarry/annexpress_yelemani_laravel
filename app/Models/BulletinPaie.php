@@ -69,9 +69,7 @@ class BulletinPaie extends Model
         $query->where('bulletin_paie.id_compagnie', $user->id_compagnie);
 
         if (! empty($user->id_agence)) {
-            $query->where(function ($q) use ($user) {
-                $q->where('employe.id_agence', $user->id_agence)->orWhereNull('employe.id_agence');
-            });
+            $query->where('employe.id_agence', $user->id_agence);
         }
 
         return $query->orderByDesc('bulletin_paie.date_generation')->get();
@@ -103,9 +101,7 @@ class BulletinPaie extends Model
             $query->where('bulletin_paie.id_compagnie', $user->id_compagnie);
 
             if (! empty($user->id_agence)) {
-                $query->where(function ($q) use ($user) {
-                    $q->where('employe.id_agence', $user->id_agence)->orWhereNull('employe.id_agence');
-                });
+                $query->where('employe.id_agence', $user->id_agence);
             }
         }
 

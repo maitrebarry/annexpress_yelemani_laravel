@@ -18,8 +18,10 @@ use Illuminate\View\View;
  * La permission Salaire_apercu (gérée par le middleware `permission:` sur les routes,
  * voir routes/web.php) gouverne toute la visibilité du module, y compris son propre
  * salaire ; elle ne donne que la LECTURE. Créer un employé hors-système, modifier un
- * salaire ou générer un bulletin reste réservé à Admin/PDG/super_admin (requireGestionnaire()
- * ci-dessous), même pour un compte qui n'a reçu que la lecture.
+ * salaire ou générer un bulletin reste réservé à l'encadrement (Admin/PDG/secretaire/
+ * super_admin — requireGestionnaire() ci-dessous), même pour un compte qui n'a reçu que
+ * la lecture. Un chef d'escale/Utilisateur, même avec la permission, ne voit et ne gère
+ * jamais que le personnel de sa propre gare (voir Employe::getEmployesVisibles()).
  */
 class SalaireController extends Controller
 {
@@ -27,7 +29,7 @@ class SalaireController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        if (! in_array($user->droit, ['Admin', 'PDG', 'super_admin'], true)) {
+        if (! in_array($user->droit, ['Admin', 'PDG', 'secretaire', 'super_admin'], true)) {
             Flash::set("Action réservée à l'administration.", 'danger');
 
             return redirect()->route('admin.salaire.index');
@@ -39,7 +41,7 @@ class SalaireController extends Controller
     public function index(): View
     {
         $user = Auth::guard('staff')->user();
-        $peutGerer = in_array($user->droit, ['Admin', 'PDG', 'super_admin'], true);
+        $peutGerer = in_array($user->droit, ['Admin', 'PDG', 'secretaire', 'super_admin'], true);
 
         return view('admin.salaire.index', [
             'listeEmployes' => Employe::getEmployesVisibles($user),
@@ -48,7 +50,7 @@ class SalaireController extends Controller
         ]);
     }
 
-    // Ajout d'un employé hors-système (gardien, balayeur...) — réservé Admin/PDG/super_admin.
+    // Ajout d'un employé hors-système (gardien, balayeur...) — réservé à l'encadrement.
     public function store(Request $request): RedirectResponse
     {
         if ($redirect = $this->requireGestionnaire()) {
@@ -79,7 +81,7 @@ class SalaireController extends Controller
         return redirect()->route('admin.salaire.index');
     }
 
-    // Modification du poste/salaire/gare/statut -- réservée Admin/PDG/super_admin. Le nom
+    // Modification du poste/salaire/gare/statut -- réservée à l'encadrement. Le nom
     // n'est éditable ici que pour le personnel hors-système (sinon il vient de
     // utilisateur/chauffeur) : le champ n'est présent dans le POST que dans ce cas (voir
     // admin/salaire/index.blade.php).

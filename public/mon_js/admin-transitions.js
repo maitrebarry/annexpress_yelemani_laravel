@@ -128,7 +128,14 @@
         );
 
         progressStart();
-        document.body.classList.add('tg-page-leaving');
+        // Volontairement PAS de document.body.classList.add('tg-page-leaving') ici : sur le
+        // site public, à faible latence, ça ne se voyait presque pas, mais les pages admin
+        // font des requêtes bien plus lourdes (jointures, DataTables, calculs de salaire...).
+        // Rendre <body> transparent dès le clic, puis attendre le fetch() + un délai fixe
+        // supplémentaire avant l'échange, exposait un flash blanc net et grandissant avec la
+        // latence serveur. L'ancienne page reste donc affichée tout du long (la barre de
+        // progression en haut suffit comme retour visuel) ; seul l'échange final, une fois le
+        // nouveau contenu prêt, est animé.
 
         fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(function (res) {
@@ -158,20 +165,37 @@
                 var newTitle = doc.title;
                 var newBody = doc.body;
 
+                // Échange immédiat, sans délai artificiel : le nouveau contenu est prêt, rien
+                // à gagner à attendre. La nouvelle page démarre invisible (classe déjà posée
+                // avant l'insertion dans le document) puis apparaît en fondu une fois insérée.
+                newBody.classList.add('tg-page-leaving');
+                document.title = newTitle;
+                swapPageStyles(doc.head);
+                document.body.replaceWith(newBody);
+                newBody.offsetWidth; // eslint-disable-line no-unused-expressions
+                newBody.classList.remove('tg-page-leaving');
+
+                // reexecuteScripts()/reinitPageWidgets() peuvent bloquer le thread principal
+                // une bonne fraction de seconde (réinit DataTables sur un gros tableau...).
+                // Si ce travail s'exécute dans la MÊME tâche JS que le retrait de classe
+                // ci-dessus, Chrome ne délègue jamais l'animation au thread de composition
+                // avant ce blocage — mesuré : le fondu reste visuellement figé (page blanche)
+                // pendant toute la durée du blocage, puis rattrape d'un coup une fois le thread
+                // libéré. requestAnimationFrame ne suffit PAS ici : son callback s'exécute
+                // JUSTE AVANT le prochain paint, donc un travail lourd à l'intérieur bloque ce
+                // paint tout autant (mesuré, même symptôme). setTimeout(..., 0) reporte à la
+                // tâche suivante, après que le pipeline de rendu (recalcul de style + peinture
+                // + prise en charge de l'animation par le compositeur) ait eu l'occasion de
+                // s'exécuter au moins une fois.
                 setTimeout(function () {
-                    document.title = newTitle;
-                    swapPageStyles(doc.head);
-                    document.body.replaceWith(newBody);
                     reexecuteScripts(newBody, existingSrcs);
                     reinitPageWidgets();
-                    newBody.classList.add('tg-page-leaving');
-                    newBody.offsetWidth; // eslint-disable-line no-unused-expressions
-                    newBody.classList.remove('tg-page-leaving');
-                    window.scrollTo({ top: 0, behavior: 'auto' });
-                    if (push) history.pushState({ tgSoftNav: true }, '', url);
-                    progressDone();
                     document.dispatchEvent(new CustomEvent('tg:page-loaded'));
-                }, 160);
+                }, 0);
+
+                window.scrollTo({ top: 0, behavior: 'auto' });
+                if (push) history.pushState({ tgSoftNav: true }, '', url);
+                progressDone();
             })
             .catch(function () {
                 // Repli : navigation classique, jamais bloquer l'utilisateur.

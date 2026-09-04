@@ -128,7 +128,7 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('mon_js/thermal-print.js') }}"></script>
+    <script src="{{ asset('mon_js/thermal-print.js') }}?v={{ @filemtime(public_path('mon_js/thermal-print.js')) }}"></script>
     <script>
         // Le ticket est la preuve de paiement remise au client : imprimé automatiquement
         // dès l'arrivée sur cette page après enregistrement (cf. BilletController::store(),

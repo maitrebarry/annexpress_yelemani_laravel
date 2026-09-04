@@ -140,6 +140,6 @@
 
 @section('scripts')
     @if ($peutImprimer)
-        <script src="{{ asset('mon_js/thermal-print.js') }}"></script>
+        <script src="{{ asset('mon_js/thermal-print.js') }}?v={{ @filemtime(public_path('mon_js/thermal-print.js')) }}"></script>
     @endif
 @endsection

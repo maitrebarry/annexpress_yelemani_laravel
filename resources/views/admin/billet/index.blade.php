@@ -65,7 +65,7 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('mon_js/thermal-print.js') }}"></script>
+    <script src="{{ asset('mon_js/thermal-print.js') }}?v={{ @filemtime(public_path('mon_js/thermal-print.js')) }}"></script>
     <script>
         tgReady(function () {
             // Deux tables sur la même page (onglets) : id="example" (init globale via

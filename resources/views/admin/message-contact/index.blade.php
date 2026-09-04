@@ -58,5 +58,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('mon_js/alert_delete.js') }}"></script>
+    <script src="{{ asset('mon_js/alert_delete.js') }}?v={{ @filemtime(public_path('mon_js/alert_delete.js')) }}"></script>
 @endsection

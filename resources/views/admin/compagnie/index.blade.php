@@ -322,8 +322,8 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('mon_js/scrip_compagnie.js') }}"></script>
-    <script src="{{ asset('mon_js/alert_delete.js') }}"></script>
+    <script src="{{ asset('mon_js/scrip_compagnie.js') }}?v={{ @filemtime(public_path('mon_js/scrip_compagnie.js')) }}"></script>
+    <script src="{{ asset('mon_js/alert_delete.js') }}?v={{ @filemtime(public_path('mon_js/alert_delete.js')) }}"></script>
     <style>
         .tg-photo-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; }
         .tg-photo-row input[type="file"] { flex: 1; }

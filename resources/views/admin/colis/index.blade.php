@@ -314,7 +314,7 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('mon_js/thermal-print.js') }}"></script>
+    <script src="{{ asset('mon_js/thermal-print.js') }}?v={{ @filemtime(public_path('mon_js/thermal-print.js')) }}"></script>
     <script>
         document.querySelectorAll('.details-colis-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {

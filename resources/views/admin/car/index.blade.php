@@ -540,7 +540,7 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('mon_js/alert_delete.js') }}"></script>
+    <script src="{{ asset('mon_js/alert_delete.js') }}?v={{ @filemtime(public_path('mon_js/alert_delete.js')) }}"></script>
     <script>
         // "Add to row" : permet de saisir plusieurs cars/camions (numéro/matricule/places)
         // d'un coup, comme Projets_licence — voir CarController::store()/CamionController::store().

@@ -16,7 +16,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   {{-- Moteur de navigation sans rechargement complet (voir le fichier pour le détail) —
        chargé tôt pour que window.tgReady existe avant tout @section('scripts') qui l'utilise. --}}
-  <script src="{{ asset('mon_js/admin-transitions.js') }}"></script>
+  <script src="{{ asset('mon_js/admin-transitions.js') }}?v={{ @filemtime(public_path('mon_js/admin-transitions.js')) }}"></script>
   <style>
     /* Barre de progression + animation de transition — mêmes réglages que
        assets_site/css/site-common.css (site public), avec les couleurs du thème admin
@@ -46,9 +46,9 @@
   <script src="{{ asset('assets/plugins/datatable/js/jquery.dataTables.min.js') }}"></script>
   <script src="{{ asset('assets/plugins/datatable/js/dataTables.bootstrap5.min.js') }}"></script>
   <!--app-->
-  <script src="{{ asset('assets/js/table-datatable.js') }}"></script>
+  <script src="{{ asset('assets/js/table-datatable.js') }}?v={{ @filemtime(public_path('assets/js/table-datatable.js')) }}"></script>
   <script src="{{ asset('assets/plugins/select2/js/select2.min.js') }}"></script>
-  <script src="{{ asset('assets/js/form-select2.js') }}"></script>
+  <script src="{{ asset('assets/js/form-select2.js') }}?v={{ @filemtime(public_path('assets/js/form-select2.js')) }}"></script>
   <script src="{{ asset('assets/js/js_gare.js') }}"></script>
   <script src="{{ asset('assets/plugins/js/bs-stepper.min.js') }}"></script>
 

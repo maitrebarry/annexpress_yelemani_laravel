@@ -109,7 +109,7 @@
                             <div class="p-2">
                                 @if ($notifCount > 0)
                                     @foreach ($billetsEnAttente as $billet)
-                                        <a class="dropdown-item d-flex align-items-center gap-2 rounded" href="{{ url('/admin/Liste_ententes/validation/' . $billet->idBillets) }}">
+                                        <a class="dropdown-item d-flex align-items-center gap-2 rounded" href="{{ route('admin.entente.index', ['billet' => $billet->idBillets]) }}">
                                             <i class="fas fa-ticket"></i>
                                             <div class="flex-grow-1">
                                                 <div class="fw-semibold small">Billet en attente</div>

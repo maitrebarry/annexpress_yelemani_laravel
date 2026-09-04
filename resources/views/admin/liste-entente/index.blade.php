@@ -75,6 +75,28 @@
         </div>
     </div>
 
+    @if (request('billet') && ! $liste->contains('idBillets', (int) request('billet')))
+        <div class="alert alert-warning mt-3">
+            <i class="fas fa-triangle-exclamation me-1"></i> Le billet #{{ request('billet') }} n'est plus en attente de validation (déjà traité, ou expiré).
+        </div>
+    @endif
+
+@endsection
+
+@section('scripts')
+    {{-- Arrivée depuis la cloche de notifications (voir admin/partials/navbar.blade.php) :
+         ouvre directement la modale de validation du billet visé, plutôt que de laisser
+         l'utilisateur le rechercher dans la liste. --}}
+    @if (request('billet'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var modalEl = document.getElementById('modalValider{{ (int) request('billet') }}');
+                if (modalEl && window.bootstrap) {
+                    new bootstrap.Modal(modalEl).show();
+                }
+            });
+        </script>
+    @endif
 @endsection
 
 @if (! $authUser->estLectureSeule())

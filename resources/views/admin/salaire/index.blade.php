@@ -1,6 +1,20 @@
 @extends('layouts.admin')
 
-@php $authUser = auth('staff')->user(); @endphp
+@php
+    $authUser = auth('staff')->user();
+
+    // Sélection du mois/année par menus déroulants explicites plutôt que le widget natif
+    // <input type="month"> (rendu peu clair pour des utilisateurs peu à l'aise avec
+    // l'informatique) — recomposé en "YYYY-MM" par JS avant soumission (voir périodeCachee).
+    $moisNoms = [
+        '01' => 'Janvier', '02' => 'Février', '03' => 'Mars', '04' => 'Avril',
+        '05' => 'Mai', '06' => 'Juin', '07' => 'Juillet', '08' => 'Août',
+        '09' => 'Septembre', '10' => 'Octobre', '11' => 'Novembre', '12' => 'Décembre',
+    ];
+    $moisActuel = now()->format('m');
+    $anneeActuelle = (int) now()->format('Y');
+    $anneesDisponibles = range($anneeActuelle - 1, $anneeActuelle + 1);
+@endphp
 
 @section('title', 'Salaires · TransGest Admin')
 
@@ -233,7 +247,23 @@
                             <p>Employé : <strong id="generer_nom_employe"></strong></p>
                             <div class="mb-3">
                                 <label class="form-label">Période</label>
-                                <input type="month" class="form-control" name="periode" required>
+                                <div class="row g-2">
+                                    <div class="col-7">
+                                        <select class="form-select periode-mois" required>
+                                            @foreach ($moisNoms as $num => $nom)
+                                                <option value="{{ $num }}" {{ $num === $moisActuel ? 'selected' : '' }}>{{ $nom }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-5">
+                                        <select class="form-select periode-annee" required>
+                                            @foreach ($anneesDisponibles as $annee)
+                                                <option value="{{ $annee }}" {{ $annee === $anneeActuelle ? 'selected' : '' }}>{{ $annee }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="periode" class="periode-cachee">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -260,7 +290,23 @@
                             <p><strong id="generer_multi_count">0</strong> employé(s) sélectionné(s).</p>
                             <div class="mb-3">
                                 <label class="form-label">Période</label>
-                                <input type="month" class="form-control" name="periode" required>
+                                <div class="row g-2">
+                                    <div class="col-7">
+                                        <select class="form-select periode-mois" required>
+                                            @foreach ($moisNoms as $num => $nom)
+                                                <option value="{{ $num }}" {{ $num === $moisActuel ? 'selected' : '' }}>{{ $nom }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-5">
+                                        <select class="form-select periode-annee" required>
+                                            @foreach ($anneesDisponibles as $annee)
+                                                <option value="{{ $annee }}" {{ $annee === $anneeActuelle ? 'selected' : '' }}>{{ $annee }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="periode" class="periode-cachee">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -275,6 +321,18 @@
 
     @section('scripts')
         <script>
+            // Recompose "YYYY-MM" à partir des menus Mois/Année juste avant l'envoi de
+            // chaque formulaire de génération de bulletin (voir la note dans le <head> de
+            // ce fichier sur le choix des menus déroulants plutôt que <input type="month">).
+            document.querySelectorAll('#genererBulletinModal, #genererBulletinsMultiModal').forEach(function(modal) {
+                var form = modal.querySelector('form');
+                form.addEventListener('submit', function() {
+                    var mois = modal.querySelector('.periode-mois').value;
+                    var annee = modal.querySelector('.periode-annee').value;
+                    modal.querySelector('.periode-cachee').value = annee + '-' + mois;
+                });
+            });
+
             document.addEventListener('DOMContentLoaded', function() {
                 document.querySelectorAll('.edit-btn').forEach(function(button) {
                     button.addEventListener('click', function() {

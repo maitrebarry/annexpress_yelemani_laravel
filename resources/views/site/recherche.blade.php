@@ -18,7 +18,7 @@
             } catch (e) {}
         })();
     </script>
-    <title>Résultats de recherche - TransGest</title>
+    <title>Résultats de recherche - Sirali</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">

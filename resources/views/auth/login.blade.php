@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion · TransGest</title>
-    <meta name="description" content="Accédez à votre espace de gestion TransGest.">
+    <title>Connexion · Sirali</title>
+    <meta name="description" content="Accédez à votre espace de gestion Sirali.">
     <meta name="theme-color" content="#0f3b5e">
     <link rel="icon" href="{{ asset('favicon.ico') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -252,9 +252,9 @@
                 <div class="card login-card">
                     <div class="login-header">
                         <div class="brand-mark">
-                            <img src="{{ asset('images/logos/transgest_icon.png') }}" alt="TransGest">
+                            <img src="{{ asset('images/logos/transgest_icon.png') }}" alt="Sirali">
                         </div>
-                        <h1>TransGest</h1>
+                        <h1>Sirali</h1>
                         <p>Accédez à votre espace de gestion</p>
                     </div>
 
@@ -339,7 +339,7 @@
             </main>
 
             <footer class="page-footer">
-                &copy; {{ date('Y') }} TransGest &mdash; Plateforme de gestion du transport
+                &copy; {{ date('Y') }} Sirali &mdash; Plateforme de gestion du transport
             </footer>
         </div>
     </div>

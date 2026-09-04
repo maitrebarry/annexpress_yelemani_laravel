@@ -1,7 +1,7 @@
 {
-    "name": "TransGest Admin",
-    "short_name": "TransGest",
-    "description": "Espace de gestion TransGest — billets, colis, caisses, configuration.",
+    "name": "Sirali Admin",
+    "short_name": "Sirali",
+    "description": "Espace de gestion Sirali — billets, colis, caisses, configuration.",
     "start_url": "/admin/Homes/home",
     "scope": "/admin",
     "display": "standalone",

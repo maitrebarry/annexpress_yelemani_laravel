@@ -2,7 +2,7 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Gares · TransGest Admin')
+@section('title', 'Gares · Sirali Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Gares')
 

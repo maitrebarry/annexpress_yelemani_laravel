@@ -5,7 +5,7 @@
     $montantAttendu = $caisse ? (float) $caisse->montant_initial + (float) $caisse->total_billets + (float) $caisse->total_colis : 0;
 @endphp
 
-@section('title', 'Ma Caisse · TransGest Admin')
+@section('title', 'Ma Caisse · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-wallet me-1"></i> Caisse</span>

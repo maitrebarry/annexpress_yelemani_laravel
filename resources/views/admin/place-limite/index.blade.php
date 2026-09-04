@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Place limite · TransGest Admin')
+@section('title', 'Place limite · Sirali Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Place limite')
 

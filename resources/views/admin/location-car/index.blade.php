@@ -5,7 +5,7 @@
     $aujourdhui = now()->toDateString();
 @endphp
 
-@section('title', 'Location des cars · TransGest Admin')
+@section('title', 'Location des cars · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-car me-1"></i> Finances</span>

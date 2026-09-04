@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Messages reçus · TransGest Admin')
+@section('title', 'Messages reçus · Sirali Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Messages reçus')
 

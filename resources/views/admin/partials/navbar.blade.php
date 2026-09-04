@@ -67,7 +67,7 @@
 <nav class="navbar navbar-expand-md sticky-top" id="navbar">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url('/admin/Homes/home') }}">
-            <span class="brand-3d">TRANSGEST</span>
+            <span class="brand-3d">SIRALI</span>
         </a>
 
         <button class="navbar-toggler" type="button" id="sidebarToggle">

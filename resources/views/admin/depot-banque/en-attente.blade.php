@@ -2,7 +2,7 @@
 
 @php $authUser = auth('staff')->user(); $totalEnAttente = $listeDemandes->sum('montant'); @endphp
 
-@section('title', 'Demandes de dépôt en attente · TransGest Admin')
+@section('title', 'Demandes de dépôt en attente · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-building-columns me-1"></i> Banque</span>

@@ -2,7 +2,7 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Supervision Escale · TransGest Admin')
+@section('title', 'Supervision Escale · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-wallet me-1"></i> Caisse</span>

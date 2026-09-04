@@ -2,7 +2,7 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Historique des colis · TransGest Admin')
+@section('title', 'Historique des colis · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-clock-rotate-left me-1"></i> G-colis</span>

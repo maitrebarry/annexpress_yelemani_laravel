@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Transferts · TransGest Admin')
+@section('title', 'Transferts · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-calendar-check me-1"></i> G-programme</span>

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Rapport Compagnie · TransGest Admin')
+@section('title', 'Rapport Compagnie · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-wallet me-1"></i> Caisse</span>

@@ -10,7 +10,7 @@
     };
 @endphp
 
-@section('title', 'Rapport annuel des billets · TransGest Admin')
+@section('title', 'Rapport annuel des billets · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-chart-column me-1"></i> Rapport billets</span>

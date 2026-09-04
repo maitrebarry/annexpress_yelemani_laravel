@@ -6,7 +6,7 @@
     $peutImprimer = $authUser->userHasPermission('Billets_impression');
 @endphp
 
-@section('title', 'Historique des billets · TransGest Admin')
+@section('title', 'Historique des billets · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-list me-1"></i> G-réservation</span>

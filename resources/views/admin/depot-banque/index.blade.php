@@ -2,7 +2,7 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Dépôt en banque · TransGest Admin')
+@section('title', 'Dépôt en banque · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-building-columns me-1"></i> Banque</span>

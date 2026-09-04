@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Livraison des colis · TransGest Admin')
+@section('title', 'Livraison des colis · Sirali Admin')
 
 @section('breadcrumb-title', 'G-colis')
 @section('breadcrumb-active', 'Livraison des colis')

@@ -2,7 +2,7 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Voyages · TransGest Admin')
+@section('title', 'Voyages · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-calendar-check me-1"></i> G-programme</span>

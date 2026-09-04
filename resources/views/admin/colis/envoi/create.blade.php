@@ -2,7 +2,7 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Ajouter des colis à envoyer · TransGest Admin')
+@section('title', 'Ajouter des colis à envoyer · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-box-open me-1"></i> G-colis</span>

@@ -11,7 +11,7 @@
     $salutationIcone = $heure < 8 || $heure >= 19 ? 'fa-moon' : 'fa-sun';
 @endphp
 
-@section('title', 'Accueil · TransGest Admin')
+@section('title', 'Accueil · Sirali Admin')
 
 @section('hero')
     <div class="tg-hero mb-4">

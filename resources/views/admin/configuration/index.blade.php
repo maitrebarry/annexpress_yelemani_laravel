@@ -10,7 +10,7 @@
     };
 @endphp
 
-@section('title', 'Utilisateurs · TransGest Admin')
+@section('title', 'Utilisateurs · Sirali Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Utilisateur')
 

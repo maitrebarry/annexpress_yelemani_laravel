@@ -5,7 +5,7 @@
     $montantListe = fn ($liste) => $liste->sum(fn ($b) => (float) preg_replace('/[^\d.]/', '', (string) $b->montant_payer));
 @endphp
 
-@section('title', 'Liste des tickets · TransGest Admin')
+@section('title', 'Liste des tickets · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-list me-1"></i> G-réservation</span>

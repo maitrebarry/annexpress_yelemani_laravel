@@ -1,4 +1,4 @@
-# TransGest Admin (transgest-laravel)
+# Sirali Admin
 
 Portage Laravel de l'application legacy PHP `Projets_licence` (gestion de compagnies de
 transport : billets, colis, caisse, configuration). Beaucoup de fichiers Laravel portent un
@@ -26,9 +26,11 @@ chantier) reste chargé et suit désormais le thème choisi via ces mêmes varia
 `--tg-orange` y sont pilotées par `--primary-color`/`--secondary-color`). Ossature Skodash
 (`assets/css/style.css`, MetisMenu, DataTables...) conservée telle quelle pour la mécanique de
 mise en page — seul l'habillage change, aucune vue de contenu n'a eu besoin d'être retouchée
-pour ça. Marque : **TransGest** (pas TransHub, corrigé après coup — voir logo
+pour ça. Marque : **Sirali** (renommée depuis TransGest — elle-même choisie après coup à la
+place de TransHub — pour se différencier d'autres logiciels du même genre ; voir logo
 `public/images/logos/transgest_icon.png`/`transgest_logo.png`, recadrés depuis l'image source
-fournie par l'utilisateur).
+fournie par l'utilisateur — noms de fichiers conservés tels quels, changer uniquement le nom
+visible n'imposait pas de renommer les assets internes).
 
 ## Démarrer en local
 
@@ -450,7 +452,7 @@ un catalogue — "pour l'instant" (le réactiver reste un simple changement de c
 réécriture). Point de bascule unique : `App\Models\Compagnie::site()` (memoïsé, lit
 `config('site.compagnie_id')`), utilisé par tous les contrôleurs et par
 `site/partials/nav.blade.php` (branding — logo/nom de cette compagnie sur **toutes** les
-pages, plus de logo TransGest générique en usage normal ; lien "Nos trajets" au lieu de
+pages, plus de logo Sirali générique en usage normal ; lien "Nos trajets" au lieu de
 l'ancien lien mal libellé qui menait au catalogue). `Site\CompagnieController::index()`
 (`/compagnies`) redirige désormais vers la page de cette compagnie plutôt que de lister un
 catalogue ; `show()` renvoie 404 pour toute autre compagnie (`site/compagnies.blade.php`

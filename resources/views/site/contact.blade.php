@@ -19,7 +19,7 @@
         })();
     </script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>À propos & Contact - TransGest</title>
+    <title>À propos & Contact - Sirali</title>
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link href="{{ asset('assets_site/css/all.min.css') }}" rel="stylesheet">

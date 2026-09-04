@@ -5,7 +5,7 @@
     $labelActuel = $isBillets ? 'Billets' : 'Colis';
 @endphp
 
-@section('title', 'Bilan de caisse · TransGest Admin')
+@section('title', 'Bilan de caisse · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-wallet me-1"></i> Caisse</span>

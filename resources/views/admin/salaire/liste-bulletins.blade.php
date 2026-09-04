@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Bulletins de paie · TransGest Admin')
+@section('title', 'Bulletins de paie · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-receipt me-1"></i> Personnel</span>

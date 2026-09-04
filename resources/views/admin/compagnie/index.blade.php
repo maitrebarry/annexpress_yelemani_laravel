@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Compagnies · TransGest Admin')
+@section('title', 'Compagnies · Sirali Admin')
 @section('breadcrumb-title', 'Configuration')
 @section('breadcrumb-active', 'Compagnies')
 

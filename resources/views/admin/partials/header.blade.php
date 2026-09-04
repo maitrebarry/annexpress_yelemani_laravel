@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>@yield('title', 'TransGest Admin')</title>
+  <title>@yield('title', 'Sirali Admin')</title>
   <script>
     // Applique le mode sombre / la couleur de thème AVANT le premier rendu de la page :
     // sans ça, la page s'affiche d'abord avec le thème par défaut (flash blanc) puis

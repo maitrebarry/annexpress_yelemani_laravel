@@ -2,7 +2,7 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Tickets en entente · TransGest Admin')
+@section('title', 'Tickets en entente · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-list me-1"></i> G-réservation</span>

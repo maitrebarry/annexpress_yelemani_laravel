@@ -11,7 +11,7 @@ class EnsureIsSuperAdmin
     public function handle(Request $request, Closure $next): Response
     {
         if (! $request->user('staff')?->isSuperAdmin()) {
-            abort(403, "Accès réservé à l'administration TransGest.");
+            abort(403, "Accès réservé à l'administration Sirali.");
         }
 
         return $next($request);

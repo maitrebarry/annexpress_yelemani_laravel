@@ -9,7 +9,7 @@
     $totalEnAttente = $enAttente->sum('montant');
 @endphp
 
-@section('title', 'Dépenses · TransGest Admin')
+@section('title', 'Dépenses · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-money-bill-wave me-1"></i> Finances</span>

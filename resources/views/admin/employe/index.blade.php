@@ -4,7 +4,7 @@
     $authUser = auth('staff')->user();
 @endphp
 
-@section('title', 'Employés · TransGest Admin')
+@section('title', 'Employés · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-id-card me-1"></i> Personnel</span>

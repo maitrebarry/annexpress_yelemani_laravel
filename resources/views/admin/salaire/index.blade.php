@@ -16,7 +16,7 @@
     $anneesDisponibles = range($anneeActuelle - 1, $anneeActuelle + 1);
 @endphp
 
-@section('title', 'Salaires · TransGest Admin')
+@section('title', 'Salaires · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-money-bill-wave me-1"></i> Personnel</span>

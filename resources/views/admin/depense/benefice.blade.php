@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Bénéfice de la compagnie · TransGest Admin')
+@section('title', 'Bénéfice de la compagnie · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-money-bill-wave me-1"></i> Finances</span>

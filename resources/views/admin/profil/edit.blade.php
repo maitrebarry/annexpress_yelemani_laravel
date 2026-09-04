@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Mon Profil · TransGest Admin')
+@section('title', 'Mon Profil · Sirali Admin')
 @section('breadcrumb-title', 'Utilisateur')
 @section('breadcrumb-active', 'Mon Profil')
 

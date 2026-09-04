@@ -19,7 +19,7 @@
         })();
     </script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Espace partenaire - TransGest</title>
+    <title>Espace partenaire - Sirali</title>
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets_site/css/all.min.css') }}">

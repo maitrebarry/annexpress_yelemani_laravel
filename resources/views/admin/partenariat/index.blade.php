@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Demandes de partenariat · TransGest Admin')
+@section('title', 'Demandes de partenariat · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-handshake me-1"></i> Partenariats</span>

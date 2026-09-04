@@ -6,7 +6,7 @@
     $soldeTotal = $listeBanques->sum('solde');
 @endphp
 
-@section('title', 'Comptes banque · TransGest Admin')
+@section('title', 'Comptes banque · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-building-columns me-1"></i> Banque</span>

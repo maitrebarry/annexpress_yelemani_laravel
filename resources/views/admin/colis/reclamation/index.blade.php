@@ -2,7 +2,7 @@
 
 @php $authUser = auth('staff')->user(); @endphp
 
-@section('title', 'Réclamation de colis · TransGest Admin')
+@section('title', 'Réclamation de colis · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-triangle-exclamation me-1"></i> G-colis</span>

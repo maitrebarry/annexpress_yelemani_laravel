@@ -7,7 +7,7 @@
     $totalLivre = $listeColisLivre->count();
 @endphp
 
-@section('title', 'Mouvement des colis · TransGest Admin')
+@section('title', 'Mouvement des colis · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-box-open me-1"></i> G-colis</span>

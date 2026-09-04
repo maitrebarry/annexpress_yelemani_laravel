@@ -11,7 +11,7 @@
         : $v['id_car_programmer'] != $idVehicule);
 @endphp
 
-@section('title', 'Détails de l\'envoi · TransGest Admin')
+@section('title', 'Détails de l\'envoi · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-box-open me-1"></i> G-colis</span>

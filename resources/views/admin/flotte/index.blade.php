@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'État de la flotte · TransGest Admin')
+@section('title', 'État de la flotte · Sirali Admin')
 
 @section('breadcrumb-title')
     <span class="text-primary"><i class="fas fa-location-dot me-1"></i> G-programme</span>

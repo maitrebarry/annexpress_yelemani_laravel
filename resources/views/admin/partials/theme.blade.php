@@ -1,7 +1,7 @@
 {{--
     Thème visuel de l'admin — copie fidèle du <style> de DojoManager_laravel
     (resources/views/layouts/app.blade.php), mêmes variables/règles CSS. Seule la
-    palette par défaut a été adaptée à TransGest (marine/orange) ; la mécanique
+    palette par défaut a été adaptée à Sirali (marine/orange) ; la mécanique
     (mode sombre, sélecteur de couleur, sidebar repliable) est identique.
 --}}
 <style>

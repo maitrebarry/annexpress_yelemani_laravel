@@ -19,7 +19,7 @@
         })();
     </script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Espace partenaire - TransGest</title>
+    <title>Espace partenaire - Sirali</title>
     <link rel="icon" href="{{ asset('assets_site/img/favicon.svg') }}">
     <link href="{{ asset('assets_site/css/inter.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('assets_site/css/all.min.css') }}">
@@ -59,7 +59,7 @@
     <span class="deco-blob blob-2"></span>
     <div class="container">
         <h1 data-aos="fade-up" style="font-size: 2rem;">Espace partenaire</h1>
-        <p data-aos="fade-up" data-aos-delay="100">Discutez directement avec notre équipe pour rejoindre TransGest</p>
+        <p data-aos="fade-up" data-aos-delay="100">Discutez directement avec notre équipe pour rejoindre Sirali</p>
     </div>
 </section>
 

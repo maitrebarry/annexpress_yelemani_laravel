@@ -1,7 +1,7 @@
 (function () {
     var BASE = window.PWA_BASE_URL || '';
-    var STORAGE_DISMISSED = 'transgest_pwa_prompt_dismissed';
-    var STORAGE_INSTALLED = 'transgest_pwa_installed';
+    var STORAGE_DISMISSED = 'sirali_pwa_prompt_dismissed';
+    var STORAGE_INSTALLED = 'sirali_pwa_installed';
     var deferredPrompt = null;
 
     // L'application installable est réservée à l'espace admin (agents/staff),
@@ -36,7 +36,7 @@
         addMeta('name', 'mobile-web-app-capable', 'yes');
         addMeta('name', 'apple-mobile-web-app-capable', 'yes');
         addMeta('name', 'apple-mobile-web-app-status-bar-style', 'black-translucent');
-        addMeta('name', 'apple-mobile-web-app-title', 'TransGest Admin');
+        addMeta('name', 'apple-mobile-web-app-title', 'Sirali Admin');
     }
 
     // --- Service worker (nécessaire pour l'installabilité + un peu de cache statique) ---
@@ -76,13 +76,13 @@
         var overlay = document.createElement('div');
         overlay.id = 'pwaInstallOverlay';
 
-        var iosBlock = '<p>Ajoutez TransGest Admin sur votre écran d’accueil pour l’ouvrir comme une vraie application.</p>'
+        var iosBlock = '<p>Ajoutez Sirali Admin sur votre écran d’accueil pour l’ouvrir comme une vraie application.</p>'
             + '<ul class="pwa-steps">'
             + '<li><b>1</b> Appuyez sur <strong>Partager</strong> en bas de l’écran</li>'
             + '<li><b>2</b> Choisissez <strong>« Sur l’écran d’accueil »</strong></li>'
             + '<li><b>3</b> Confirmez avec <strong>Ajouter</strong></li>'
             + '</ul>';
-        var androidBlock = '<p>Installez TransGest Admin sur votre téléphone pour un accès rapide en plein écran, comme une vraie application.</p>';
+        var androidBlock = '<p>Installez Sirali Admin sur votre téléphone pour un accès rapide en plein écran, comme une vraie application.</p>';
 
         overlay.innerHTML =
             '<style>' +
@@ -103,8 +103,8 @@
             '#pwaDismissBtn{background:#f1f3f5;color:#5b6472;}' +
             '</style>' +
             '<div id="pwaInstallCard">' +
-            '<img class="pwa-icon" src="' + BASE + '/assets_site/img/icons/icon-192.png" alt="TransGest Admin">' +
-            '<h3>Installer TransGest Admin</h3>' +
+            '<img class="pwa-icon" src="' + BASE + '/assets_site/img/icons/icon-192.png" alt="Sirali Admin">' +
+            '<h3>Installer Sirali Admin</h3>' +
             (mode === 'ios' ? iosBlock : androidBlock) +
             '<div class="pwa-actions">' +
             '<button id="pwaDismissBtn" type="button">Plus tard</button>' +

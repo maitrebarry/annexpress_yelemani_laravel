@@ -19,7 +19,7 @@
         })();
     </script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Site en cours de configuration · TransGest</title>
+    <title>Site en cours de configuration · Sirali</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

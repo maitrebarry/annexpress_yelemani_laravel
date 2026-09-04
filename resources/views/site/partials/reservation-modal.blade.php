@@ -88,15 +88,63 @@
                     <summary><i class="fas fa-circle-question"></i> Comment payer avec Orange Money ?</summary>
                     <div class="resa-payment-guide-body">
                         <p class="resa-payment-target" id="resaPaymentTarget">Chargement des informations de paiement...</p>
-                        <ol>
-                            <li>Composez <strong>#144#</strong> sur le téléphone qui va payer.</li>
-                            <li>Choisissez <strong>« Paiement marchand »</strong> (ou « Transfert d'argent » si cette option n'apparaît pas).</li>
-                            <li>Entrez le <strong>code marchand</strong> ou le <strong>numéro</strong> indiqué ci-dessus, selon l'option choisie.</li>
-                            <li>Entrez le montant exact : <strong><span id="resaPaymentGuideAmount">0</span> FCFA</strong>.</li>
-                            <li>Validez avec votre <strong>code secret Orange Money</strong>.</li>
-                            <li>Gardez le <strong>SMS de confirmation</strong> reçu — il sert de preuve de paiement.</li>
-                        </ol>
-                        <p class="resa-payment-guide-note"><i class="fas fa-info-circle"></i> Le libellé exact des options peut varier légèrement selon votre téléphone.</p>
+
+                        <div class="resa-pay-carousel" id="resaPayCarousel">
+                            <div class="resa-pay-carousel-track" id="resaPayTrack">
+                                <div class="resa-pay-slide">
+                                    <div class="resa-pay-slide-icon"><i class="fas fa-mobile-screen-button"></i></div>
+                                    <div class="resa-pay-slide-step">Étape 1 / 7</div>
+                                    <div class="resa-pay-slide-title">Ouvrez le clavier d'appel</div>
+                                    <p class="resa-pay-slide-text">Sur le téléphone qui va payer, ouvrez l'application <strong>Téléphone</strong> — comme pour composer un appel normal.</p>
+                                </div>
+                                <div class="resa-pay-slide">
+                                    <div class="resa-pay-slide-icon"><i class="fas fa-hashtag"></i></div>
+                                    <div class="resa-pay-slide-step">Étape 2 / 7</div>
+                                    <div class="resa-pay-slide-title">Tapez le début du code</div>
+                                    <div class="resa-pay-slide-code">#144#8*</div>
+                                    <p class="resa-pay-slide-text">C'est le début du code Orange Money « Paiement Marchand » — toujours le même, à taper tel quel.</p>
+                                </div>
+                                <div class="resa-pay-slide">
+                                    <div class="resa-pay-slide-icon"><i class="fas fa-store"></i></div>
+                                    <div class="resa-pay-slide-step">Étape 3 / 7</div>
+                                    <div class="resa-pay-slide-title">Ajoutez le code marchand</div>
+                                    <div class="resa-pay-slide-code"><span class="js-pay-code">------</span>*</div>
+                                    <p class="resa-pay-slide-text">C'est le code de la gare de départ, déjà indiqué ci-dessus — recopiez-le tel quel.</p>
+                                </div>
+                                <div class="resa-pay-slide">
+                                    <div class="resa-pay-slide-icon"><i class="fas fa-money-bill-wave"></i></div>
+                                    <div class="resa-pay-slide-step">Étape 4 / 7</div>
+                                    <div class="resa-pay-slide-title">Ajoutez le montant</div>
+                                    <div class="resa-pay-slide-code"><span class="js-pay-montant">0</span>*</div>
+                                    <p class="resa-pay-slide-text">Le montant exact à payer — il se met à jour tout seul selon le nombre de passagers.</p>
+                                </div>
+                                <div class="resa-pay-slide">
+                                    <div class="resa-pay-slide-icon"><i class="fas fa-lock"></i></div>
+                                    <div class="resa-pay-slide-step">Étape 5 / 7</div>
+                                    <div class="resa-pay-slide-title">Ajoutez votre code secret</div>
+                                    <div class="resa-pay-slide-code">••••#</div>
+                                    <p class="resa-pay-slide-text">Terminez par votre <strong>code secret Orange Money</strong> personnel (4 chiffres), puis <strong>#</strong>. Ne le partagez jamais avec personne.</p>
+                                </div>
+                                <div class="resa-pay-slide">
+                                    <div class="resa-pay-slide-icon"><i class="fas fa-phone"></i></div>
+                                    <div class="resa-pay-slide-step">Étape 6 / 7</div>
+                                    <div class="resa-pay-slide-title">Appelez ce numéro</div>
+                                    <div class="resa-pay-slide-code resa-pay-slide-code-small"><span class="js-pay-full">#144#8*...*...*••••#</span></div>
+                                    <p class="resa-pay-slide-text">Une fois le code entier tapé, appuyez sur la touche d'appel verte — comme pour un appel classique.</p>
+                                </div>
+                                <div class="resa-pay-slide">
+                                    <div class="resa-pay-slide-icon"><i class="fas fa-circle-check"></i></div>
+                                    <div class="resa-pay-slide-step">Étape 7 / 7</div>
+                                    <div class="resa-pay-slide-title">Paiement confirmé</div>
+                                    <p class="resa-pay-slide-text">Un message s'affiche à l'écran, puis un <strong>SMS de confirmation Orange Money</strong> arrive — gardez-le, il sert de preuve de paiement.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="resa-pay-nav" id="resaPayNav">
+                            <button type="button" class="resa-pay-nav-btn" id="resaPayPrev" aria-label="Étape précédente"><i class="fas fa-chevron-left"></i></button>
+                            <div class="resa-pay-dots" id="resaPayDots"></div>
+                            <button type="button" class="resa-pay-nav-btn" id="resaPayNext" aria-label="Étape suivante"><i class="fas fa-chevron-right"></i></button>
+                        </div>
                     </div>
                 </details>
 
@@ -170,9 +218,35 @@
         padding: 10px 12px; margin: 0 0 12px; font-size: .82rem; line-height: 1.5;
     }
     .resa-payment-target strong { font-size: 1rem; }
-    .resa-payment-guide-body ol { padding-left: 18px; margin: 0 0 10px; }
-    .resa-payment-guide-body li { margin-bottom: 6px; line-height: 1.45; }
     .resa-payment-guide-note { display: flex; gap: 6px; align-items: flex-start; font-size: .72rem; color: var(--gray, #7f8c8d); margin: 0; }
+
+    /* Carrousel "Comment payer" — anime les étapes une par une (utilisateurs peu à l'aise
+       avec le numérique : mieux vaut une info à la fois qu'une longue liste à lire). */
+    .resa-pay-carousel { position: relative; background: #fff; border: 1px solid #e2e8f0; border-radius: var(--radius, 8px); overflow: hidden; }
+    .resa-pay-carousel-track { display: flex; transition: transform .35s ease; }
+    .resa-pay-slide { flex: 0 0 100%; padding: 18px 16px 14px; text-align: center; min-height: 150px; }
+    .resa-pay-slide-icon {
+        width: 42px; height: 42px; border-radius: 50%; margin: 0 auto 10px;
+        background: linear-gradient(135deg, var(--primary, #0f3b5e), var(--primary-dark, #0a2a44));
+        color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.05rem;
+    }
+    .resa-pay-slide-step { font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--secondary, #e67e22); margin-bottom: 4px; }
+    .resa-pay-slide-title { font-size: .9rem; font-weight: 700; color: var(--dark, #2c3e50); margin-bottom: 8px; }
+    .resa-pay-slide-code {
+        display: inline-block; background: var(--primary, #0f3b5e); color: #fff; font-family: 'Courier New', monospace;
+        font-size: 1.05rem; font-weight: 700; letter-spacing: .03em; padding: 7px 14px; border-radius: 8px; margin-bottom: 8px;
+    }
+    .resa-pay-slide-code-small { font-size: .78rem; padding: 7px 10px; word-break: break-all; }
+    .resa-pay-slide-text { font-size: .76rem; color: var(--gray, #7f8c8d); line-height: 1.45; margin: 0; }
+    .resa-pay-nav { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 10px 0 2px; }
+    .resa-pay-nav-btn {
+        width: 26px; height: 26px; border-radius: 50%; border: none; background: #e2e8f0; color: var(--dark, #2c3e50);
+        cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: .68rem; flex-shrink: 0;
+    }
+    .resa-pay-nav-btn:hover { background: var(--secondary, #e67e22); color: #fff; }
+    .resa-pay-dots { display: flex; gap: 6px; }
+    .resa-pay-dot { width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; padding: 0; border: none; cursor: pointer; transition: all .2s; }
+    .resa-pay-dot.is-active { background: var(--secondary, #e67e22); width: 16px; border-radius: 4px; }
     .resa-price-box {
         background: linear-gradient(135deg, #fef3e8, #fff5eb); border-radius: var(--radius-lg, 12px);
         padding: 14px 18px; margin: 6px 0 18px; display: flex; justify-content: space-between; align-items: center;
@@ -200,6 +274,63 @@
         const form = document.getElementById('resaForm');
         const submitBtn = document.getElementById('resaSubmitBtn');
         let prixUnitaireActuel = 0;
+        let codeMarchandActuel = '';
+
+        // Carrousel "Comment payer" : une étape à la fois, défilement automatique
+        // (pensé pour des utilisateurs peu à l'aise avec le numérique — voir demande :
+        // "surtout ceux qui ne savent manipuler les outils numérique"), navigable
+        // aussi manuellement (flèches/points).
+        (function () {
+            const track = document.getElementById('resaPayTrack');
+            const dotsWrap = document.getElementById('resaPayDots');
+            const prevBtn = document.getElementById('resaPayPrev');
+            const nextBtn = document.getElementById('resaPayNext');
+            if (! track || ! dotsWrap) return;
+
+            const slides = track.children;
+            const count = slides.length;
+            let index = 0;
+            let timer = null;
+
+            for (let i = 0; i < count; i++) {
+                const dot = document.createElement('button');
+                dot.type = 'button';
+                dot.className = 'resa-pay-dot' + (i === 0 ? ' is-active' : '');
+                dot.setAttribute('aria-label', 'Étape ' + (i + 1));
+                dot.addEventListener('click', function () { goTo(i); restart(); });
+                dotsWrap.appendChild(dot);
+            }
+            const dots = dotsWrap.children;
+
+            function goTo(i) {
+                index = (i + count) % count;
+                track.style.transform = 'translateX(-' + (index * 100) + '%)';
+                for (let j = 0; j < dots.length; j++) dots[j].classList.toggle('is-active', j === index);
+            }
+            function start() { stop(); timer = setInterval(function () { goTo(index + 1); }, 4000); }
+            function stop() { if (timer) clearInterval(timer); }
+            function restart() { start(); }
+
+            if (prevBtn) prevBtn.addEventListener('click', function () { goTo(index - 1); restart(); });
+            if (nextBtn) nextBtn.addEventListener('click', function () { goTo(index + 1); restart(); });
+
+            start();
+
+            const detailsEl = document.getElementById('resaPaymentGuide');
+            if (detailsEl) {
+                detailsEl.addEventListener('toggle', function () {
+                    if (detailsEl.open) { goTo(0); start(); } else { stop(); }
+                });
+            }
+        })();
+
+        function updatePaymentCarousel(montantTexte) {
+            document.querySelectorAll('.js-pay-code').forEach(function (el) { el.textContent = codeMarchandActuel || '------'; });
+            document.querySelectorAll('.js-pay-montant').forEach(function (el) { el.textContent = montantTexte; });
+            document.querySelectorAll('.js-pay-full').forEach(function (el) {
+                el.textContent = '#144#8*' + (codeMarchandActuel || '------') + '*' + montantTexte.replace(/\s/g, '') + '*••••#';
+            });
+        }
 
         function csrfToken() {
             // Défensif : si jamais cette balise venait à manquer sur une page (elle doit
@@ -227,8 +358,7 @@
             const nb = parseInt(document.getElementById('resaNbPassagers').value, 10) || 1;
             const total = (prixUnitaireActuel * nb).toLocaleString('fr-FR');
             document.getElementById('resaTotalPrice').textContent = total;
-            const guideAmount = document.getElementById('resaPaymentGuideAmount');
-            if (guideAmount) guideAmount.textContent = total;
+            updatePaymentCarousel(total);
         }
         document.getElementById('resaNbPassagers').addEventListener('input', updateTotal);
 
@@ -266,6 +396,9 @@
                     // transmises au client alors que le formulaire lui demandait déjà de
                     // payer — sans jamais lui dire à qui envoyer l'argent.
                     const paymentTarget = document.getElementById('resaPaymentTarget');
+                    const payCarousel = document.getElementById('resaPayCarousel');
+                    const payNav = document.getElementById('resaPayNav');
+                    codeMarchandActuel = trajet.codeMarchand || '';
                     if (paymentTarget) {
                         if (trajet.codeMarchand || trajet.numeroOrangeMoney) {
                             let html = '';
@@ -276,8 +409,12 @@
                                 html += 'Code marchand : <strong>' + trajet.codeMarchand + '</strong>';
                             }
                             paymentTarget.innerHTML = html;
+                            if (payCarousel) payCarousel.style.display = '';
+                            if (payNav) payNav.style.display = '';
                         } else {
                             paymentTarget.textContent = "Les informations de paiement de cette gare ne sont pas encore configurées — contactez la compagnie avant de payer.";
+                            if (payCarousel) payCarousel.style.display = 'none';
+                            if (payNav) payNav.style.display = 'none';
                         }
                     }
 

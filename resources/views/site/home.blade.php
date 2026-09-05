@@ -125,7 +125,17 @@
         @media (max-width: 1180px) {
             .hero-search-wrap { position: static; height: auto; margin-top: -60px; padding-bottom: 30px; justify-content: center; }
             .hero { min-height: 0; overflow: visible; }
-            .hero .swiper, .hero .swiper-wrapper, .hero .swiper-slide { height: 640px; overflow: hidden; }
+            {{-- overflow:hidden ici (sur .swiper-wrapper/.swiper-slide en plus de .swiper,
+                 qui l'a déjà par défaut via swiper-bundle.min.css) empêchait Chrome de
+                 peindre quoi que ce soit sur les diapositives à cette largeur — image de
+                 fond ET texte, silencieusement invisibles bien que présents et correctement
+                 dimensionnés dans le DOM (confirmé : un double overflow:hidden sur un
+                 parent ET un enfant transformé par Swiper, à cette taille précise,
+                 empêche Chrome de composer/peindre le contenu). Reproduit et corrigé en
+                 le retirant : .swiper garde son overflow:hidden natif (suffisant à lui
+                 seul pour masquer les diapositives hors champ), plus besoin de le
+                 réappliquer sur ses enfants. --}}
+            .hero .swiper, .hero .swiper-wrapper, .hero .swiper-slide { height: 640px; }
         }
         @media (max-width: 480px) {
             .hero-slide-text h1 { font-size: 2rem; }

@@ -36,10 +36,10 @@
     </script>
     <script defer src="{{ asset('assets_site/js/site-transitions.js') }}"></script>
     <style>
-        .auth-card { max-width: 460px; margin: 0 auto; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 36px; }
+        .auth-card { max-width: 460px; margin: 0 auto; background: var(--white); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 36px; }
         .auth-tabs { display: flex; gap: 8px; margin-bottom: 28px; background: var(--gray-light); border-radius: var(--radius); padding: 4px; }
         .auth-tab { flex: 1; text-align: center; padding: 10px; border-radius: var(--radius); font-weight: 600; font-size: 0.85rem; cursor: pointer; color: var(--gray); }
-        .auth-tab.active { background: white; color: var(--primary); box-shadow: var(--shadow); }
+        .auth-tab.active { background: var(--white); color: var(--primary); box-shadow: var(--shadow); }
         .auth-panel { display: none; }
         .auth-panel.active { display: block; }
         .form-group { margin-bottom: 16px; }

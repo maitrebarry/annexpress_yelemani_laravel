@@ -183,12 +183,12 @@
 
     #mobileNav {
         position: fixed; top: 0; right: -100%; width: 82%; max-width: 320px; height: 100vh;
-        background: white; box-shadow: -5px 0 30px rgba(0, 0, 0, .15); z-index: 2000;
+        background: var(--card-bg); box-shadow: -5px 0 30px rgba(0, 0, 0, .15); z-index: 2000;
         padding: 80px 30px 30px; transition: right .35s ease;
         display: flex; flex-direction: column; gap: 0;
     }
     #mobileNav .nav-link {
-        display: block; padding: 15px 0; border-bottom: 1px solid #eee; border-bottom-width: 1px;
+        display: block; padding: 15px 0; border-bottom: 1px solid var(--card-border); border-bottom-width: 1px;
         font-size: 1rem;
     }
     #mobileNav .nav-link.active { border-bottom-color: var(--secondary); }

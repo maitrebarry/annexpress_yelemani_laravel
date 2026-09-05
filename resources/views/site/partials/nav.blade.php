@@ -201,6 +201,24 @@
         .topbar-left span:nth-child(2) { display: none; }
         .topbar-right a span.full { display: none; }
     }
+
+    /* .topbar-right en flex simple (pas de wrap ni de scroll) + html en overflow-x:hidden
+       (ligne 198) : sur un petit écran, avec un téléphone/email/réseaux sociaux réellement
+       renseignés (voir Compagnie), le contenu dépasse largement les 375px courants — le
+       sélecteur de langue, le thème et le mode sombre se retrouvaient poussés à 500-600px,
+       donc invisibles sans le moindre indice qu'ils existent (juste rognés, pas de
+       scrollbar). On dégraisse : les coordonnées de contact restent joignables en un tap
+       (icône seule, via l'astuce font-size:0 sur le lien — l'icône garde sa propre taille
+       explicite ci-dessus), le sélecteur de langue (décoratif : aucune traduction
+       n'existe réellement derrière) et les réseaux sociaux (déjà présents ailleurs sur le
+       site) disparaissent, pour garantir que thème et mode sombre restent toujours
+       visibles — ce sont les seuls contrôles fonctionnels de cette barre. */
+    @media (max-width: 575.98px) {
+        .topbar-right a { font-size: 0; }
+        .topbar-right a i { font-size: .75rem; }
+        .topbar-socials, .topbar-lang { display: none; }
+        .topbar-right { gap: 14px; }
+    }
 </style>
 
 <script>

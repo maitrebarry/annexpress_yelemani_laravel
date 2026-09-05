@@ -193,8 +193,7 @@
             @php
                 $peutVoirGProgramme = $authUser->userHasPermission('Programme_Creation')
                     || $authUser->userHasPermission('Programme_programmer_car')
-                    || $authUser->userHasPermission('Programme_programmation_voyage')
-                    || $authUser->userHasPermission('Programme_hors_programme');
+                    || $authUser->userHasPermission('Programme_programmation_voyage');
                 $programmationPaths = [
                     'admin/Programmer_voyages', 'admin/Programmation_cars',
                     'admin/Programmation_voyages/liste_programmer_voyage', 'admin/Transferts_gares/historique', 'admin/Flotte',
@@ -226,11 +225,6 @@
                         @if ($authUser->userHasPermission('Programme_programmation_voyage') && in_array($droit, ['Admin', 'chef_d_escale', 'super_admin', 'PDG', 'secretaire'], true))
                             <a class="nav-link {{ $isActive('admin/Transferts_gares/historique') }}" href="{{ url('/admin/Transferts_gares/historique') }}">
                                 <i class="fas fa-right-left"></i> <span class="nav-text">Transferts</span>
-                            </a>
-                        @endif
-                        @if ($authUser->userHasPermission('Programme_hors_programme'))
-                            <a class="nav-link" href="#">
-                                <i class="fas fa-calendar-xmark"></i> <span class="nav-text">Hors programme</span>
                             </a>
                         @endif
                         @if (in_array($droit, ['Admin', 'super_admin', 'PDG', 'secretaire'], true))

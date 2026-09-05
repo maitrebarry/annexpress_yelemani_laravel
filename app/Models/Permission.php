@@ -56,7 +56,6 @@ class Permission extends Model
         'Programme_Creation',
         'Programme_programmer_car',
         'Programme_programmation_voyage',
-        'Programme_hors_programme',
         'Salaire_apercu',
     ];
 
@@ -95,7 +94,6 @@ class Permission extends Model
         'Depenses_gestion',
         'Location_gestion',
         'Programme_programmation_voyage',
-        'Programme_hors_programme',
     ];
 
     // Utilisateur simple, service "Billetterie" : écrans billets + sa propre caisse.

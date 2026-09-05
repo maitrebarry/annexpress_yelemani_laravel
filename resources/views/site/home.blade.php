@@ -123,7 +123,13 @@
         .hsc-trust i { color: var(--success); }
 
         @media (max-width: 1180px) {
-            .hero-search-wrap { position: static; height: auto; margin-top: -60px; padding-bottom: 30px; justify-content: center; }
+            {{-- margin-top était négatif (-60px), pour faire "flotter" la carte de
+                 réservation par-dessus le bas du carrousel — un effet resté invisible tant
+                 que le carrousel lui-même ne s'affichait pas sur mobile (voir plus haut).
+                 Maintenant qu'il s'affiche, ce chevauchement cachait carrément le titre de
+                 la carte derrière l'image du carrousel. Passé en marge positive : la carte
+                 démarre proprement sous le carrousel, sans grignoter son contenu. --}}
+            .hero-search-wrap { position: static; height: auto; margin-top: 20px; padding-bottom: 30px; justify-content: center; }
             .hero { min-height: 0; overflow: visible; }
             {{-- overflow:hidden ici (sur .swiper-wrapper/.swiper-slide en plus de .swiper,
                  qui l'a déjà par défaut via swiper-bundle.min.css) empêchait Chrome de

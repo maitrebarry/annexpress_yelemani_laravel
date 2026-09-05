@@ -219,5 +219,21 @@
 @endsection
 
 @section('scripts')
+    {{-- window.stepper1 : identifiant global réutilisé aussi par
+         admin/programme/create.blade.php pour SON propre bs-stepper (page différente, même
+         nom de variable ET même id #stepper1). Sans cette initialisation propre à CETTE
+         page, un stepper1 provenant de l'autre page pouvait rester en mémoire après une
+         navigation douce (voir mon_js/admin-transitions.js) : ses boutons Suivant/Précédent
+         ne levaient aucune erreur mais ne faisaient plus rien puisqu'ils pilotaient les
+         éléments de l'ANCIENNE page, déjà remplacés — impossible de dépasser l'étape 1
+         (Expéditeur), donc impossible de voir les champs des étapes suivantes ni
+         d'enregistrer un colis. tgReady (pas DOMContentLoaded, qui ne se redéclenche jamais
+         après la première navigation) réinitialise correctement stepper1 à chaque arrivée
+         sur cette page, navigation douce comprise. --}}
+    <script>
+        tgReady(function () {
+            window.stepper1 = new Stepper(document.querySelector('#stepper1'));
+        });
+    </script>
     <script src="{{ asset('assets/js/scrip_validations.js') }}?v={{ @filemtime(public_path('assets/js/scrip_validations.js')) }}"></script>
 @endsection

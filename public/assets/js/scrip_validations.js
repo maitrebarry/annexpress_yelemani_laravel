@@ -1,5 +1,9 @@
    // calculer de fraix de transport
-   document.addEventListener("DOMContentLoaded", function () {
+   // tgReady (pas DOMContentLoaded, qui ne se redéclenche jamais après la première
+   // navigation — voir mon_js/admin-transitions.js) : sans ça, ce calcul ne se déclenchait
+   // plus jamais dès que cette page était atteinte par navigation douce, laissant le champ
+   // fraix_transaction vide et bloquant l'enregistrement (champ obligatoire côté serveur).
+   tgReady(function () {
     var valeurInput = document.getElementById("valeur");
     var fraisInput = document.getElementById("fraix_transaction");
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Camion;
 use App\Models\Car;
 use App\Models\CaisseUtilisateur;
 use App\Models\LocationCar;
@@ -34,13 +35,43 @@ class LocationCarService
                     ->where('p.idDepart', $idAgenceDepart);
             }))
             ->whereNotIn('car.id_car', function ($sub) use ($dateDepart, $dateRetour) {
+                // whereNotNull('lc.id_car') est indispensable depuis l'ajout des locations de
+                // camion : une ligne location_car avec id_car NULL (location de camion) dans
+                // cette sous-requête ferait échouer TOUT le NOT IN (NULL rend la comparaison
+                // indéterminée pour chaque car — piège SQL classique), excluant silencieusement
+                // tous les cars dès qu'un camion est loué sur une période qui chevauche.
                 $sub->select('lc.id_car')->from('location_car as lc')
+                    ->whereNotNull('lc.id_car')
                     ->whereIn('lc.statut', ['en_attente', 'valide'])
                     ->where('lc.date_depart', '<=', $dateRetour)
                     ->where('lc.date_retour_prevu', '>=', $dateDepart);
             })
             ->orderBy('car.numero_car')
             ->get(['car.id_car', 'car.numero_car', 'car.matriculle']);
+    }
+
+    /**
+     * Miroir de carsDisponibles() pour un camion : pas de sous-filtre "limiterAGare" (pas
+     * de liaison_car_trajet/programmer équivalente pour un camion — même choix déjà fait
+     * pour l'envoi de colis, EnvoiColisService::getCamionsActifs() : un camion est
+     * disponible compagnie entière, pas scopé par gare). Un camion déjà loué sur une
+     * période qui chevauche celle demandée est exclu, même logique que pour un car. Seuls
+     * les camions actifs sont proposés (contrairement à la Flotte, qui montre tout).
+     */
+    public function camionsDisponibles(int $idCompagnie, string $dateDepart, string $dateRetour): Collection
+    {
+        return Camion::query()
+            ->where('camion.id_compagnie', $idCompagnie)
+            ->where('camion.actif', 'on')
+            ->whereNotIn('camion.id_camion', function ($sub) use ($dateDepart, $dateRetour) {
+                $sub->select('lc.id_camion')->from('location_car as lc')
+                    ->whereNotNull('lc.id_camion')
+                    ->whereIn('lc.statut', ['en_attente', 'valide'])
+                    ->where('lc.date_depart', '<=', $dateRetour)
+                    ->where('lc.date_retour_prevu', '>=', $dateDepart);
+            })
+            ->orderBy('camion.numero_camion')
+            ->get(['camion.id_camion', 'camion.numero_camion', 'camion.matriculle']);
     }
 
     public function saveLocation(Utilisateur $user, array $data): array
@@ -57,7 +88,11 @@ class LocationCarService
         }
 
         $destination = trim((string) ($data['destination'] ?? ''));
-        $idCar = $data['id_car'] ?? null;
+        // Un véhicule loué est soit un car, soit un camion (jamais les deux), même
+        // convention que ChauffeurController (checkbox "est_camion").
+        $estCamion = ($data['est_camion'] ?? null) === '1';
+        $idCamion = $estCamion ? ($data['id_camion'] ?? null) : null;
+        $idCar = $estCamion ? null : ($data['id_car'] ?? null);
         $nomClient = trim((string) ($data['nom_client'] ?? ''));
         $prenomClient = trim((string) ($data['prenom_client'] ?? ''));
         $telephoneClient = trim((string) ($data['telephone_client'] ?? ''));
@@ -68,8 +103,8 @@ class LocationCarService
         if ($destination === '') {
             return ['ok' => false, 'type' => 'danger', 'message' => 'Veuillez indiquer la destination.'];
         }
-        if (empty($idCar)) {
-            return ['ok' => false, 'type' => 'danger', 'message' => 'Veuillez choisir un car.'];
+        if ($estCamion ? empty($idCamion) : empty($idCar)) {
+            return ['ok' => false, 'type' => 'danger', 'message' => 'Veuillez choisir un véhicule.'];
         }
         if ($nomClient === '' || $prenomClient === '' || $telephoneClient === '') {
             return ['ok' => false, 'type' => 'danger', 'message' => "Les coordonnées du client (nom, prénom, téléphone) sont obligatoires."];
@@ -84,40 +119,66 @@ class LocationCarService
             return ['ok' => false, 'type' => 'danger', 'message' => 'Le frais de location doit être un nombre positif.'];
         }
 
-        // IDOR guard : un Admin ne peut louer que les cars de sa propre compagnie.
-        $carAppartientCompagnie = Car::where('id_car', $idCar)->where('id_compagnie', $user->id_compagnie)->exists();
-        if (! $carAppartientCompagnie) {
-            return ['ok' => false, 'type' => 'danger', 'message' => "Ce car n'appartient pas à votre compagnie."];
+        // IDOR guard : un Admin ne peut louer que les véhicules de sa propre compagnie.
+        if ($estCamion) {
+            $vehiculeAppartientCompagnie = Camion::where('id_camion', $idCamion)->where('id_compagnie', $user->id_compagnie)->exists();
+            if (! $vehiculeAppartientCompagnie) {
+                return ['ok' => false, 'type' => 'danger', 'message' => "Ce camion n'appartient pas à votre compagnie."];
+            }
+        } else {
+            $vehiculeAppartientCompagnie = Car::where('id_car', $idCar)->where('id_compagnie', $user->id_compagnie)->exists();
+            if (! $vehiculeAppartientCompagnie) {
+                return ['ok' => false, 'type' => 'danger', 'message' => "Ce car n'appartient pas à votre compagnie."];
+            }
         }
 
         $aujourdhui = now()->toDateString();
-        $limiterAGare = $droit === 'chef_d_escale' && $dateDepart === $aujourdhui;
 
         // Re-vérification serveur de la disponibilité : ne jamais faire confiance à la
         // liste proposée côté client (formulaire trafiqué, race condition...).
-        $disponibles = $this->carsDisponibles($user->id_compagnie, $idAgenceDepart, $dateDepart, $dateRetourPrevu, $limiterAGare);
-        if (! $disponibles->contains('id_car', (int) $idCar)) {
-            return ['ok' => false, 'type' => 'danger', 'message' => "Ce car n'est plus disponible sur la période demandée. Veuillez en choisir un autre."];
+        if ($estCamion) {
+            $disponibles = $this->camionsDisponibles($user->id_compagnie, $dateDepart, $dateRetourPrevu);
+            if (! $disponibles->contains('id_camion', (int) $idCamion)) {
+                return ['ok' => false, 'type' => 'danger', 'message' => "Ce camion n'est plus disponible sur la période demandée. Veuillez en choisir un autre."];
+            }
+        } else {
+            $limiterAGare = $droit === 'chef_d_escale' && $dateDepart === $aujourdhui;
+            $disponibles = $this->carsDisponibles($user->id_compagnie, $idAgenceDepart, $dateDepart, $dateRetourPrevu, $limiterAGare);
+            if (! $disponibles->contains('id_car', (int) $idCar)) {
+                return ['ok' => false, 'type' => 'danger', 'message' => "Ce car n'est plus disponible sur la période demandée. Veuillez en choisir un autre."];
+            }
         }
 
         try {
             $resultat = DB::transaction(function () use (
-                $user, $droit, $idAgenceDepart, $destination, $idCar, $nomClient, $prenomClient,
+                $user, $droit, $idAgenceDepart, $destination, $estCamion, $idCar, $idCamion, $nomClient, $prenomClient,
                 $telephoneClient, $dateDepart, $dateRetourPrevu, $fraisLocation
             ) {
-                // Verrouille ce car précis : sans ça, deux locations pour LE MEME car sur des
-                // périodes qui se chevauchent, soumises à quelques millisecondes d'intervalle,
-                // peuvent toutes les deux le lire comme disponible avant qu'aucune n'écrive.
-                DB::table('car')->where('id_car', $idCar)->lockForUpdate()->first();
+                // Verrouille ce véhicule précis : sans ça, deux locations pour LE MEME
+                // véhicule sur des périodes qui se chevauchent, soumises à quelques
+                // millisecondes d'intervalle, peuvent toutes les deux le lire comme
+                // disponible avant qu'aucune n'écrive.
+                if ($estCamion) {
+                    DB::table('camion')->where('id_camion', $idCamion)->lockForUpdate()->first();
 
-                $conflit = DB::table('location_car')
-                    ->where('id_car', $idCar)
-                    ->whereIn('statut', ['en_attente', 'valide'])
-                    ->where('date_depart', '<=', $dateRetourPrevu)
-                    ->where('date_retour_prevu', '>=', $dateDepart)
-                    ->exists();
+                    $conflit = DB::table('location_car')
+                        ->where('id_camion', $idCamion)
+                        ->whereIn('statut', ['en_attente', 'valide'])
+                        ->where('date_depart', '<=', $dateRetourPrevu)
+                        ->where('date_retour_prevu', '>=', $dateDepart)
+                        ->exists();
+                } else {
+                    DB::table('car')->where('id_car', $idCar)->lockForUpdate()->first();
+
+                    $conflit = DB::table('location_car')
+                        ->where('id_car', $idCar)
+                        ->whereIn('statut', ['en_attente', 'valide'])
+                        ->where('date_depart', '<=', $dateRetourPrevu)
+                        ->where('date_retour_prevu', '>=', $dateDepart)
+                        ->exists();
+                }
                 if ($conflit) {
-                    return ['ok' => false, 'type' => 'danger', 'message' => "Ce car vient d'être réservé sur cette période par quelqu'un d'autre. Veuillez en choisir un autre."];
+                    return ['ok' => false, 'type' => 'danger', 'message' => "Ce véhicule vient d'être réservé sur cette période par quelqu'un d'autre. Veuillez en choisir un autre."];
                 }
 
                 [$idCaisse, $idCaisseUser, $erreurCaisse] = $this->resoudreCaisse($user, $droit, $idAgenceDepart);
@@ -132,6 +193,7 @@ class LocationCarService
                     'id_agence_depart' => $idAgenceDepart,
                     'destination' => $destination,
                     'id_car' => $idCar,
+                    'id_camion' => $idCamion,
                     'id_caisse' => $idCaisse,
                     'id_caisse_user' => $idCaisseUser,
                     'nom_client' => $nomClient,
@@ -211,11 +273,17 @@ class LocationCarService
         return LocationCar::query()
             ->leftJoin('agence as a', 'location_car.id_agence_depart', '=', 'a.idAgence')
             ->leftJoin('car as c', 'location_car.id_car', '=', 'c.id_car')
+            ->leftJoin('camion as cam', 'location_car.id_camion', '=', 'cam.id_camion')
             ->leftJoin('utilisateur as u', 'location_car.id_utilisateur', '=', 'u.idUser')
             ->where('location_car.id_compagnie', $user->id_compagnie)
             ->when($user->droit === 'chef_d_escale', fn ($q) => $q->where('location_car.id_agence_depart', $user->id_agence))
             ->orderByDesc('location_car.date_depart')->orderByDesc('location_car.id_location')
-            ->get(['location_car.*', 'a.localite', 'a.numeroGare', 'c.numero_car', 'c.matriculle', 'u.utilisateurs as agent']);
+            ->get([
+                'location_car.*', 'a.localite', 'a.numeroGare', 'c.numero_car', 'c.matriculle', 'u.utilisateurs as agent',
+                DB::raw("CASE WHEN location_car.id_car IS NOT NULL THEN 'car' ELSE 'camion' END AS type_vehicule"),
+                DB::raw('COALESCE(c.numero_car, cam.numero_camion) AS numero_vehicule'),
+                DB::raw('COALESCE(c.matriculle, cam.matriculle) AS matricule_vehicule'),
+            ]);
     }
 
     /**
@@ -227,6 +295,7 @@ class LocationCarService
         return LocationCar::query()
             ->leftJoin('agence as a', 'location_car.id_agence_depart', '=', 'a.idAgence')
             ->leftJoin('car as c', 'location_car.id_car', '=', 'c.id_car')
+            ->leftJoin('camion as cam', 'location_car.id_camion', '=', 'cam.id_camion')
             ->leftJoin('utilisateur as u', 'location_car.id_utilisateur', '=', 'u.idUser')
             ->leftJoin('utilisateur as v', 'location_car.id_valide_par', '=', 'v.idUser')
             ->where('location_car.id_location', $id)
@@ -235,6 +304,9 @@ class LocationCarService
             ->first([
                 'location_car.*', 'a.localite', 'a.numeroGare', 'c.numero_car', 'c.matriculle',
                 'u.utilisateurs as agent', 'u.droit as agent_droit', 'v.utilisateurs as valide_par_nom',
+                DB::raw("CASE WHEN location_car.id_car IS NOT NULL THEN 'car' ELSE 'camion' END AS type_vehicule"),
+                DB::raw('COALESCE(c.numero_car, cam.numero_camion) AS numero_vehicule'),
+                DB::raw('COALESCE(c.matriculle, cam.matriculle) AS matricule_vehicule'),
             ]);
     }
 

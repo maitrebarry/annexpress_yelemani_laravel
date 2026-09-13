@@ -60,6 +60,13 @@
             || (window.matchMedia && window.matchMedia('(max-width: 900px)').matches);
     }
 
+    // Le modal ne doit jamais apparaître avant connexion (ex: sur la page de login
+    // elle-même) : PWA_USER_LOGGED_IN n'est injecté à `true` par
+    // admin/partials/foot.blade.php que lorsqu'un utilisateur staff est authentifié.
+    function estConnecte() {
+        return window.PWA_USER_LOGGED_IN === true;
+    }
+
     if (isStandalone()) {
         localStorage.setItem(STORAGE_INSTALLED, '1');
     }
@@ -143,7 +150,10 @@
     window.addEventListener('beforeinstallprompt', function (e) {
         e.preventDefault();
         deferredPrompt = e;
-        if (isAdminSection() && !alreadyHandled() && isMobile()) {
+        // Pas de isMobile() ici volontairement : deferredPrompt.prompt() fonctionne aussi
+        // sur Chrome/Edge desktop (crée un raccourci comme sur mobile) — seul le frein
+        // isAdminSection()/estConnecte() reste pertinent pour cette branche.
+        if (isAdminSection() && estConnecte() && !alreadyHandled()) {
             setTimeout(function () { showModal('android'); }, 1200);
         }
     });
@@ -153,8 +163,9 @@
         localStorage.removeItem(STORAGE_DISMISSED);
     });
 
-    // iOS Safari ne déclenche jamais beforeinstallprompt : instructions manuelles
-    if (isAdminSection() && isIos() && !alreadyHandled() && isMobile()) {
+    // iOS Safari ne déclenche jamais beforeinstallprompt : instructions manuelles.
+    // isMobile()/isIos() restent ici : pas d'équivalent iOS desktop.
+    if (isAdminSection() && estConnecte() && isIos() && isMobile() && !alreadyHandled()) {
         setTimeout(function () { showModal('ios'); }, 1200);
     }
 })();

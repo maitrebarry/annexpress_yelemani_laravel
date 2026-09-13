@@ -300,3 +300,13 @@
       });
     })();
   </script>
+
+  {{-- Modal d'installation PWA : ne doit apparaître qu'après connexion (jamais sur la
+       page de login, qui n'étend pas ce layout de toute façon), voir
+       public/mon_js/pwa-install.js. Injecté ici (juste avant </body>, sur toutes les
+       pages admin) plutôt que dans header.blade.php : ce script agit sur le <body>
+       (overlay de la modale), pas sur le <head>. --}}
+  <script>
+    window.PWA_USER_LOGGED_IN = @json(auth('staff')->check());
+  </script>
+  <script src="{{ asset('mon_js/pwa-install.js') }}?v={{ @filemtime(public_path('mon_js/pwa-install.js')) }}"></script>

@@ -23,6 +23,7 @@ class LocationCar extends Model
         'id_agence_depart',
         'destination',
         'id_car',
+        'id_camion',
         'id_caisse',
         'id_caisse_user',
         'nom_client',
@@ -44,6 +45,11 @@ class LocationCar extends Model
     public function car()
     {
         return $this->belongsTo(Car::class, 'id_car', 'id_car');
+    }
+
+    public function camion()
+    {
+        return $this->belongsTo(Camion::class, 'id_camion', 'id_camion');
     }
 
     public function agent()

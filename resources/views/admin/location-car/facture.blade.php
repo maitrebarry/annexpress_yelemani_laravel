@@ -185,7 +185,7 @@ $mentionSignature = ($creeParChefEscale && $location->statut === 'valide')
             </div>
         </header>
 
-        <h3 class="titre-facture">Facture de location de car — N° {{ str_pad($location->id_location, 6, '0', STR_PAD_LEFT) }}</h3>
+        <h3 class="titre-facture">Facture de location de {{ ($location->type_vehicule ?? 'car') === 'camion' ? 'camion' : 'car' }} — N° {{ str_pad($location->id_location, 6, '0', STR_PAD_LEFT) }}</h3>
 
         <div class="section">
             <h4>Détails de la location</h4>
@@ -197,8 +197,8 @@ $mentionSignature = ($creeParChefEscale && $location->statut === 'valide')
                     <td>{{ $location->destination }}</td>
                 </tr>
                 <tr>
-                    <td class="label">Car</td>
-                    <td>N°{{ $location->numero_car ?? '-' }} - {{ $location->matriculle ?? '-' }}</td>
+                    <td class="label">{{ ($location->type_vehicule ?? 'car') === 'camion' ? 'Camion' : 'Car' }}</td>
+                    <td>N°{{ $location->numero_vehicule ?? '-' }} - {{ $location->matricule_vehicule ?? '-' }}</td>
                     <td class="label">Statut</td>
                     <td><span class="badge-statut {{ $location->statut }}">{{ $statutLabel }}</span></td>
                 </tr>

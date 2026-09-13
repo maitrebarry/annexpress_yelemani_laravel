@@ -38,7 +38,7 @@
                     <tr>
                         <th class="border-0" style="{{ $theadStyle }}">Gare départ</th>
                         <th class="border-0" style="{{ $theadStyle }}">Destination</th>
-                        <th class="border-0" style="{{ $theadStyle }}">Car</th>
+                        <th class="border-0" style="{{ $theadStyle }}">Véhicule</th>
                         <th class="border-0" style="{{ $theadStyle }}">Client</th>
                         <th class="border-0" style="{{ $theadStyle }}">Période</th>
                         <th class="border-0" style="{{ $theadStyle }}">Frais</th>
@@ -51,7 +51,14 @@
                         <tr>
                             <td>{{ $l->localite ?? '-' }} ({{ $l->numeroGare ?? '-' }})</td>
                             <td>{{ $l->destination }}</td>
-                            <td>N°{{ $l->numero_car ?? '-' }} <span class="text-muted small">{{ $l->matriculle ?? '' }}</span></td>
+                            <td>
+                                @if ($l->type_vehicule === 'camion')
+                                    <span class="badge bg-info-subtle text-info-emphasis"><i class="fas fa-truck me-1"></i>Camion</span>
+                                @else
+                                    <span class="badge bg-primary-subtle text-primary-emphasis"><i class="fas fa-bus me-1"></i>Car</span>
+                                @endif
+                                N°{{ $l->numero_vehicule ?? '-' }} <span class="text-muted small">{{ $l->matricule_vehicule ?? '' }}</span>
+                            </td>
                             <td>{{ $l->prenom_client }} {{ $l->nom_client }}</td>
                             <td>{{ \Illuminate\Support\Carbon::parse($l->date_depart)->format('d/m/Y') }} → {{ \Illuminate\Support\Carbon::parse($l->date_retour_prevu)->format('d/m/Y') }}</td>
                             <td class="fw-bold text-success">{{ number_format($l->frais_location, 0, ',', ' ') }} F</td>
@@ -109,7 +116,7 @@
                         @csrf
                         <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
                             <h5 class="modal-title text-white d-flex align-items-center gap-2">
-                                <i class="fas fa-car"></i> Nouvelle location de car
+                                <i class="fas fa-car"></i> Nouvelle location
                             </h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -149,9 +156,23 @@
                                             <input type="date" class="form-control" id="date_retour_prevu" name="date_retour_prevu" value="{{ $aujourdhui }}" min="{{ $aujourdhui }}" required>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-12">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="estCamionCheck" name="est_camion" value="1">
+                                                <label class="form-check-label" for="estCamionCheck">Louer un camion (au lieu d'un car)</label>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-6" id="carField">
                                             <label class="form-label fw-semibold">Car <span id="carsDispoBadge" class="badge bg-light text-muted"></span></label>
                                             <select class="form-select" id="id_car" name="id_car" required disabled>
+                                                <option value="" selected>Choisissez d'abord la gare et les dates</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6 d-none" id="camionField">
+                                            <label class="form-label fw-semibold">Camion <span id="camionsDispoBadge" class="badge bg-light text-muted"></span></label>
+                                            <select class="form-select" id="id_camion" name="id_camion" disabled>
                                                 <option value="" selected>Choisissez d'abord la gare et les dates</option>
                                             </select>
                                         </div>
@@ -190,7 +211,7 @@
                                                 <span class="fw-semibold" id="resumeDestination">—</span>
                                             </div>
                                             <div class="d-flex justify-content-between py-2 border-bottom">
-                                                <span class="text-muted small">Car</span>
+                                                <span class="text-muted small">Véhicule</span>
                                                 <span class="fw-semibold" id="resumeCar">—</span>
                                             </div>
                                             <div class="d-flex justify-content-between py-2 border-bottom">
@@ -245,8 +266,15 @@
                             <span class="fw-semibold">{{ $l->localite ?? '-' }} ({{ $l->numeroGare ?? '-' }})</span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
-                            <span class="text-muted small">Car</span>
-                            <span class="fw-semibold">N°{{ $l->numero_car ?? '-' }} - {{ $l->matriculle ?? '-' }}</span>
+                            <span class="text-muted small">Véhicule</span>
+                            <span class="fw-semibold">
+                                @if ($l->type_vehicule === 'camion')
+                                    <span class="badge bg-info-subtle text-info-emphasis"><i class="fas fa-truck me-1"></i>Camion</span>
+                                @else
+                                    <span class="badge bg-primary-subtle text-primary-emphasis"><i class="fas fa-bus me-1"></i>Car</span>
+                                @endif
+                                N°{{ $l->numero_vehicule ?? '-' }} - {{ $l->matricule_vehicule ?? '-' }}
+                            </span>
                         </div>
                         <div class="d-flex justify-content-between py-2 border-bottom">
                             <span class="text-muted small">Période</span>
@@ -298,13 +326,37 @@
             const dateDepartInput = document.getElementById('date_depart');
             const dateRetourInput = document.getElementById('date_retour_prevu');
             const idCarSelect = document.getElementById('id_car');
+            const idCamionSelect = document.getElementById('id_camion');
+            const carField = document.getElementById('carField');
+            const camionField = document.getElementById('camionField');
+            const estCamionCheck = document.getElementById('estCamionCheck');
             const carsDispoBadge = document.getElementById('carsDispoBadge');
+            const camionsDispoBadge = document.getElementById('camionsDispoBadge');
             const idAgenceDepartFixe = {{ (int) ($authUser->id_agence ?? 0) }};
             const isAdmin = {{ $authUser->droit === 'Admin' ? 'true' : 'false' }};
 
             // La modale "Nouvelle location" n'est pas rendue pour un PDG (lecture seule) :
             // ce script s'arrête ici dans ce cas, tout le reste ci-dessous suppose la modale présente.
             if (!dateDepartInput) return;
+
+            // Bascule Car / Camion : même principe que toggleVehiculeFields() dans
+            // resources/views/admin/car/index.blade.php, mais chaque select est repeuplé
+            // par AJAX (pas de liste statique ici), donc on rafraîchit aussitôt le select
+            // qui devient visible.
+            function toggleVehiculeFields() {
+                const estCamion = estCamionCheck.checked;
+                carField.classList.toggle('d-none', estCamion);
+                camionField.classList.toggle('d-none', !estCamion);
+                idCarSelect.required = !estCamion;
+                idCamionSelect.required = estCamion;
+                if (estCamion) {
+                    idCarSelect.value = '';
+                    rafraichirCamionsDisponibles();
+                } else {
+                    idCamionSelect.value = '';
+                    rafraichirCarsDisponibles();
+                }
+            }
 
             function rafraichirCarsDisponibles() {
                 const id_agence_depart = isAdmin ? (idAgenceDepartInput ? idAgenceDepartInput.value : '') : idAgenceDepartFixe;
@@ -359,17 +411,80 @@
                     });
             }
 
-            idAgenceDepartInput?.addEventListener('change', rafraichirCarsDisponibles);
+            // Miroir de rafraichirCarsDisponibles() pour un camion.
+            function rafraichirCamionsDisponibles() {
+                const id_agence_depart = isAdmin ? (idAgenceDepartInput ? idAgenceDepartInput.value : '') : idAgenceDepartFixe;
+                const date_depart = dateDepartInput.value;
+                const date_retour_prevu = dateRetourInput.value;
+
+                idCamionSelect.innerHTML = '<option value="">Chargement...</option>';
+                idCamionSelect.disabled = true;
+                camionsDispoBadge.textContent = '';
+                camionsDispoBadge.className = 'badge bg-light text-muted';
+
+                if (!id_agence_depart || !date_depart || !date_retour_prevu) {
+                    idCamionSelect.innerHTML = '<option value="">Choisissez d\'abord la gare et les dates</option>';
+                    return;
+                }
+
+                fetch('{{ route('admin.location-car.ajax-camions-disponibles') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: new URLSearchParams({ id_agence_depart, date_depart, date_retour_prevu }),
+                })
+                    .then(r => r.json())
+                    .then(response => {
+                        if (response.error) {
+                            idCamionSelect.innerHTML = '<option value="">' + response.error + '</option>';
+                            camionsDispoBadge.textContent = 'Erreur';
+                            camionsDispoBadge.className = 'badge bg-danger';
+                            return;
+                        }
+                        if (!response.camions || response.camions.length === 0) {
+                            idCamionSelect.innerHTML = '<option value="">Aucun camion disponible sur cette période</option>';
+                            camionsDispoBadge.textContent = '0 disponible';
+                            camionsDispoBadge.className = 'badge bg-danger';
+                            return;
+                        }
+                        let options = '<option value="" disabled selected>Choisir un camion</option>';
+                        response.camions.forEach(function (c) {
+                            options += `<option value="${c.id_camion}" data-numero="${c.numero_camion}" data-matriculle="${c.matriculle}">Camion n°${c.numero_camion} - ${c.matriculle}</option>`;
+                        });
+                        idCamionSelect.innerHTML = options;
+                        idCamionSelect.disabled = false;
+                        camionsDispoBadge.textContent = response.camions.length + ' disponible' + (response.camions.length > 1 ? 's' : '');
+                        camionsDispoBadge.className = 'badge bg-success';
+                    })
+                    .catch(() => {
+                        idCamionSelect.innerHTML = '<option value="">Erreur lors du chargement des camions</option>';
+                        camionsDispoBadge.textContent = 'Erreur';
+                        camionsDispoBadge.className = 'badge bg-danger';
+                    });
+            }
+
+            function rafraichirVehiculesDisponibles() {
+                if (estCamionCheck.checked) {
+                    rafraichirCamionsDisponibles();
+                } else {
+                    rafraichirCarsDisponibles();
+                }
+            }
+
+            estCamionCheck.addEventListener('change', toggleVehiculeFields);
+            idAgenceDepartInput?.addEventListener('change', rafraichirVehiculesDisponibles);
             dateDepartInput?.addEventListener('change', function () {
                 if (dateRetourInput.value < dateDepartInput.value) {
                     dateRetourInput.value = dateDepartInput.value;
                 }
                 dateRetourInput.min = dateDepartInput.value;
-                rafraichirCarsDisponibles();
+                rafraichirVehiculesDisponibles();
             });
-            dateRetourInput?.addEventListener('change', rafraichirCarsDisponibles);
+            dateRetourInput?.addEventListener('change', rafraichirVehiculesDisponibles);
 
-            document.getElementById('modalNouvelleLocation')?.addEventListener('shown.bs.modal', rafraichirCarsDisponibles);
+            document.getElementById('modalNouvelleLocation')?.addEventListener('shown.bs.modal', rafraichirVehiculesDisponibles);
 
             // Résumé en direct
             const resumeDestination = document.getElementById('resumeDestination');
@@ -384,8 +499,10 @@
 
             function majResume() {
                 resumeDestination.textContent = destinationInput.value || '—';
-                const opt = idCarSelect.options[idCarSelect.selectedIndex];
-                resumeCar.textContent = (opt && opt.dataset && opt.dataset.numero) ? ('N°' + opt.dataset.numero + ' - ' + opt.dataset.matriculle) : '—';
+                const select = estCamionCheck.checked ? idCamionSelect : idCarSelect;
+                const prefixe = estCamionCheck.checked ? 'Camion ' : '';
+                const opt = select.options[select.selectedIndex];
+                resumeCar.textContent = (opt && opt.dataset && opt.dataset.numero) ? (prefixe + 'N°' + opt.dataset.numero + ' - ' + opt.dataset.matriculle) : '—';
                 resumePeriode.textContent = (dateDepartInput.value && dateRetourInput.value)
                     ? (dateDepartInput.value + ' → ' + dateRetourInput.value) : '—';
                 const client = [prenomInput.value, nomInput.value].filter(Boolean).join(' ');
@@ -396,6 +513,8 @@
 
             [destinationInput, fraisInput, nomInput, prenomInput, dateDepartInput, dateRetourInput].forEach(el => el?.addEventListener('input', majResume));
             idCarSelect.addEventListener('change', majResume);
+            idCamionSelect.addEventListener('change', majResume);
+            estCamionCheck.addEventListener('change', majResume);
 
             // Valider / Rejeter, sweetalert2 stylé
             document.querySelectorAll('.location-valider-btn').forEach(function (btn) {

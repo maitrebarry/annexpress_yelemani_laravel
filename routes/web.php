@@ -335,6 +335,7 @@ Route::middleware(['auth:staff', 'permission:Location_gestion'])->prefix('admin'
     Route::get('/Locations_cars', [LocationCarController::class, 'index'])->name('admin.location-car.index');
     Route::post('/Locations_cars', [LocationCarController::class, 'store'])->name('admin.location-car.store');
     Route::post('/Locations_cars/ajaxCarsDisponibles', [LocationCarController::class, 'ajaxCarsDisponibles'])->name('admin.location-car.ajax-cars-disponibles');
+    Route::post('/Locations_cars/ajaxCamionsDisponibles', [LocationCarController::class, 'ajaxCamionsDisponibles'])->name('admin.location-car.ajax-camions-disponibles');
     Route::post('/Locations_cars/valider/{id}', [LocationCarController::class, 'valider'])->name('admin.location-car.valider');
     Route::post('/Locations_cars/rejeter/{id}', [LocationCarController::class, 'rejeter'])->name('admin.location-car.rejeter');
     Route::get('/Locations_cars/facture/{id}', [LocationCarController::class, 'facture'])->name('admin.location-car.facture');

@@ -48,7 +48,7 @@ class LocationCarController extends Controller
         }
 
         $resultat = $service->saveLocation($user, $request->only([
-            'id_agence_depart', 'destination', 'id_car', 'nom_client', 'prenom_client',
+            'id_agence_depart', 'destination', 'est_camion', 'id_car', 'id_camion', 'nom_client', 'prenom_client',
             'telephone_client', 'date_depart', 'date_retour_prevu', 'frais_location',
         ]));
 
@@ -79,6 +79,34 @@ class LocationCarController extends Controller
             'cars' => $cars->map(fn ($c) => [
                 'id_car' => (int) $c->id_car,
                 'numero_car' => $c->numero_car,
+                'matriculle' => $c->matriculle,
+            ])->values(),
+        ]);
+    }
+
+    // Miroir de ajaxCarsDisponibles() pour un camion (pas de limiterAGare, cf.
+    // LocationCarService::camionsDisponibles()).
+    public function ajaxCamionsDisponibles(Request $request, LocationCarService $service): JsonResponse
+    {
+        $user = Auth::guard('staff')->user();
+
+        $idAgenceDepart = $user->droit === 'chef_d_escale' ? $user->id_agence : (int) $request->input('id_agence_depart');
+        $dateDepart = (string) $request->input('date_depart');
+        $dateRetourPrevu = (string) $request->input('date_retour_prevu');
+
+        if (! $idAgenceDepart || ! $dateDepart || ! $dateRetourPrevu) {
+            return response()->json(['error' => 'Gare de départ et dates requises.']);
+        }
+        if ($dateRetourPrevu < $dateDepart) {
+            return response()->json(['error' => 'La date de retour prévu ne peut pas être avant la date de départ.']);
+        }
+
+        $camions = $service->camionsDisponibles($user->id_compagnie, $dateDepart, $dateRetourPrevu);
+
+        return response()->json([
+            'camions' => $camions->map(fn ($c) => [
+                'id_camion' => (int) $c->id_camion,
+                'numero_camion' => $c->numero_camion,
                 'matriculle' => $c->matriculle,
             ])->values(),
         ]);

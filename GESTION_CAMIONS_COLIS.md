@@ -2,7 +2,7 @@
 
 ## Résumé
 
-Ajout d'un second type de véhicule, le **camion**, dédié au transport de colis (fret), en plus des **cars** existants (bus passagers). Un camion se gère sur le même écran que les cars, un chauffeur peut être affecté à l'un ou l'autre, et un colis peut désormais être envoyé sur un camion en plus d'un car.
+Ajout d'un second type de véhicule, le **camion**, dédié au transport de colis (fret), en plus des **cars** existants (bus passagers). Un camion se gère sur le même écran que les cars, un chauffeur peut être affecté à l'un ou l'autre, un colis peut être envoyé sur un camion en plus d'un car, un camion apparaît dans l'écran "Flotte", et un camion peut désormais être loué au même titre qu'un car dans l'écran "Location des cars".
 
 ## Contexte / motivation
 
@@ -94,6 +94,46 @@ Identique pour les deux types, sur le modèle déjà existant pour les cars :
 
 Ces trois dernières actions acceptent un paramètre `type` (`car` par défaut, pour rester compatibles avec d'éventuels liens déjà en cache générés avant cette fonctionnalité).
 
+## Écran "Flotte" (`/admin/Flotte`)
+
+Réservé à Admin/PDG/super_admin (restriction déjà en place dans `FlotteController`, inchangée).
+
+**Constat** : `ProgrammationVoyage::etatFlotte()` construit l'état de chaque car ("en transit", "disponible à X", "anomalie") à partir de `car.status_car` + `programmation_voyage` — un camion n'a ni l'un ni l'autre (seulement `actif` on/off, pas de position ni de trajet). Impossible de fusionner les deux dans un même tableau avec la même logique d'état.
+
+**Solution retenue** : un second tableau, plus simple, sous celui des cars — colonnes Numéro Camion | Matricule | Statut (badge "En location" / "Envoi de colis en cours" / "Disponible" / "Inactif"). Nouvelle méthode statique `Camion::etatFlotte(?int $idCompagnie)` (`app/Models/Camion.php`), calquée sur `ProgrammationVoyage::etatFlotte()` : tous les camions de la compagnie, actifs **et** inactifs, contrairement à `EnvoiColisService::getCamionsActifs()` qui ne veut que les actifs pour l'envoi de colis.
+
+## Écran "Location des cars" (`/admin/Locations_cars`) → camions
+
+Migration : [`database/migrations/2026_09_13_130000_add_camion_support_to_location_car_table.php`](database/migrations/2026_09_13_130000_add_camion_support_to_location_car_table.php).
+
+### Table `location_car` — colonne ajoutée
+
+| Colonne | Type | Description |
+|---|---|---|
+| `id_car` | INT, nullable (était `NOT NULL`) | Rempli uniquement si la location porte sur un car |
+| `id_camion` | INT, nullable (nouveau) | Rempli uniquement si la location porte sur un camion |
+
+Même convention que partout ailleurs dans cette fonctionnalité : pas de colonne "type" séparée, le type se déduit de savoir laquelle des deux colonnes est renseignée (`CASE WHEN location_car.id_car IS NOT NULL THEN 'car' ELSE 'camion' END`, calculé en SQL dans `LocationCarService::getLocations()`/`getById()`, même technique que `EnvoiColisController::liste_colis_envoyer()`).
+
+Contrairement au projet legacy (`Projets_licence`), la table `location_car` de cette base Laravel embarquait déjà `id_caisse`/`id_caisse_user` dès sa création (`2025_08_11_000035_create_location_car_table.php`) : il n'existe pas ici d'équivalent à faire tourner de la migration `ajout_location_car_caisse_utilisateur.sql` du legacy — seule la migration camion ci-dessus était nécessaire.
+
+### Formulaire de location
+
+Checkbox **"Louer un camion (au lieu d'un car)"** basculant entre le select "Car" existant et un nouveau select "Camion" (même pattern JS `toggleVehiculeFields` que `resources/views/admin/car/index.blade.php` pour les chauffeurs, adapté ici car chaque select est peuplé dynamiquement par AJAX plutôt que rendu statiquement).
+
+- **Disponibilité d'un camion** (`LocationCarService::camionsDisponibles()`) : miroir de `carsDisponibles()`, mais **sans** le sous-filtre "limiterAGare" (pas de `liaison_car_trajet`/`programmer` équivalent pour un camion — même choix déjà fait pour l'envoi de colis : un camion est disponible compagnie entière, pas scopé par gare). Un camion déjà loué sur une période chevauchante est exclu, même logique SQL que pour un car. Seuls les camions `actif = 'on'` sont proposés (contrairement à la Flotte, qui montre tout).
+- **Bug corrigé au passage dans `carsDisponibles()`** : sa sous-requête `whereNotIn('car.id_car', ...)` sélectionnait `lc.id_car` sans filtrer les lignes où cette colonne est NULL. Tant que `location_car.id_car` était `NOT NULL` (avant cette fonctionnalité), ça ne posait aucun problème. Depuis qu'une location de camion produit une ligne `location_car` avec `id_car IS NULL`, une seule ligne NULL dans le résultat de la sous-requête rend `NOT IN` indéterminé pour **toutes** les comparaisons (piège SQL classique) — silencieusement, plus aucun car n'apparaissait disponible dès qu'un camion était loué sur une période chevauchante. Corrigé en ajoutant `whereNotNull('lc.id_car')` dans la sous-requête (symétrique du `whereNotNull('lc.id_camion')` déjà nécessaire côté `camionsDisponibles()`). Repéré et vérifié via un test manuel bout-en-bout (location camion + location car sur la même période) avant cette correction.
+- **Verrouillage anti-double-réservation** : le verrou `lockForUpdate()` + revérification anti-chevauchement à l'écriture (dans `LocationCarService::saveLocation()`) s'applique de façon identique, juste sur `camion`/`id_camion` selon le cas (`est_camion` est un flag de formulaire, même convention que `ChauffeurController`).
+- **IDOR** : vérification inline que le camion choisi appartient bien à la compagnie de l'utilisateur (`Camion::where('id_camion', ...)->where('id_compagnie', ...)->exists()`), même principe que pour un car.
+- La logique de caisse (`crediterCaisse()`, choix caisse de gare vs caisse individuelle du chef d'escale) est **inchangée** : elle ne dépend pas du type de véhicule.
+
+### Historique, facture, validation/rejet
+
+- Tableau historique : colonne "Véhicule" (au lieu de "Car"), avec badge Car/Camion (même style que `resources/views/admin/colis/envoi/index.blade.php`).
+- `getLocations()`/`getById()` : `leftJoin` vers `car` **et** vers `camion` (au lieu du seul `leftJoin car`), avec les champs calculés `type_vehicule`, `numero_vehicule`, `matricule_vehicule`.
+- Facture imprimable (`resources/views/admin/location-car/facture.blade.php`) : titre et ligne "Car"/"Camion" dynamiques selon `type_vehicule`. Rappel : cette app n'a pas dompdf installé, la facture est du HTML + `window.print()`, pas un vrai PDF généré serveur (écart déjà assumé pour le reçu de billet thermique).
+- `validerLocation()`, `rejeterLocation()`, `crediterCaisse()` : **aucun changement** — ils opèrent sur `location_car` par `id_location` uniquement, indépendamment du type de véhicule loué.
+
 ## Permissions
 
 **Aucune nouvelle permission créée.** Les permissions existantes couvrent déjà la fonctionnalité :
@@ -102,6 +142,8 @@ Ces trois dernières actions acceptent un paramètre `type` (`car` par défaut, 
 |---|---|
 | Gestion des camions et des chauffeurs (3 onglets) | `Configuration_gestion_car/chauffeur` |
 | Envoi de colis (car ou camion) | `colis_envoi` |
+| Consultation de la Flotte (cars et camions) | Restriction par rôle (Admin/PDG/super_admin), pas de permission dédiée |
+| Location d'un car ou d'un camion | `Location_gestion` |
 
 Ces permissions sont accordées par défaut à `super_admin`/`Admin`/`PDG`, et assignables individuellement à d'autres rôles (`chef_d_escale`, `secretaire`, `Utilisateur`) via l'écran d'assignation de permissions existant.
 
@@ -138,16 +180,33 @@ Ces permissions sont accordées par défaut à `super_admin`/`Admin`/`PDG`, et a
 **Libellé "Cars & Chauffeurs" → "Cars & Camions & Chauffeurs" (texte uniquement, 14 vues) :**
 `add_liste_horaire.view.php`, `add_liste_escale.view.php`, `configuration.view.php`, `asssignier_permission.view.php`, `documentation.view.php`, `compagnies.view.php`, `place_limite.view.php`, `add_utilisateur.view.php`, `add_gare.view.php`, `add_permission.view.php`, `add_liste_trajet.view.php`, `liste_gare.view.php`, ainsi que `cars_chauffeur.view.php` et `chauffeur_cars.view.php` (déjà listés ci-dessus).
 
+**Flotte :**
+- `database/migrations/2026_09_13_130000_add_camion_support_to_location_car_table.php`
+- `app/Models/Camion.php` (`etatFlotte()`)
+- `app/Http/Controllers/Admin/FlotteController.php`
+- `resources/views/admin/flotte/index.blade.php`
+
+**Location des cars :**
+- `app/Models/LocationCar.php` (`id_camion`, relation `camion()`)
+- `app/Services/LocationCarService.php` (`camionsDisponibles()`, `saveLocation()`, `getLocations()`, `getById()`, et correction du bug `whereNotIn`/NULL décrit plus haut dans `carsDisponibles()`)
+- `app/Http/Controllers/Admin/LocationCarController.php` (`ajaxCamionsDisponibles()`)
+- `routes/web.php` (route `admin.location-car.ajax-camions-disponibles`)
+- `resources/views/admin/location-car/index.blade.php`
+- `resources/views/admin/location-car/facture.blade.php`
+
 ## Procédure de déploiement
 
-1. Vérifier la structure réelle des tables concernées (`DESCRIBE chauffeur; DESCRIBE envoi; DESCRIBE ligne_envoi;`).
-2. Exécuter `ajout_camions.sql` sur la base (dev, puis prod après validation).
-3. Déployer le code (`git pull`).
-4. Tester : ajout d'un camion, affectation d'un chauffeur de camion (vérifier qu'il apparaît bien dans la liste des chauffeurs), envoi de colis par camion, liste/détails/changement/annulation, puis re-tester le flux car pour confirmer l'absence de régression.
+1. Déployer le code (`git pull`).
+2. Exécuter les migrations (`php artisan migrate`) — inclut la migration camion (`create_camion_table` + colonnes sur `chauffeur`/`envoi`/`ligne_envoi`) et celle sur `location_car` (`add_camion_support_to_location_car_table`).
+3. Tester : ajout d'un camion, affectation d'un chauffeur de camion (vérifier qu'il apparaît bien dans la liste des chauffeurs), envoi de colis par camion, liste/détails/changement/annulation ; écran Flotte (tableau camions visible) ; écran Location des cars (cocher "Louer un camion", vérifier la liste AJAX, créer une location de camion, valider/rejeter, facture) ; puis re-tester les flux car (envoi, location) pour confirmer l'absence de régression — en particulier la disponibilité des cars dans le formulaire de location après qu'un camion a été loué sur une période chevauchante (cf. bug `whereNotIn`/NULL corrigé ci-dessus).
 
 ### Rollback
 
 ```sql
+ALTER TABLE location_car DROP COLUMN id_camion;
+-- location_car.id_car peut rester nullable sans casser l'existant (idem chauffeur.id_car
+-- ci-dessous) ; à ne remettre NOT NULL que si aucune ligne id_car IS NULL ne subsiste.
+
 DROP TABLE IF EXISTS camion;
 ALTER TABLE chauffeur DROP COLUMN id_camion, DROP COLUMN type_vehicule;
 ALTER TABLE envoi DROP COLUMN id_camion;
@@ -156,4 +215,4 @@ ALTER TABLE ligne_envoi DROP COLUMN numero_camion;
 -- "car" ont tous cette colonne renseignée) ; à ne remettre NOT NULL que si
 -- aucune ligne id_car IS NULL ne subsiste.
 ```
-Retirer aussi les fichiers créés (`Camion.php`, `Camions.php`, `camions.view.php`) et revenir au commit précédent pour le reste du code si un rollback complet est nécessaire.
+Ou, plus simplement sur cette base Laravel : `php artisan migrate:rollback --step=1` (annule `add_camion_support_to_location_car_table`) et à nouveau pour les migrations camion sous-jacentes si un rollback complet est nécessaire, en plus de revenir au commit précédent pour le code (Flotte, Location des cars, Camion, Camions, camions.view.php côté legacy).

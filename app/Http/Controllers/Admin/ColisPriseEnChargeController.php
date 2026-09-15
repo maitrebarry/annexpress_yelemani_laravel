@@ -82,11 +82,11 @@ class ColisPriseEnChargeController extends Controller
         if (empty($destination)) {
             $errors[] = 'La destination est obligatoire.';
         }
-        if ($valeur === null || $valeur === '' || ! is_numeric($valeur)) {
-            $errors[] = 'La valeur du colis est obligatoire.';
+        if ($valeur === null || $valeur === '' || ! is_numeric($valeur) || (float) $valeur < 0) {
+            $errors[] = 'La valeur du colis est obligatoire et doit être un nombre positif.';
         }
-        if ($fraixTransaction === null || $fraixTransaction === '' || ! is_numeric($fraixTransaction)) {
-            $errors[] = 'Les frais de transaction sont obligatoires.';
+        if ($fraixTransaction === null || $fraixTransaction === '' || ! is_numeric($fraixTransaction) || (float) $fraixTransaction < 0) {
+            $errors[] = 'Les frais de transaction sont obligatoires et doivent être un nombre positif.';
         }
 
         if (! empty($errors)) {
@@ -172,11 +172,16 @@ class ColisPriseEnChargeController extends Controller
         if (empty($destination)) {
             $errors[] = 'La destination est obligatoire.';
         }
-        if (empty($valeur)) {
-            $errors[] = 'La valeur du colis est obligatoire.';
+        // Le frais peut etre recalcule automatiquement (JS) ou saisi manuellement (case
+        // "Modifier manuellement les frais") -- dans les deux cas ce qui arrive ici est un
+        // champ de formulaire ordinaire, donc pas plus fiable qu'une saisie utilisateur
+        // quelconque : on revalide qu'il s'agit bien d'un nombre positif ou nul, jamais
+        // negatif (qui decrediterait la caisse d'un montant negatif).
+        if ($valeur === null || $valeur === '' || ! is_numeric($valeur) || (float) $valeur < 0) {
+            $errors[] = 'La valeur du colis est obligatoire et doit être un nombre positif.';
         }
-        if (empty($fraixTransaction)) {
-            $errors[] = 'Les frais de transaction sont obligatoires.';
+        if ($fraixTransaction === null || $fraixTransaction === '' || ! is_numeric($fraixTransaction) || (float) $fraixTransaction < 0) {
+            $errors[] = 'Les frais de transaction sont obligatoires et doivent être un nombre positif.';
         }
         if ($codeColis === '') {
             $errors[] = 'Le code colis est obligatoire.';
@@ -379,6 +384,8 @@ class ColisPriseEnChargeController extends Controller
             'tel_dest'     => $colis->numero_dest ?? '-',
             'depart'       => $colis->provient_de ?? '-',
             'destination'  => $colis->destination ?? '-',
+            'valeur'       => number_format((float) ($colis->valeur ?? 0), 0, ',', ' '),
+            'frais'        => number_format((float) ($colis->fraix_transaction ?? 0), 0, ',', ' '),
             'agent'        => $colis->agent_nom ?? '-',
             'qr_data'      => $qrData,
         ]);

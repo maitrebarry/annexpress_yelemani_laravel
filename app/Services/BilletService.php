@@ -1014,7 +1014,16 @@ class BilletService
                       AND b.destinationId = pv.id_trajet AND b.departId = pv.localite_user
                       AND b.id_compagnie = pv.id_compagnie
                       AND (b.statut_embarquement IS NULL OR b.statut_embarquement != 'embarque')
-                      AND (b.status_billets IS NULL OR b.status_billets != 'annule')
+                      -- status_billets = '' (pas seulement != 'annule') : un billet avec un
+                      -- report/une annulation deja demande(e) ('report_demande'/'report_transmis'/
+                      -- 'annulation_demandee'/'annulation_en_cours') est hors des mains de l'agent
+                      -- et invisible de la liste d'embarquement (getBilletsPourEmbarquement(),
+                      -- meme condition) en attendant sa validation Admin ailleurs -- il ne doit
+                      -- donc plus compter comme restant ici non plus, sinon le bus reste bloque
+                      -- indefiniment sur un passager que l'agent ne peut plus traiter depuis cet
+                      -- ecran (meme bug corrige cote legacy le 2026-09-16, cf. Projets_licence
+                      -- commit c7e2785).
+                      AND (b.status_billets IS NULL OR b.status_billets = '')
                 ) as nb_restants"),
             ]);
     }
@@ -1063,11 +1072,19 @@ class BilletService
             return ['ok' => false, 'message' => 'Ce car ne part pas de votre gare.'];
         }
 
+        // status_billets = '' (pas seulement != 'annule') : un billet avec un report ou une
+        // annulation deja demande(e) ('report_demande'/'report_transmis'/'annulation_demandee'/
+        // 'annulation_en_cours') est hors des mains de l'agent -- il a disparu de la liste
+        // d'embarquement (cf. getBilletsPourEmbarquement(), meme condition) en attendant sa
+        // validation par l'Admin ailleurs, donc il ne doit plus non plus bloquer le decollage :
+        // sinon le bus reste bloque indefiniment sur un passager que l'agent ne peut plus
+        // traiter depuis cet ecran (meme bug corrige cote legacy le 2026-09-16, cf.
+        // Projets_licence commit c7e2785).
         $nbRestants = Billet::where('jourVoyage', $prog->date_enregistre)->where('Heur_departs', $prog->id_horaire)
             ->where('destinationId', $prog->id_trajet)->where('departId', $prog->localite_user)
             ->where('id_compagnie', $user->id_compagnie)
             ->where(fn ($q) => $q->whereNull('statut_embarquement')->orWhere('statut_embarquement', '!=', 'embarque'))
-            ->where(fn ($q) => $q->whereNull('status_billets')->orWhere('status_billets', '!=', 'annule'))
+            ->where(fn ($q) => $q->whereNull('status_billets')->orWhere('status_billets', ''))
             ->count();
         if ($nbRestants > 0) {
             return ['ok' => false, 'message' => "$nbRestants passager(s) non traité(s) (ni embarqué, ni annulé) : impossible de faire décoller le bus."];

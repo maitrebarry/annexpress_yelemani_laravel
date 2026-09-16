@@ -220,6 +220,7 @@ Route::middleware(['auth:staff', 'permission:Programme_programmation_voyage'])->
     Route::get('/Programmation_voyages/liste_programmer_voyage', [ProgrammationVoyageController::class, 'listeJournaliere'])->name('admin.programmation-voyage.liste-journaliere');
     Route::get('/Programmation_voyages/edit/{idProgrammation}', [ProgrammationVoyageController::class, 'edit'])->name('admin.programmation-voyage.edit');
     Route::post('/Programmation_voyages/edit/{idProgrammation}', [ProgrammationVoyageController::class, 'update'])->name('admin.programmation-voyage.update');
+    Route::post('/Programmation_voyages/desactiver/{idProgrammation}', [ProgrammationVoyageController::class, 'desactiver'])->name('admin.programmation-voyage.desactiver');
 });
 
 Route::middleware(['auth:staff', 'permission:Salaire_apercu'])->prefix('admin')->group(function () {

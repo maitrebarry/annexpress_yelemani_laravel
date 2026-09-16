@@ -21,8 +21,11 @@ use Illuminate\View\View;
  * app/models/Programmation_voyage.php — écran "Trajets programmés" du menu
  * G-programme (affectation quotidienne d'un car à un créneau, suivi transit/arrivée).
  *
- * Hors scope pour l'instant (voir le plan) : le bouton "Transférer les passagers"
- * (dépend du futur module Transferts), "Désactiver" (mort dans le legacy aussi),
+ * "Transférer les passagers" (modal + TransfertGareController) et "Désactiver"
+ * (annulation volontaire d'un voyage sain, cf. desactiver() ci-dessous) sont
+ * maintenant implémentés des deux côtés (legacy et Laravel).
+ *
+ * Hors scope pour l'instant (voir le plan) :
  * decollerCar()/getEtatFlotte() (jamais appelés depuis cet écran côté legacy).
  */
 class ProgrammationVoyageController extends Controller
@@ -357,6 +360,80 @@ class ProgrammationVoyageController extends Controller
             $resultat ? 'La programmation a été modifiée avec succès !' : 'Erreur lors de la modification de la programmation.',
             $resultat ? 'success' : 'danger'
         );
+
+        return redirect()->route('admin.programmation-voyage.liste-journaliere');
+    }
+
+    // Bouton "Désactiver" de liste-journaliere : annule un voyage du jour qui n'a pas
+    // encore décollé, uniquement si aucune place n'a été vendue dessus (contrairement à
+    // debloquerJamaisParti(), reservée Admin/super_admin pour réparer une anomalie déjà en
+    // "En_transit_" fantôme, celle-ci est une annulation VOLONTAIRE d'un voyage sain,
+    // ouverte à chef_d_escale/secretaire aussi, et refusée dès qu'un billet est vendu dessus).
+    // Port de Projets_licence/app/models/Programmation_voyage.php::desactiverProgrammation().
+    public function desactiver(int $idProgrammation): RedirectResponse
+    {
+        $user = Auth::guard('staff')->user();
+
+        if (! in_array($user->droit, ['Admin', 'chef_d_escale', 'secretaire'], true)) {
+            Flash::set('Accès refusé ou session invalide.', 'danger');
+
+            return redirect()->route('admin.programmation-voyage.liste-journaliere');
+        }
+
+        $prog = ProgrammationVoyage::where('id_programmation', $idProgrammation)
+            ->where('id_compagnie', $user->id_compagnie)
+            ->first();
+
+        if (! $prog) {
+            Flash::set('Programmation introuvable.', 'danger');
+
+            return redirect()->route('admin.programmation-voyage.liste-journaliere');
+        }
+        if ($prog->statut !== 'active') {
+            Flash::set('Cette programmation est déjà annulée.', 'warning');
+
+            return redirect()->route('admin.programmation-voyage.liste-journaliere');
+        }
+        if (! empty($prog->decolle_le)) {
+            Flash::set('Ce car a déjà décollé : impossible de désactiver ce voyage.', 'warning');
+
+            return redirect()->route('admin.programmation-voyage.liste-journaliere');
+        }
+
+        $ok = DB::transaction(function () use ($prog, $user) {
+            // Reverification sous verrou juste avant d'ecrire : une vente de billet
+            // concurrente entre le check ci-dessus et cette transaction ne doit jamais
+            // pouvoir etre ecrasee par une desactivation qui la croirait encore a zero.
+            $car = Car::where('id_car', $prog->id_car_programmer)
+                ->where('id_compagnie', $user->id_compagnie)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $car || (int) $car->nbr_place_reserve > 0) {
+                return 'places_vendues';
+            }
+
+            $misAJour = ProgrammationVoyage::where('id_programmation', $prog->id_programmation)
+                ->where('id_compagnie', $user->id_compagnie)
+                ->where('statut', 'active')
+                ->update(['statut' => 'annulee']);
+
+            if ($misAJour === 0) {
+                return 'course_concurrente';
+            }
+
+            $car->update(['status_car' => $prog->localite_user, 'nbr_place_reserve' => 0]);
+
+            return 'ok';
+        });
+
+        if ($ok === 'places_vendues') {
+            Flash::set('Impossible de désactiver : des places ont déjà été vendues sur ce voyage.', 'danger');
+        } elseif ($ok === 'course_concurrente') {
+            Flash::set("Cette programmation vient d'être modifiée par quelqu'un d'autre. Veuillez réessayer.", 'danger');
+        } else {
+            Flash::set('Voyage désactivé : le car est de nouveau disponible.', 'success');
+        }
 
         return redirect()->route('admin.programmation-voyage.liste-journaliere');
     }

@@ -69,6 +69,14 @@
                                                         <i class="fas fa-right-left me-2"></i>Transférer les passagers
                                                     </a>
                                                 @endif
+                                                <form method="post" action="{{ route('admin.programmation-voyage.desactiver', $p->id_programmation) }}"
+                                                    class="desactiver-programmation-form"
+                                                    data-confirm-text="Le voyage du car n°{{ $p->numero_car }} sera annulé et le car redeviendra disponible. Impossible si des places ont déjà été vendues dessus.">
+                                                    @csrf
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="fas fa-circle-xmark me-2"></i>Désactiver
+                                                    </button>
+                                                </form>
                                             </div>
                                         </div>
                                     @endunless
@@ -120,6 +128,25 @@
         <script>
             tgReady(function () {
                 var csrfToken = @json(csrf_token());
+
+                document.querySelectorAll('.desactiver-programmation-form').forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        event.preventDefault();
+
+                        Swal.fire({
+                            title: 'Désactiver ce voyage ?',
+                            text: form.dataset.confirmText,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Oui, désactiver',
+                            cancelButtonText: 'Annuler',
+                            customClass: { confirmButton: 'btn btn-danger', cancelButton: 'btn btn-light' },
+                            buttonsStyling: false,
+                        }).then(function (result) {
+                            if (result.isConfirmed) { form.submit(); }
+                        });
+                    });
+                });
 
                 document.querySelectorAll('.transfer-btn').forEach(function (btn) {
                     btn.addEventListener('click', function () {

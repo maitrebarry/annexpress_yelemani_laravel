@@ -36,10 +36,62 @@ class CaisseUtilisateurService
     public function getCaisseFermeeNonVersee(int $idUtilisateur): ?CaisseUtilisateur
     {
         return CaisseUtilisateur::with('agence')
-            ->where('id_utilisateur', $idUtilisateur)
-            ->whereDate('date_service', now()->toDateString())
-            ->where('statut', 'fermee')
-            ->first();
+            ->leftJoin('versements_caisse as v', function ($j) {
+                $j->on('v.id_caisse_user', '=', 'caisse_utilisateur.id_caisse_user')->where('v.statut', '!=', 'rejete');
+            })
+            ->where('caisse_utilisateur.id_utilisateur', $idUtilisateur)
+            ->whereDate('caisse_utilisateur.date_service', now()->toDateString())
+            ->where('caisse_utilisateur.statut', 'fermee')
+            ->first(['caisse_utilisateur.*', 'v.statut as statut_versement']);
+    }
+
+    /**
+     * Caisses "oubliées" d'un utilisateur : encore ouvertes ou fermées-non-versées, mais
+     * datant d'un jour AVANT aujourd'hui (celle du jour même est déjà couverte par
+     * getCaisseOuverte()/getCaisseFermeeNonVersee() ci-dessus). Sans ça, une caisse jamais
+     * fermée la veille restait invisible de "Ma Caisse" dès le lendemain : l'opérateur ne
+     * pouvait plus ni la fermer ni la verser lui-même, et personne d'autre n'a de moyen de
+     * le faire à sa place.
+     */
+    public function getCaissesAnciennesEnAttente(int $idUtilisateur)
+    {
+        return CaisseUtilisateur::query()
+            ->join('agence as a', 'a.idAgence', '=', 'caisse_utilisateur.id_agence')
+            ->leftJoin('versements_caisse as v', function ($j) {
+                $j->on('v.id_caisse_user', '=', 'caisse_utilisateur.id_caisse_user')->where('v.statut', '!=', 'rejete');
+            })
+            ->where('caisse_utilisateur.id_utilisateur', $idUtilisateur)
+            ->whereDate('caisse_utilisateur.date_service', '<', now()->toDateString())
+            ->whereIn('caisse_utilisateur.statut', ['ouverte', 'fermee'])
+            ->orderBy('caisse_utilisateur.date_service')
+            ->get(['caisse_utilisateur.*', 'a.localite', 'a.numeroGare', 'v.statut as statut_versement']);
+    }
+
+    /**
+     * Même principe que getCaissesAnciennesEnAttente() mais pour TOUTE la compagnie, toutes
+     * gares confondues, tous opérateurs confondus (billettières, agents colis, ET chefs
+     * d'escale eux-mêmes s'ils vendent aussi) : vue d'anomalie pour l'Admin/PDG, qui ne
+     * devrait pas avoir à naviguer gare par gare et date par date pour repérer une caisse
+     * oubliée quelque part dans la compagnie.
+     */
+    public function getCaissesAnciennesCompagnie(int $idCompagnie)
+    {
+        return CaisseUtilisateur::query()
+            ->join('agence as a', 'a.idAgence', '=', 'caisse_utilisateur.id_agence')
+            ->join('utilisateur as u', 'u.idUser', '=', 'caisse_utilisateur.id_utilisateur')
+            ->leftJoin('versements_caisse as v', function ($j) {
+                $j->on('v.id_caisse_user', '=', 'caisse_utilisateur.id_caisse_user')->where('v.statut', '!=', 'rejete');
+            })
+            ->where('caisse_utilisateur.id_compagnie', $idCompagnie)
+            ->whereDate('caisse_utilisateur.date_service', '<', now()->toDateString())
+            ->whereIn('caisse_utilisateur.statut', ['ouverte', 'fermee'])
+            ->orderBy('caisse_utilisateur.date_service')->orderBy('a.localite')
+            ->get([
+                'caisse_utilisateur.*', 'a.localite', 'a.numeroGare',
+                'u.utilisateurs as nom_operateur', 'u.droit',
+                'v.statut as statut_versement',
+                DB::raw('DATEDIFF(CURDATE(), caisse_utilisateur.date_service) as jours_ecoules'),
+            ]);
     }
 
     // Un Admin n'a pas de gare fixe en session : il doit choisir la gare concernée
@@ -134,13 +186,18 @@ class CaisseUtilisateurService
         return $caisse->id_caisse_user;
     }
 
-    public function fermerCaisse(Utilisateur $user, float $montantCompte): array
+    // $idCaisseUser optionnel : cible une caisse OUBLIEE (jour precedent, jamais fermee,
+    // cf. "Ma Caisse" > Caisses anciennes) plutot que celle du jour. Sans lui, comportement
+    // inchange (caisse ouverte d'aujourd'hui).
+    public function fermerCaisse(Utilisateur $user, float $montantCompte, ?int $idCaisseUser = null): array
     {
         if ($montantCompte < 0) {
             return ['ok' => false, 'type' => 'danger', 'message' => 'Le montant compté ne peut pas être négatif.'];
         }
 
-        $caisse = $this->getCaisseOuverte($user->idUser);
+        $caisse = $idCaisseUser
+            ? CaisseUtilisateur::where('id_caisse_user', $idCaisseUser)->where('id_utilisateur', $user->idUser)->where('statut', 'ouverte')->first()
+            : $this->getCaisseOuverte($user->idUser);
         if (! $caisse) {
             return ['ok' => false, 'type' => 'warning', 'message' => 'Aucune caisse ouverte à fermer.'];
         }
@@ -186,14 +243,19 @@ class CaisseUtilisateurService
             ->get(['idUser', 'utilisateurs']);
     }
 
-    public function creerVersement(Utilisateur $user, int $idChefEscale, float $montant, ?string $commentaire): array
+    // $idCaisseUser optionnel : cible une caisse ANCIENNE deja fermee mais jamais versee
+    // (jour precedent, cf. "Ma Caisse" > Caisses anciennes) plutot que celle du jour. Sans
+    // lui, comportement inchange (caisse fermee d'aujourd'hui).
+    public function creerVersement(Utilisateur $user, int $idChefEscale, float $montant, ?string $commentaire, ?int $idCaisseUser = null): array
     {
         if ($montant <= 0) {
             return ['ok' => false, 'type' => 'danger', 'message' => 'Le montant du versement doit être supérieur à 0.'];
         }
 
-        $caisse = CaisseUtilisateur::where('id_utilisateur', $user->idUser)
-            ->whereDate('date_service', now()->toDateString())->where('statut', 'fermee')->first();
+        $caisse = $idCaisseUser
+            ? CaisseUtilisateur::where('id_caisse_user', $idCaisseUser)->where('id_utilisateur', $user->idUser)->where('statut', 'fermee')->first()
+            : CaisseUtilisateur::where('id_utilisateur', $user->idUser)
+                ->whereDate('date_service', now()->toDateString())->where('statut', 'fermee')->first();
         if (! $caisse) {
             return ['ok' => false, 'type' => 'warning', 'message' => "Fermez d'abord votre caisse avant de procéder au versement."];
         }
@@ -226,8 +288,14 @@ class CaisseUtilisateurService
                 'commentaire' => $commentaire,
             ]);
 
-            CaisseUtilisateur::where('id_caisse_user', $caisse->id_caisse_user)->update(['statut' => 'versee']);
-
+            // La caisse reste 'fermee' tant que le versement n'est pas VALIDE par le chef
+            // d'escale (cf. validerVersement()) : elle ne doit passer 'versee' qu'a ce
+            // moment-la, pas des la simple soumission de la demande, sinon "Ma Caisse"
+            // affiche "Versee" avant meme que quiconque n'ait valide quoi que ce soit -- et
+            // si la demande est rejetee, rien ne repasse la caisse a 'fermee', bloquant tout
+            // nouveau versement pour cette caisse (le check plus haut exige statut='fermee').
+            // Le garde-fou anti-doublon ci-dessus (dejaExistant) suffit deja a empecher une
+            // deuxieme demande tant que celle-ci est en_attente.
             $this->insererJournal($caisse->id_caisse_user, $user->idUser, 'versement', 'VRS-'.$versement->id_versement, $montant, "Versement au chef d'escale");
 
             return ['ok' => true, 'type' => 'success', 'message' => 'Demande de versement envoyée avec succès.'];
@@ -251,10 +319,23 @@ class CaisseUtilisateurService
             $query->where('id_chef_escale', $user->idUser)->where('id_agence', $user->id_agence);
         }
 
+        $versement = $query->first();
+        if (! $versement) {
+            return ['ok' => false, 'type' => 'danger', 'message' => 'Versement introuvable ou déjà traité.'];
+        }
+
         // Update conditionnel : si déjà validé/rejeté entre-temps, rowCount = 0.
         $affecte = $query->update(['statut' => $action, 'date_validation' => now()]);
         if (! $affecte) {
             return ['ok' => false, 'type' => 'danger', 'message' => 'Versement introuvable ou déjà traité.'];
+        }
+
+        // La caisse ne passe 'versee' qu'ICI, a la validation reelle par le chef d'escale
+        // (cf. creerVersement(), qui ne la touche plus a la simple soumission). En cas de
+        // rejet, la caisse est deja restee 'fermee' depuis sa fermeture initiale : rien a
+        // faire, l'operateur peut directement soumettre un nouveau versement corrige.
+        if ($action === 'valide') {
+            CaisseUtilisateur::where('id_caisse_user', $versement->id_caisse_user)->update(['statut' => 'versee']);
         }
 
         return $action === 'valide'

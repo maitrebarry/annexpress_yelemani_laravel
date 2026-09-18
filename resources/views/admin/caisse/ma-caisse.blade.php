@@ -17,8 +17,13 @@
         <button type="button" class="btn btn-sm btn-warning rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalFermerCaisse">
             <i class="fas fa-lock me-1"></i> Fermer ma caisse
         </button>
+    @elseif ($caisseFermee && ($caisseFermee->statut_versement ?? null) === 'en_attente')
+        <span class="badge bg-info-subtle text-info-emphasis rounded-pill px-3 py-2">
+            <i class="fas fa-clock me-1"></i> Versement en attente de validation
+        </span>
     @elseif ($caisseFermee)
-        <button type="button" class="btn btn-sm btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerser">
+        <button type="button" class="btn btn-sm btn-primary rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#modalVerser"
+                data-id-caisse-user="" data-id-agence="{{ $caisseFermee->id_agence }}">
             <i class="fas fa-paper-plane me-1"></i> Verser
         </button>
     @else
@@ -131,6 +136,62 @@
                                     <td colspan="5" class="text-muted fst-italic text-center py-3">Aucun mouvement pour le moment.</td>
                                 </tr>
                             @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($caissesAnciennes->isNotEmpty())
+        <div class="card border-0 shadow-sm mb-4 border-start border-4 border-danger">
+            <div class="card-header bg-danger-subtle">
+                <h6 class="fw-bold mb-0 text-danger"><i class="fas fa-triangle-exclamation me-2"></i>Caisses anciennes à régulariser</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead class="table-light text-center">
+                            <tr>
+                                <th>Date</th>
+                                <th>Réf</th>
+                                <th class="text-end">Billets</th>
+                                <th class="text-end">Colis</th>
+                                <th>Statut</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            @foreach ($caissesAnciennes as $a)
+                                <tr>
+                                    <td>{{ \Illuminate\Support\Carbon::parse($a->date_service)->format('d/m/Y') }}</td>
+                                    <td class="fw-semibold">{{ $a->reference }}</td>
+                                    <td class="text-end">{{ number_format($a->total_billets, 0, ',', ' ') }} F</td>
+                                    <td class="text-end">{{ number_format($a->total_colis, 0, ',', ' ') }} F</td>
+                                    <td>
+                                        @if ($a->statut === 'ouverte')
+                                            <span class="badge bg-success">Ouverte</span>
+                                        @elseif (($a->statut_versement ?? null) === 'en_attente')
+                                            <span class="badge bg-info-subtle text-info-emphasis">Versement en attente</span>
+                                        @else
+                                            <span class="badge bg-secondary">Fermée</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($a->statut === 'ouverte')
+                                            <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalFermerAncienne{{ $a->id_caisse_user }}">
+                                                <i class="fas fa-lock me-1"></i>Fermer
+                                            </button>
+                                        @elseif (($a->statut_versement ?? null) !== 'en_attente')
+                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalVerserAncienne{{ $a->id_caisse_user }}">
+                                                <i class="fas fa-paper-plane me-1"></i>Verser
+                                            </button>
+                                        @else
+                                            <span class="text-muted small">—</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -317,6 +378,94 @@
             </div>
         </div>
     @endif
+
+    {{-- Modals des caisses anciennes (cf. section "Caisses anciennes à régulariser" plus
+         haut) : une paire fermer/verser par caisse, plutôt que de réutiliser les modals
+         ci-dessus dynamiquement en JS — leur contenu (montant attendu, liste des chefs
+         d'escale) diffère par caisse (gare différente possible pour un Admin), et le nombre
+         de caisses oubliées reste faible en pratique. --}}
+    @foreach ($caissesAnciennes as $a)
+        @if ($a->statut === 'ouverte')
+            @php $attenduAncienne = (float) $a->montant_initial + (float) $a->total_billets + (float) $a->total_colis; @endphp
+            <div class="modal fade" id="modalFermerAncienne{{ $a->id_caisse_user }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning">
+                            <h5 class="modal-title text-dark"><i class="fas fa-lock me-1"></i> Fermer la caisse du {{ \Illuminate\Support\Carbon::parse($a->date_service)->format('d/m/Y') }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="post" action="{{ route('admin.caisse.fermer-caisse') }}">
+                            @csrf
+                            <input type="hidden" name="id_caisse_user" value="{{ $a->id_caisse_user }}">
+                            <div class="modal-body">
+                                <p class="mb-1">Montant attendu :</p>
+                                <p class="fs-4 fw-bold text-primary mb-3">{{ number_format($attenduAncienne, 0, ',', ' ') }} FCFA</p>
+                                <label class="form-label fw-semibold">Montant compté (physique)</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="montant_compte" min="0" step="1" required>
+                                    <span class="input-group-text">FCFA</span>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                                <button type="submit" class="btn btn-warning fw-semibold text-dark"><i class="fas fa-lock me-2"></i>Confirmer la fermeture</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @elseif (($a->statut_versement ?? null) !== 'en_attente')
+            @php $chefsAncienne = $chefsParAgence[$a->id_agence] ?? collect(); @endphp
+            <div class="modal fade" id="modalVerserAncienne{{ $a->id_caisse_user }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary">
+                            <h5 class="modal-title text-white"><i class="fas fa-paper-plane me-1"></i> Verser la caisse du {{ \Illuminate\Support\Carbon::parse($a->date_service)->format('d/m/Y') }}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="post" action="{{ route('admin.caisse.verser') }}">
+                            @csrf
+                            <input type="hidden" name="id_caisse_user" value="{{ $a->id_caisse_user }}">
+                            <div class="modal-body">
+                                <p class="mb-1">Montant compté à la fermeture :</p>
+                                <p class="fs-4 fw-bold text-success mb-3">{{ number_format($a->montant_compte, 0, ',', ' ') }} FCFA</p>
+                                @if ($chefsAncienne->isEmpty())
+                                    <div class="alert alert-danger mb-0">Aucun chef d'escale n'est configuré pour cette gare. Le versement est impossible pour le moment.</div>
+                                @else
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Chef d'escale</label>
+                                        <select class="form-select" name="id_chef_escale" required>
+                                            <option value="" disabled selected>Choisissez un chef d'escale</option>
+                                            @foreach ($chefsAncienne as $c)
+                                                <option value="{{ $c->idUser }}">{{ $c->utilisateurs }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label fw-semibold">Montant</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" name="montant" min="1" step="1" value="{{ $a->montant_compte }}" required>
+                                            <span class="input-group-text">FCFA</span>
+                                        </div>
+                                    </div>
+                                    <div class="mb-0">
+                                        <label class="form-label fw-semibold">Commentaire <small class="text-muted">(optionnel)</small></label>
+                                        <textarea class="form-control" name="commentaire" rows="2"></textarea>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                                @if ($chefsAncienne->isNotEmpty())
+                                    <button type="submit" class="btn btn-primary fw-semibold"><i class="fas fa-paper-plane me-2"></i>Envoyer la demande</button>
+                                @endif
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
 @endsection
 

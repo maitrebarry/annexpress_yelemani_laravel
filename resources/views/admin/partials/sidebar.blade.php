@@ -266,6 +266,11 @@
                                 <i class="fas fa-chart-column"></i> <span class="nav-text">Rapport compagnie</span>
                             </a>
                         @endif
+                        @if (in_array($droit, ['Admin', 'PDG'], true))
+                            <a class="nav-link {{ $isActive('admin/Caisse/anomalies') }}" href="{{ url('/admin/Caisse/anomalies') }}">
+                                <i class="fas fa-triangle-exclamation"></i> <span class="nav-text">Anomalies de caisse</span>
+                            </a>
+                        @endif
                         @if ($authUser->userHasPermission('Caisse_billant') && $droit !== 'Utilisateur')
                             <a class="nav-link {{ $isActive('admin/Caisse/bilant_caisse_billets') }}" href="{{ url('/admin/Caisse/bilant_caisse_billets') }}">
                                 <i class="fas fa-scale-balanced"></i> <span class="nav-text">Bilan de caisse</span>

@@ -33,14 +33,31 @@ class CaisseController extends Controller
 
         $caisse = $service->getCaisseOuverte($user->idUser);
         $caisseFermee = $caisse ? null : $service->getCaisseFermeeNonVersee($user->idUser);
+        // Caisses d'un jour precedent jamais fermees (oubli) ou fermees mais jamais versees :
+        // sinon invisibles ici (les deux methodes ci-dessus sont scopees a aujourd'hui) et
+        // donc impossibles a regulariser soi-meme.
+        $caissesAnciennes = $service->getCaissesAnciennesEnAttente($user->idUser);
+
+        // Un chef d'escale par gare concernee : celle de la caisse fermee du jour (s'il y en
+        // a une), plus celle de chaque caisse ancienne encore a verser -- une caisse ancienne
+        // peut dater d'une periode ou l'operateur (typiquement un Admin) etait a une autre
+        // gare que sa gare de session actuelle.
+        $idsAgences = collect([$caisseFermee?->id_agence])
+            ->merge($caissesAnciennes->where('statut', 'fermee')->pluck('id_agence'))
+            ->filter()->unique();
+        $chefsParAgence = $idsAgences->mapWithKeys(
+            fn ($idAgence) => [$idAgence => $service->getChefsDEscale((int) $idAgence, $user->id_compagnie)]
+        );
 
         return view('admin.caisse.ma-caisse', [
             'caisse' => $caisse,
             'caisseFermee' => $caisseFermee,
+            'caissesAnciennes' => $caissesAnciennes,
             'journal' => $caisse ? $service->getJournal($caisse->id_caisse_user) : collect(),
             'historique' => $service->getHistoriqueCaisses($user->idUser, 20),
             'listeAgences' => $user->droit === 'Admin' ? Agence::where('id_compagnie', $user->id_compagnie)->orderBy('localite')->get() : collect(),
-            'chefs' => $caisseFermee ? $service->getChefsDEscale($caisseFermee->id_agence, $user->id_compagnie) : collect(),
+            'chefs' => $caisseFermee ? ($chefsParAgence[$caisseFermee->id_agence] ?? collect()) : collect(),
+            'chefsParAgence' => $chefsParAgence,
         ]);
     }
 
@@ -63,7 +80,13 @@ class CaisseController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
-        $resultat = $service->fermerCaisse($user, (float) $request->input('montant_compte', 0));
+        // id_caisse_user optionnel (champ hidden du formulaire) : cible une caisse OUBLIEE
+        // (jour precedent, cf. "Ma Caisse" > Caisses anciennes) plutot que celle du jour.
+        $resultat = $service->fermerCaisse(
+            $user,
+            (float) $request->input('montant_compte', 0),
+            $request->filled('id_caisse_user') ? (int) $request->input('id_caisse_user') : null
+        );
         Flash::set($resultat['message'], $resultat['type']);
 
         return redirect()->route('admin.caisse.ma-caisse');
@@ -73,20 +96,33 @@ class CaisseController extends Controller
     {
         $user = Auth::guard('staff')->user();
 
+        // id_caisse_user optionnel : meme principe que fermerCaisse() ci-dessus.
         $resultat = $service->creerVersement(
             $user,
             (int) $request->input('id_chef_escale'),
             (float) $request->input('montant', 0),
-            $request->input('commentaire')
+            $request->input('commentaire'),
+            $request->filled('id_caisse_user') ? (int) $request->input('id_caisse_user') : null
         );
         Flash::set($resultat['message'], $resultat['type']);
 
         return redirect()->route('admin.caisse.ma-caisse');
     }
 
-    public function caissesEscale(Request $request, CaisseUtilisateurService $service): View
+    public function caissesEscale(Request $request, CaisseUtilisateurService $service): View|RedirectResponse
     {
         $user = Auth::guard('staff')->user();
+
+        // Aucun controle de role n'existait ici : seul le lien de la sidebar est cache a un
+        // simple Utilisateur, mais rien cote serveur ne l'empechait de voir les ecarts de
+        // caisse de ses collegues et les versements en attente de sa gare en tapant l'URL
+        // directement (permission:Caisse_apercue, deja possedee par tout Utilisateur billet).
+        if ($user->droit === 'Utilisateur') {
+            Flash::set('Vous ne pouvez consulter que votre propre caisse.', 'danger');
+
+            return redirect()->route('admin.caisse.ma-caisse');
+        }
+
         [$idAgence, $estAdmin, $listeAgences] = $this->resolveGareEscale($user, $request);
         $date = $request->input('date', now()->toDateString());
         $idChef = $user->droit === 'chef_d_escale' ? $user->idUser : null;
@@ -153,6 +189,16 @@ class CaisseController extends Controller
     public function rapportProprietaire(Request $request, CaisseUtilisateurService $service): View|RedirectResponse
     {
         $user = Auth::guard('staff')->user();
+
+        // Rapport compagnie entiere (toutes gares confondues) : meme restriction que le lien
+        // de la sidebar (Admin/PDG/secretaire -- chef_d_escale ne voit que sa propre gare,
+        // via caissesEscale()) -- aucun controle serveur n'existait avant, seul le lien
+        // etait cache, donc accessible en tapant l'URL par n'importe quel role.
+        if (! in_array($user->droit, ['Admin', 'PDG', 'secretaire'], true)) {
+            Flash::set("Accès réservé à l'Admin/PDG.", 'danger');
+
+            return redirect()->route('admin.caisse.ma-caisse');
+        }
 
         if ($user->id_compagnie === null) {
             Flash::set("Ce rapport n'est disponible que pour un compte rattaché à une compagnie.", 'warning');
@@ -377,5 +423,26 @@ class CaisseController extends Controller
         }
 
         return [$idAgencePoste ?: null, true, $listeAgences];
+    }
+
+    /**
+     * Vue d'anomalie pour l'Admin/PDG : toutes les caisses oubliées (jamais fermées) ou
+     * fermées-non-versées d'un jour précédent, toutes gares et tous opérateurs confondus
+     * (billettières, agents colis, chefs d'escale). Lecture seule — régulariser une caisse
+     * reste réservé à son titulaire (cf. "Ma Caisse" > Caisses anciennes).
+     */
+    public function anomalies(CaisseUtilisateurService $service): View|RedirectResponse
+    {
+        $user = Auth::guard('staff')->user();
+
+        if (! in_array($user->droit, ['Admin', 'PDG'], true)) {
+            Flash::set("Accès réservé à l'Admin/PDG.", 'danger');
+
+            return redirect()->route('admin.home');
+        }
+
+        return view('admin.caisse.anomalies', [
+            'anomalies' => $service->getCaissesAnciennesCompagnie((int) $user->id_compagnie),
+        ]);
     }
 }

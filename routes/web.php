@@ -300,6 +300,7 @@ Route::middleware(['auth:staff', 'permission:Caisse_apercue'])->prefix('admin')-
     Route::post('/Caisse/fermer_caisse_user', [CaisseController::class, 'fermerCaisse'])->name('admin.caisse.fermer-caisse');
     Route::get('/Caisse/caisses_escale', [CaisseController::class, 'caissesEscale'])->name('admin.caisse.caisses-escale');
     Route::get('/Caisse/rapport_proprietaire', [CaisseController::class, 'rapportProprietaire'])->name('admin.caisse.rapport-proprietaire');
+    Route::get('/Caisse/anomalies', [CaisseController::class, 'anomalies'])->name('admin.caisse.anomalies');
 
     Route::middleware('permission:Caisse_billant')->group(function () {
         Route::get('/Caisse/bilant_caisse_billets', [CaisseController::class, 'bilantBillets'])->name('admin.caisse.bilant-billets');

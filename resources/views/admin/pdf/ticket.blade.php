@@ -187,6 +187,18 @@
 
   <hr>
 
+  @if (! empty($bagages) && $bagages->isNotEmpty())
+    <table class="infos">
+      @foreach ($bagages as $b)
+        <tr>
+          <td class="label">Bagage{{ ! empty($b->description) ? ' (' . $b->description . ')' : '' }}</td>
+          <td class="value">{{ number_format((float) $b->prix, 0, ',', ' ') }} FCFA</td>
+        </tr>
+      @endforeach
+    </table>
+    <hr>
+  @endif
+
   <div class="total-box">
     <table>
       <tr>
@@ -200,6 +212,12 @@
           @endphp
         </td>
       </tr>
+      @if (! empty($bagages) && $bagages->isNotEmpty())
+        <tr>
+          <td class="label">Bagages</td>
+          <td class="value">{{ number_format((float) $totalBagages, 0, ',', ' ') }} FCFA</td>
+        </tr>
+      @endif
     </table>
   </div>
 

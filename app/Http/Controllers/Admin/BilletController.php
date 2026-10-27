@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Services\BilletService;
 use App\Services\CaisseUtilisateurService;
+use App\Services\ProgrammationVoyageService;
+use App\Models\Bagage;
 use App\Models\Billet;
 use App\Models\Compagnie;
 use App\Support\Flash;
@@ -28,13 +30,31 @@ class BilletController extends Controller
         return view('admin.billet.create', $service->getFormData($user));
     }
 
-    public function store(Request $request, BilletService $service, CaisseUtilisateurService $caisseService): RedirectResponse
+    // Vente d'un billet du jour sans programmation préalable : la vue interroge cet
+    // endpoint dès que date=aujourd'hui et heure+destination sont connues (catalogue ou
+    // "Heure non listée"), pour savoir s'il faut afficher un bandeau informatif (car déjà
+    // programmé) ou un choix de car parmi ceux disponibles à la gare.
+    public function ajaxEtatCreneau(Request $request, BilletService $service, ProgrammationVoyageService $programmationService): JsonResponse
+    {
+        $user = Auth::guard('staff')->user();
+
+        return response()->json($service->getEtatCreneauPourAjax(
+            $user,
+            $request->input('heureDepart'),
+            $request->input('destinationLocalite'),
+            $request->input('idDepart'),
+            $programmationService
+        ));
+    }
+
+    public function store(Request $request, BilletService $service, CaisseUtilisateurService $caisseService, ProgrammationVoyageService $programmationService): RedirectResponse
     {
         $user = Auth::guard('staff')->user();
 
         $resultat = $service->creerReservation($user, $request->only([
             'idDepart', 'destinationId', 'Client', 'jourVoyage', 'programme', 'escale', 'nombrePassages',
-        ]), $caisseService);
+            'idCarChoisi', 'bagage_description', 'bagage_poids', 'bagage_prix',
+        ]), $caisseService, $programmationService);
 
         Flash::set($resultat['message'], $resultat['type']);
 
@@ -336,7 +356,10 @@ class BilletController extends Controller
             }
         }
 
-        $html = view('admin.pdf.ticket', compact('billet', 'compagnie', 'logoPath'))->render();
+        $bagages = Bagage::getBagagesPourBillet($id, $user->id_compagnie);
+        $totalBagages = $bagages->sum('prix');
+
+        $html = view('admin.pdf.ticket', compact('billet', 'compagnie', 'logoPath', 'bagages', 'totalBagages'))->render();
 
         $this->streamThermalPdf($html, "ticket_{$id}.pdf");
     }

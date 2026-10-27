@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Agence;
+use App\Models\Bagage;
 use App\Models\Billet;
 use App\Models\CaisseUtilisateur;
 use App\Models\Car;
@@ -119,6 +120,27 @@ class BilletService
             ->where('programmer.id_compagnie', $idCompagnie)
             ->first(['programmer.idProgrammer', 'programmer.prix']);
 
+        // Heure saisie librement ("Heure non listée", pour vendre un billet même quand
+        // aucune heure programmée ne convient) : on retombe sur le prix de cette même
+        // destination à une autre heure déjà programmée, MAIS seulement si toutes les
+        // heures existantes vers cette destination partagent exactement le même prix
+        // (certaines destinations ont un tarif réduit à une heure précise) — dans le
+        // doute, ne jamais deviner un prix : mieux vaut refuser la vente que
+        // sous-facturer un client.
+        if (! $programme) {
+            $programmesDestination = Programme::query()
+                ->join('agence as a2', 'programmer.idDestination', '=', 'a2.idAgence')
+                ->where('programmer.idDepart', $idAgenceDepart)
+                ->where('a2.localite', $destinationLocalite)
+                ->where('programmer.id_compagnie', $idCompagnie)
+                ->get(['programmer.idProgrammer', 'programmer.prix']);
+
+            $prixDistincts = $programmesDestination->pluck('prix')->map(fn ($p) => (float) $p)->unique();
+            if ($prixDistincts->count() === 1) {
+                $programme = $programmesDestination->first();
+            }
+        }
+
         if (! $programme) {
             return null;
         }
@@ -141,6 +163,31 @@ class BilletService
         return $prix;
     }
 
+    // idDestination (agence) pour un couple départ/destination : ne dépend pas de
+    // l'heure, donc le repli "heure non listée" est systématique ici (pas de condition
+    // de prix identique à vérifier, contrairement à prixReference()).
+    private function resolveIdAgenceDestination(int $idAgenceDepart, string $heureDepart, string $destinationLocalite, int $idCompagnie): ?int
+    {
+        $idDestination = Programme::query()
+            ->join('agence as a2', 'programmer.idDestination', '=', 'a2.idAgence')
+            ->where('programmer.idDepart', $idAgenceDepart)
+            ->where('a2.localite', $destinationLocalite)
+            ->where('programmer.heureDepart', $heureDepart)
+            ->where('programmer.id_compagnie', $idCompagnie)
+            ->value('programmer.idDestination');
+
+        if ($idDestination === null) {
+            $idDestination = Programme::query()
+                ->join('agence as a2', 'programmer.idDestination', '=', 'a2.idAgence')
+                ->where('programmer.idDepart', $idAgenceDepart)
+                ->where('a2.localite', $destinationLocalite)
+                ->where('programmer.id_compagnie', $idCompagnie)
+                ->value('programmer.idDestination');
+        }
+
+        return $idDestination !== null ? (int) $idDestination : null;
+    }
+
     // Le numéro affiché côté formulaire n'est qu'un aperçu, jamais utilisé côté serveur :
     // régénéré et vérifié en base pour éviter tout doublon (deux ventes dans la même
     // seconde pourraient sinon produire le même numéro).
@@ -156,7 +203,59 @@ class BilletService
         return 'SMT'.uniqid();
     }
 
-    public function creerReservation(Utilisateur $user, array $data, CaisseUtilisateurService $caisseService): array
+    // État d'un créneau d'aujourd'hui pour la vente sans programmation préalable : soit un
+    // car est déjà programmé (bandeau informatif, places restantes), soit aucun ne l'est
+    // encore (liste des cars physiquement présents à la gare pour en choisir un). Appelé en
+    // AJAX depuis le formulaire de vente (admin.billet.create), que l'heure vienne du select
+    // catalogué ou soit saisie librement ("Heure non listée").
+    public function getEtatCreneauPourAjax(Utilisateur $user, ?string $heureDepart, ?string $destinationLocalite, $idDepartPoste, ProgrammationVoyageService $programmationService): array
+    {
+        [$idAgenceDepart, $departLocalite, ] = $this->resolveDepart($user, $idDepartPoste);
+        if (! $idAgenceDepart || ! $departLocalite) {
+            return ['erreur' => 'Gare de départ introuvable.'];
+        }
+        if (! $heureDepart || ! $destinationLocalite) {
+            return ['erreur' => 'Heure ou destination manquante.'];
+        }
+
+        $aujourdhui = now()->toDateString();
+        $prixUnitaire = $this->prixReference($idAgenceDepart, $destinationLocalite, $heureDepart, $user->id_compagnie, null);
+
+        $prog = ProgrammationVoyage::where('id_horaire', $heureDepart)
+            ->where('date_enregistre', $aujourdhui)
+            ->where('id_trajet', $destinationLocalite)
+            ->where('localite_user', $departLocalite)
+            ->where('id_agence', $idAgenceDepart)
+            ->where('id_compagnie', $user->id_compagnie)
+            ->first();
+
+        if ($prog) {
+            $car = Car::where('id_car', $prog->id_car_programmer)->first();
+
+            return [
+                'existe' => true,
+                'numero_car' => $car?->numero_car,
+                'matriculle' => $car?->matriculle,
+                'places_restantes' => $car ? max(0, (int) $car->nbr_place - (int) $car->nbr_place_reserve) : 0,
+                'prix_unitaire' => $prixUnitaire,
+            ];
+        }
+
+        $cars = $programmationService->carsDisponiblesGare($departLocalite, $user->id_compagnie);
+
+        return [
+            'existe' => false,
+            'prix_unitaire' => $prixUnitaire,
+            'cars' => $cars->map(fn ($c) => [
+                'id_car' => (int) $c->id_car,
+                'numero_car' => $c->numero_car,
+                'matriculle' => $c->matriculle,
+                'places_restantes' => max(0, (int) $c->nbr_place - (int) $c->nbr_place_reserve),
+            ])->values()->all(),
+        ];
+    }
+
+    public function creerReservation(Utilisateur $user, array $data, CaisseUtilisateurService $caisseService, ProgrammationVoyageService $programmationService): array
     {
         if ($user->estLectureSeule()) {
             return ['ok' => false, 'type' => 'danger', 'message' => 'Votre rôle est en lecture seule.'];
@@ -193,10 +292,101 @@ class BilletService
         }
         $montantTotal = $prixUnitaire * $nombrePassages;
 
+        // === Vente d'aujourd'hui sans programmation préalable ===
+        // Résolue (ou créée à la volée) AVANT d'ouvrir la transaction de vente ci-dessous :
+        // garde le code plus simple à suivre (aucune programmation fantôme possible si la
+        // vente échoue ensuite, puisqu'elle est déjà actée indépendamment à ce stade).
+        $idCarProgrammer = null;
+        if ($jourVoyage === $aujourdhui) {
+            $prog = ProgrammationVoyage::where('id_horaire', $programme)
+                ->where('date_enregistre', $jourVoyage)
+                ->where('id_trajet', $destinationId)
+                ->where('localite_user', $departLocalite)
+                ->where('id_agence', $idAgenceDepart)
+                ->where('id_compagnie', $user->id_compagnie)
+                ->first();
+
+            if ($prog) {
+                $idCarProgrammer = $prog->id_car_programmer;
+            } else {
+                // Aucun car programmé : l'agent en a choisi un parmi ceux disponibles à sa
+                // gare (cf. ajaxEtatCreneau() côté vue).
+                $idCarChoisi = (int) ($data['idCarChoisi'] ?? 0);
+                if (! $idCarChoisi) {
+                    return ['ok' => false, 'type' => 'danger', 'message' => 'Aucun car programmé pour cette heure et ce trajet. Veuillez choisir un car disponible.'];
+                }
+
+                // Défense en profondeur : le car doit être physiquement à CETTE gare, même
+                // pour un Admin (insertProgrammation() est plus permissif pour lui — il peut
+                // réaffecter un car présent ailleurs dans sa compagnie — ce qui ne convient
+                // pas ici : on ne doit jamais "téléporter" un car absent de la gare qui
+                // encaisse la vente).
+                $carValide = Car::where('id_car', $idCarChoisi)->where('id_compagnie', $user->id_compagnie)
+                    ->where('status_car', $departLocalite)->exists();
+                if (! $carValide) {
+                    return ['ok' => false, 'type' => 'danger', 'message' => "Ce car n'est plus disponible à cette gare. Veuillez réessayer."];
+                }
+
+                $idAgenceDestination = $this->resolveIdAgenceDestination($idAgenceDepart, $programme, $destinationId, $user->id_compagnie);
+                if (! $idAgenceDestination) {
+                    return ['ok' => false, 'type' => 'danger', 'message' => 'Trajet introuvable pour cette destination/heure.'];
+                }
+
+                // Admin : gare choisie dans le formulaire ; autres rôles : null (le service
+                // retombe alors sur l'agence/gare fixe de l'utilisateur).
+                $idDepartPourAdmin = $user->droit === 'Admin' ? $departLocalite : null;
+                $programmationCreee = $programmationService->insertProgrammation(
+                    $user->id_compagnie, $user->agence?->localite, $user->id_agence, $idCarChoisi,
+                    $programme, $destinationId, $jourVoyage, $idDepartPourAdmin, $idAgenceDepart, $idAgenceDestination
+                );
+                if (! $programmationCreee) {
+                    return ['ok' => false, 'type' => 'danger', 'message' => 'Impossible de programmer ce car sur ce créneau (déjà en route, déjà programmé ailleurs, ou créneau invalide). Veuillez réessayer ou choisir un autre car.'];
+                }
+                // Mirroir de ProgrammationVoyageController::store() : la programmation
+                // réussie met le car "en transit" vers sa destination.
+                Car::where('id_car', $idCarChoisi)->update(['status_car' => 'En_transit_'.$destinationId]);
+
+                // Anti-course : si un autre agent de la même gare a programmé un AUTRE car
+                // sur ce même créneau quelques millisecondes avant nous (insertProgrammation()
+                // ne bloque que les doublons sur le MÊME car, pas deux cars différents sur le
+                // même trajet), un seul doit survivre : le premier créé. Le perdant désactive
+                // sa propre programmation (sans risque : par construction, aucune place n'a
+                // encore été vendue dessus) et la vente continue avec le car gagnant.
+                $gagnant = ProgrammationVoyage::where('id_horaire', $programme)
+                    ->where('date_enregistre', $jourVoyage)
+                    ->where('id_trajet', $destinationId)
+                    ->where('localite_user', $departLocalite)
+                    ->where('id_agence', $idAgenceDepart)
+                    ->where('id_compagnie', $user->id_compagnie)
+                    ->where('statut', 'active')
+                    ->orderBy('id_programmation')
+                    ->first();
+
+                if ($gagnant && (int) $gagnant->id_car_programmer !== $idCarChoisi) {
+                    $notre = ProgrammationVoyage::where('id_horaire', $programme)
+                        ->where('date_enregistre', $jourVoyage)
+                        ->where('id_trajet', $destinationId)
+                        ->where('localite_user', $departLocalite)
+                        ->where('id_agence', $idAgenceDepart)
+                        ->where('id_compagnie', $user->id_compagnie)
+                        ->where('id_car_programmer', $idCarChoisi)
+                        ->where('statut', 'active')
+                        ->first();
+                    if ($notre) {
+                        $programmationService->desactiverSansVente($notre->id_programmation, $user->id_compagnie);
+                    }
+                    $idCarProgrammer = $gagnant->id_car_programmer;
+                } else {
+                    $idCarProgrammer = $idCarChoisi;
+                }
+            }
+        }
+
         try {
             return DB::transaction(function () use (
                 $user, $idAgenceDepart, $departLocalite, $numeroGareDepart, $jourVoyage, $aujourdhui,
-                $nomClient, $destinationId, $programme, $nombrePassages, $destFinale, $montantTotal, $caisseService
+                $nomClient, $destinationId, $programme, $nombrePassages, $destFinale, $montantTotal, $caisseService,
+                $idCarProgrammer, $data
             ) {
                 $client = Client::create([
                     'Client' => $nomClient,
@@ -206,22 +396,10 @@ class BilletService
                 ]);
 
                 $numPlace = '-';
-                $idCarProgrammer = null;
 
                 if ($jourVoyage === $aujourdhui) {
-                    $prog = ProgrammationVoyage::where('id_horaire', $programme)
-                        ->where('date_enregistre', $jourVoyage)
-                        ->where('id_trajet', $destinationId)
-                        ->where('localite_user', $departLocalite)
-                        ->where('id_agence', $idAgenceDepart)
-                        ->where('id_compagnie', $user->id_compagnie)
-                        ->first();
-
-                    if (! $prog) {
-                        throw new \RuntimeException('AUCUN_CAR_PROGRAMME');
-                    }
-                    $idCarProgrammer = $prog->id_car_programmer;
-
+                    // $idCarProgrammer déjà résolu (ou créé) avant l'ouverture de cette
+                    // transaction — voir le bloc juste au-dessus de DB::transaction().
                     $car = Car::where('id_car', $idCarProgrammer)->lockForUpdate()->first();
                     if (! $car) {
                         throw new \RuntimeException('CAR_INTROUVABLE');
@@ -324,6 +502,43 @@ class BilletService
                 $creditOk = $caisseService->crediterBillet($user->idUser, $montantTotal, $numeroBillets, $billet->idBillets);
                 if ($creditOk === false) {
                     throw new \RuntimeException('CAISSE_FERMEE');
+                }
+
+                // Bagages optionnels ajoutés au moment de la vente (cf. app/Models/Bagage.php).
+                // Pas de formule automatique : le prix est saisi à la main par l'agent après
+                // pesée réelle. Une seule ligne de caisse pour le total (pas une par bagage).
+                $bagagePrixListe = (array) ($data['bagage_prix'] ?? []);
+                if (! empty($bagagePrixListe)) {
+                    $bagageDescriptions = (array) ($data['bagage_description'] ?? []);
+                    $bagagePoidsListe = (array) ($data['bagage_poids'] ?? []);
+                    $totalBagages = 0.0;
+
+                    foreach ($bagagePrixListe as $i => $prixBagage) {
+                        if ($prixBagage === '' || $prixBagage === null) {
+                            continue;
+                        }
+                        $prixBagage = (float) $prixBagage;
+                        if ($prixBagage < 0) {
+                            continue;
+                        }
+                        $poidsBagage = $bagagePoidsListe[$i] ?? null;
+                        Bagage::create([
+                            'idBillets' => $billet->idBillets,
+                            'description' => $bagageDescriptions[$i] ?? null,
+                            'poids' => ($poidsBagage !== null && $poidsBagage !== '') ? $poidsBagage : null,
+                            'prix' => $prixBagage,
+                            'id_compagnie' => $user->id_compagnie,
+                            'id_utilisateur' => $user->idUser,
+                        ]);
+                        $totalBagages += $prixBagage;
+                    }
+
+                    if ($totalBagages > 0) {
+                        $creditBagageOk = $caisseService->crediterBagage($user->idUser, $totalBagages, $numeroBillets, $billet->idBillets);
+                        if ($creditBagageOk === false) {
+                            throw new \RuntimeException('CAISSE_FERMEE');
+                        }
+                    }
                 }
 
                 // Ancienne caisse de gare (table `caisse`, système remplacé — voir mémoire
@@ -442,6 +657,8 @@ class BilletService
         $heure = $billet->Heur_departs ? \Illuminate\Support\Carbon::parse($billet->Heur_departs) : null;
         $montantNet = preg_replace('/[^\d.]/', '', (string) $billet->montant_payer);
 
+        $bagages = Bagage::getBagagesPourBillet($idBillets, $user->id_compagnie);
+
         return [
             'compagnie' => $compagnie->nom_compagnie ?? 'Nom Compagnie',
             'slogan' => $compagnie->slogant ?? '',
@@ -455,6 +672,8 @@ class BilletService
             'places' => $billet->numeroPlace ?? '-',
             'montant' => $montantNet !== '' ? number_format((float) $montantNet, 0, ',', ' ') : '-',
             'emisPar' => $billet->utilisateurs ?? '-',
+            'bagages' => $bagages->map(fn ($b) => ['description' => $b->description, 'prix' => (float) $b->prix])->values()->all(),
+            'totalBagages' => $bagages->sum('prix'),
         ];
     }
 

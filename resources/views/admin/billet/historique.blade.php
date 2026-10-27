@@ -4,6 +4,7 @@
     $authUser = auth('staff')->user();
     $montantTotal = $listeHistorique->sum(fn ($b) => (float) preg_replace('/[^\d.]/', '', (string) $b->montant_payer));
     $peutImprimer = $authUser->userHasPermission('Billets_impression');
+    $peutBagages = ! $authUser->estLectureSeule() && $authUser->userHasPermission('Billets_bagages');
 @endphp
 
 @section('title', 'Historique des billets · Sirali Admin')
@@ -85,7 +86,7 @@
                         <th class="border-0">Heure</th>
                         <th class="border-0">Statut</th>
                         <th class="border-0 text-end">Montant</th>
-                        @if ($peutImprimer)
+                        @if ($peutImprimer || $peutBagages)
                             <th class="border-0 text-center">Action</th>
                         @endif
                     </tr>
@@ -108,23 +109,32 @@
                                 @endif
                             </td>
                             <td class="text-end fw-bold text-success">{{ number_format((float) preg_replace('/[^\d.]/', '', (string) $b->montant_payer), 0, ',', ' ') }} F</td>
-                            @if ($peutImprimer)
+                            @if ($peutImprimer || $peutBagages)
                                 <td class="text-center">
                                     <div class="dropdown">
                                         <a href="#" class="text-dark fs-5" data-bs-toggle="dropdown" aria-expanded="false">
                                             <i class="fas fa-ellipsis-vertical"></i>
                                         </a>
                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                            <li>
-                                                <a class="dropdown-item thermal-print-btn" href="#" data-id="{{ $b->idBillets }}">
-                                                    <i class="fas fa-print me-2"></i>Imprimer (thermique)
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="{{ url('/admin/Liste_du_jours/recu/' . $b->idBillets) }}" target="_blank">
-                                                    <i class="fas fa-file-pdf me-2"></i>Ouvrir PDF
-                                                </a>
-                                            </li>
+                                            @if ($peutImprimer)
+                                                <li>
+                                                    <a class="dropdown-item thermal-print-btn" href="#" data-id="{{ $b->idBillets }}">
+                                                        <i class="fas fa-print me-2"></i>Imprimer (thermique)
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ url('/admin/Liste_du_jours/recu/' . $b->idBillets) }}" target="_blank">
+                                                        <i class="fas fa-file-pdf me-2"></i>Ouvrir PDF
+                                                    </a>
+                                                </li>
+                                            @endif
+                                            @if ($peutBagages && $b->status_billets !== 'annule')
+                                                <li>
+                                                    <a class="dropdown-item" href="{{ route('admin.bagage.ajouter', $b->idBillets) }}">
+                                                        <i class="fas fa-suitcase me-2"></i>Ajouter des bagages
+                                                    </a>
+                                                </li>
+                                            @endif
                                         </ul>
                                     </div>
                                 </td>

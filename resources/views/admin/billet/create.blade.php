@@ -66,6 +66,13 @@
                                 <select class="form-select" name="programme" id="programmeSelect" required>
                                     <option value="" selected disabled>Sélectionnez une heure</option>
                                 </select>
+                                <input type="time" class="form-control mt-2" id="heureLibreInput" name="programme" disabled style="display:none;">
+                                <div class="form-check mt-1">
+                                    <input class="form-check-input" type="checkbox" id="heureLibreCheck">
+                                    <label class="form-check-label small text-muted" for="heureLibreCheck">
+                                        Heure non listée (saisir librement)
+                                    </label>
+                                </div>
                             </div>
 
                             <div class="col-md-6">
@@ -78,6 +85,43 @@
                                 <div id="escalesList" class="d-flex flex-wrap gap-2"></div>
                                 <input type="hidden" id="escaleSelected" name="escale" value="">
                             </div>
+
+                            <div class="col-12" id="carVoyageBox" style="display:none;"></div>
+
+                            @if ($authUser->userHasPermission('Billets_bagages'))
+                                <div class="col-12">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="afficherBagages">
+                                        <label class="form-check-label fw-semibold" for="afficherBagages">Bagages payants</label>
+                                    </div>
+                                    <div class="d-none" id="bagagesBox">
+                                        <div id="bagagesRows">
+                                            <div class="row align-items-end mb-2 bagage-row">
+                                                <div class="col-md-5">
+                                                    <label class="form-label">Description</label>
+                                                    <input type="text" class="form-control" placeholder="Ex: 1 valise" name="bagage_description[]" autocomplete="off">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Poids (kg)</label>
+                                                    <input type="number" step="0.1" min="0" class="form-control" placeholder="Poids" name="bagage_poids[]" autocomplete="off">
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label class="form-label">Prix (FCFA)</label>
+                                                    <input type="number" min="0" class="form-control" placeholder="Prix" name="bagage_prix[]" autocomplete="off">
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <button type="button" class="btn btn-outline-danger remove-bagage-btn d-none w-100" title="Retirer cette ligne">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" id="addBagageRow" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-plus"></i> Ajouter un bagage
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
 
                             <div class="col-12 mt-2">
                                 <button type="submit" class="btn btn-success px-4">
@@ -170,6 +214,10 @@
         const escalesList = document.getElementById('escalesList');
         const escaleSelected = document.getElementById('escaleSelected');
         const nombrePassagersInput = document.getElementById('nombrePassagers');
+        const heureLibreCheck = document.getElementById('heureLibreCheck');
+        const heureLibreInput = document.getElementById('heureLibreInput');
+        const carVoyageBox = document.getElementById('carVoyageBox');
+        let prixUnitaireHeureLibre = null;
 
         // Les noms de destination/escale viennent de la config (localités/escales saisies
         // par l'Admin), mais peuvent contenir des apostrophes (ex. "Côte d'Ivoire") ou des
@@ -203,17 +251,22 @@
             return (h < now.getHours()) || (h === now.getHours() && m <= now.getMinutes());
         };
 
+        // Heure déjà passée aujourd'hui : reste sélectionnable (vente d'un billet pour un
+        // voyage déjà en cours), juste signalée dans le libellé de l'option.
         function updateProgrammeOptions() {
             const destIdx = destinationSelect.value;
             const isToday = dateEqToday(dateInput.value);
             const programmes = (destinations[destIdx] ?? {}).programmes ?? [];
             programmeSelect.innerHTML = '<option value="" selected disabled>Sélectionnez une heure</option>' +
-                programmes.filter(p => !isToday || !hourIsPast(p.heureDepart))
-                    .map(p => `<option value="${escapeHtml(p.heureDepart)}" data-prix="${p.prix}" data-escales="${escapeHtml(JSON.stringify(p.escales))}">${escapeHtml(p.heureDepart)}</option>`)
-                    .join('');
+                programmes.map(p => {
+                    const passee = isToday && hourIsPast(p.heureDepart);
+                    const libelle = escapeHtml(p.heureDepart) + (passee ? ' (déjà passée)' : '');
+                    return `<option value="${escapeHtml(p.heureDepart)}" data-prix="${p.prix}" data-escales="${escapeHtml(JSON.stringify(p.escales))}">${libelle}</option>`;
+                }).join('');
             escalesBox.style.display = 'none';
             escalesList.innerHTML = '';
             majResume();
+            rafraichirEtatCreneau();
         }
 
         destinationSelect.addEventListener('change', function () {
@@ -221,6 +274,93 @@
             updateProgrammeOptions();
         });
         dateInput.addEventListener('change', updateProgrammeOptions);
+
+        // "Heure non listée" : saisie libre d'une heure absente du catalogue (programmeSelect
+        // et heureLibreInput partagent name="programme" ; seul le champ actif, non désactivé,
+        // est effectivement soumis).
+        heureLibreCheck.addEventListener('change', function () {
+            if (this.checked) {
+                programmeSelect.disabled = true;
+                programmeSelect.style.display = 'none';
+                heureLibreInput.disabled = false;
+                heureLibreInput.style.display = '';
+                escalesBox.style.display = 'none';
+                escalesList.innerHTML = '';
+                escaleSelected.value = '';
+            } else {
+                heureLibreInput.disabled = true;
+                heureLibreInput.style.display = 'none';
+                programmeSelect.disabled = false;
+                programmeSelect.style.display = '';
+            }
+            majResume();
+            rafraichirEtatCreneau();
+        });
+        heureLibreInput.addEventListener('change', function () { majResume(); rafraichirEtatCreneau(); });
+
+        function heureActuelle() {
+            return heureLibreCheck.checked ? (heureLibreInput.value || '') : (programmeSelect.value || '');
+        }
+
+        // Vente d'un billet du jour sans programmation préalable : dès que date=aujourd'hui
+        // et heure+destination sont connues, demande au serveur si un car est déjà
+        // programmé sur ce créneau (bandeau info) ou s'il faut en choisir un parmi ceux
+        // disponibles à la gare.
+        function rafraichirEtatCreneau() {
+            const isToday = dateEqToday(dateInput.value);
+            const destIdx = destinationSelect.value;
+            const destNom = destinations[destIdx]?.nom;
+            const heure = heureActuelle();
+
+            prixUnitaireHeureLibre = null;
+            carVoyageBox.style.display = 'none';
+            carVoyageBox.innerHTML = '';
+
+            if (! isToday || ! destNom || ! heure) {
+                majResume();
+                return;
+            }
+
+            const idDepart = document.getElementById('departSelect')?.value || '';
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+            fetch('{{ route('admin.billet.ajax-etat-creneau') }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({ heureDepart: heure, destinationLocalite: destNom, idDepart }),
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.erreur) {
+                        return;
+                    }
+                    prixUnitaireHeureLibre = data.prix_unitaire;
+                    carVoyageBox.style.display = '';
+
+                    if (data.existe) {
+                        carVoyageBox.innerHTML = `
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-bus me-1"></i>
+                                Car déjà programmé sur ce créneau : <strong>${escapeHtml(data.numero_car ?? '-')}</strong>
+                                (${escapeHtml(data.matriculle ?? '-')}) — ${data.places_restantes} place(s) restante(s).
+                            </div>`;
+                    } else if (data.cars && data.cars.length) {
+                        carVoyageBox.innerHTML = `
+                            <label class="form-label fw-semibold">Car pour ce voyage</label>
+                            <select class="form-select" name="idCarChoisi" id="idCarChoisiSelect" required>
+                                <option value="" selected disabled>Choisissez un car disponible à la gare</option>
+                                ${data.cars.map(c => `<option value="${c.id_car}">${escapeHtml(c.numero_car)} (${escapeHtml(c.matriculle)}) — ${c.places_restantes} place(s)</option>`).join('')}
+                            </select>`;
+                    } else {
+                        carVoyageBox.innerHTML = `
+                            <div class="alert alert-warning mb-0">
+                                Aucun car disponible à cette gare pour programmer ce voyage.
+                            </div>`;
+                    }
+
+                    majResume();
+                });
+        }
 
         // Escales en boutons pilule cliquables (au lieu de radios nus) : cliquer une
         // deuxième fois sur celle déjà choisie la décoche (revenir à "pas d'escale").
@@ -252,24 +392,36 @@
             majResume();
         });
 
-        programmeSelect.addEventListener('change', function () { rebuildEscales(); majResume(); });
+        programmeSelect.addEventListener('change', function () { rebuildEscales(); majResume(); rafraichirEtatCreneau(); });
         nombrePassagersInput.addEventListener('input', majResume);
 
         function majResume() {
             const destIdx = destinationSelect.value;
             const destNom = destinations[destIdx]?.nom ?? '—';
+            const heureLibre = heureLibreCheck.checked;
             const selectedOption = programmeSelect.options[programmeSelect.selectedIndex];
-            const heure = selectedOption && selectedOption.value ? selectedOption.value : '—';
-            const prixProgramme = selectedOption ? parseFloat(selectedOption.dataset.prix || 0) : 0;
+            const heure = heureLibre ? (heureLibreInput.value || '—') : (selectedOption && selectedOption.value ? selectedOption.value : '—');
             const escaleBtn = escalesList.querySelector('.escale-pill.active');
-            const prixUnitaire = escaleBtn ? parseFloat(escaleBtn.dataset.prix || 0) : prixProgramme;
+            let prixUnitaire;
+            let prixIntrouvable = false;
+            if (heureLibre) {
+                prixUnitaire = prixUnitaireHeureLibre;
+                prixIntrouvable = (heure !== '—' && prixUnitaire === null);
+            } else {
+                const prixProgramme = selectedOption ? parseFloat(selectedOption.dataset.prix || 0) : 0;
+                prixUnitaire = escaleBtn ? parseFloat(escaleBtn.dataset.prix || 0) : prixProgramme;
+            }
             const nb = parseInt(nombrePassagersInput.value) || 0;
 
             document.getElementById('resumeDestination').textContent = destNom;
             document.getElementById('resumeHeure').textContent = heure;
             document.getElementById('resumePlaces').textContent = nb || '—';
-            document.getElementById('resumePrixUnitaire').textContent = prixUnitaire ? prixUnitaire.toLocaleString('fr-FR') + ' F' : '—';
-            document.getElementById('resumeTotal').textContent = (prixUnitaire * nb).toLocaleString('fr-FR') + ' F';
+            document.getElementById('resumePrixUnitaire').textContent = prixIntrouvable
+                ? 'Tarif introuvable pour cette heure — choisissez une heure déjà listée'
+                : (prixUnitaire ? Number(prixUnitaire).toLocaleString('fr-FR') + ' F' : '—');
+            document.getElementById('resumeTotal').textContent = prixIntrouvable
+                ? '—'
+                : (Number(prixUnitaire || 0) * nb).toLocaleString('fr-FR') + ' F';
 
             const escaleRow = document.getElementById('resumeEscaleRow');
             if (escaleBtn) {
@@ -279,6 +431,45 @@
                 escaleRow.style.display = 'none';
             }
         }
+
+        // Bagages payants (optionnel) : "add to row", même principe que les escales —
+        // un passager peut avoir plusieurs bagages (description/poids/prix).
+        (function () {
+            const afficherBagages = document.getElementById('afficherBagages');
+            if (! afficherBagages) {
+                return;
+            }
+            const bagagesBox = document.getElementById('bagagesBox');
+            const bagagesRows = document.getElementById('bagagesRows');
+            const addBagageBtn = document.getElementById('addBagageRow');
+
+            afficherBagages.addEventListener('change', function () {
+                bagagesBox.classList.toggle('d-none', ! this.checked);
+            });
+
+            function toggleRemoveBagageButtons() {
+                const rows = bagagesRows.querySelectorAll('.bagage-row');
+                rows.forEach(function (row) {
+                    row.querySelector('.remove-bagage-btn').classList.toggle('d-none', rows.length <= 1);
+                });
+            }
+
+            addBagageBtn.addEventListener('click', function () {
+                const firstRow = bagagesRows.querySelector('.bagage-row');
+                const newRow = firstRow.cloneNode(true);
+                newRow.querySelectorAll('input').forEach(function (input) { input.value = ''; });
+                bagagesRows.appendChild(newRow);
+                toggleRemoveBagageButtons();
+            });
+
+            bagagesRows.addEventListener('click', function (e) {
+                const btn = e.target.closest('.remove-bagage-btn');
+                if (btn) {
+                    btn.closest('.bagage-row').remove();
+                    toggleRemoveBagageButtons();
+                }
+            });
+        })();
 
         @if ($authUser->droit !== 'Admin')
             rebuildDestinationOptions();

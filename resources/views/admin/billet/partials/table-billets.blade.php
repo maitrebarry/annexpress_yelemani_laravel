@@ -3,6 +3,7 @@
     $peutAnnuler = in_array($authUser->droit, ['Admin', 'chef_d_escale'], true) && $authUser->userHasPermission('Billets_annulation');
     $peutReporter = ! $authUser->estLectureSeule() && $authUser->userHasPermission('Billets_reporte');
     $peutImprimer = $authUser->userHasPermission('Billets_impression');
+    $peutBagages = ! $authUser->estLectureSeule() && $authUser->userHasPermission('Billets_bagages');
     $aujourdhuiStr = now()->toDateString();
     $demainStr = now()->addDay()->toDateString();
     $tableId = $tableId ?? 'example';
@@ -47,7 +48,7 @@
                     <th class="border-0">Heure</th>
                     <th class="border-0 text-end">Montant</th>
                     <th class="border-0">Statut</th>
-                    @if ($peutAnnuler || $peutReporter || $peutImprimer)
+                    @if ($peutAnnuler || $peutReporter || $peutImprimer || $peutBagages)
                         <th class="border-0">Actions</th>
                     @endif
                 </tr>
@@ -73,7 +74,7 @@
                                 <span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3 py-2">Actif</span>
                             @endif
                         </td>
-                        @if ($peutAnnuler || $peutReporter || $peutImprimer)
+                        @if ($peutAnnuler || $peutReporter || $peutImprimer || $peutBagages)
                             <td>
                                 @if (in_array($b->status_billets, ['annule', 'annulation_demandee'], true) && ! $peutImprimer)
                                     <span class="text-muted small">—</span>
@@ -96,6 +97,13 @@
                                                 </li>
                                             @endif
                                             @if (! in_array($b->status_billets, ['annule', 'annulation_demandee'], true))
+                                                @if ($peutBagages)
+                                                    <li>
+                                                        <a class="dropdown-item" href="{{ route('admin.bagage.ajouter', $b->idBillets) }}">
+                                                            <i class="fas fa-suitcase me-2"></i>Ajouter des bagages
+                                                        </a>
+                                                    </li>
+                                                @endif
                                                 @if ($peutReporter)
                                                     <li>
                                                         <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalReporter{{ $b->idBillets }}">

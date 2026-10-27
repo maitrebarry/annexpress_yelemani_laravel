@@ -9,6 +9,7 @@ use App\Models\LiaisonCarTrajet;
 use App\Models\Programme;
 use App\Models\ProgrammationVoyage;
 use App\Models\Utilisateur;
+use App\Services\ProgrammationVoyageService;
 use App\Support\Flash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -67,7 +68,7 @@ class ProgrammationVoyageController extends Controller
 
     // Le formulaire permet de cocher plusieurs cars à la fois : chacun reçoit la
     // destination/horaire choisis sur sa propre ligne.
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, ProgrammationVoyageService $programmationService): RedirectResponse
     {
         $user = Auth::guard('staff')->user();
 
@@ -115,7 +116,7 @@ class ProgrammationVoyageController extends Controller
                 continue;
             }
 
-            if ($this->insertProgrammation($user->id_compagnie, $user->agence?->localite, $user->id_agence, $car, $horaire, $destination, $dateEnregistre, $depart, $agenceDepart, $agenceDestination)) {
+            if ($programmationService->insertProgrammation($user->id_compagnie, $user->agence?->localite, $user->id_agence, $car, $horaire, $destination, $dateEnregistre, $depart, $agenceDepart, $agenceDestination)) {
                 Car::where('id_car', $car)->update(['status_car' => 'En_transit_'.$destination]);
                 $reussies++;
             } else {
@@ -298,7 +299,7 @@ class ProgrammationVoyageController extends Controller
         ]);
     }
 
-    public function update(Request $request, int $idProgrammation): View|RedirectResponse
+    public function update(Request $request, int $idProgrammation, ProgrammationVoyageService $programmationService): View|RedirectResponse
     {
         $user = Auth::guard('staff')->user();
 
@@ -323,7 +324,7 @@ class ProgrammationVoyageController extends Controller
             return redirect()->route('admin.programmation-voyage.liste-journaliere');
         }
 
-        $resultat = $this->updateProgrammation($idProgrammation, $idHoraire, $idDestination, $action, $idCarRemplacement);
+        $resultat = $this->updateProgrammation($programmationService, $idProgrammation, $idHoraire, $idDestination, $action, $idCarRemplacement);
 
         if (is_array($resultat) && ! empty($resultat['needs_choice'])) {
             $programmation = ProgrammationVoyage::query()
@@ -547,107 +548,9 @@ class ProgrammationVoyageController extends Controller
             ->value('aDest.numeroGare');
     }
 
-    // Places déjà vendues (billets) pour un créneau exact — inclut les billets vers une
-    // escale du trajet, enregistrés avec le nom de l'escale comme destinationId.
-    private function countPlacesVendues($idHoraire, $idDestination, $localiteUser, $jourVoyage, $idCompagnie, $idAgence = null): int
-    {
-        $destinations = ProgrammationVoyage::destinationsPourCreneau($idHoraire, $idDestination, $localiteUser, $idCompagnie, $idAgence);
-
-        $query = DB::table('billets')
-            ->where('jourVoyage', $jourVoyage)->where('Heur_departs', $idHoraire)
-            ->where('departId', $localiteUser)->where('id_compagnie', $idCompagnie)
-            ->whereIn('destinationId', $destinations);
-
-        if ($idAgence) {
-            $numeroGare = Agence::where('idAgence', $idAgence)->value('numeroGare');
-            if ($numeroGare !== null) {
-                $query->where('num_gare', $numeroGare);
-            }
-        }
-
-        return (int) $query->sum('nombrePassages');
-    }
-
-    // $localiteFallback/$idAgenceFallback ne servent que pour un chef d'escale (pas de
-    // $idDepart/$idAgenceDepart fournis) : sa propre gare de session fait alors foi.
-    private function insertProgrammation($idCompagnie, ?string $localiteFallback, ?int $idAgenceFallback, $idCare, $idHoraire, $idDestination, $dateEnregistre, $idDepart, $idAgenceDepart, $idAgenceDestination): bool
-    {
-        $localiteUser = $idDepart ?: $localiteFallback;
-
-        if ($idDestination == $localiteUser) {
-            return false;
-        }
-
-        if ($idAgenceDepart) {
-            $agenceDepart = Agence::where('idAgence', $idAgenceDepart)->where('id_compagnie', $idCompagnie)->first();
-            if (! $agenceDepart || $agenceDepart->localite !== $localiteUser) {
-                return false;
-            }
-            $idAgence = $agenceDepart->idAgence;
-        } else {
-            $idAgence = $idAgenceFallback;
-        }
-        if (! $idAgence) {
-            return false;
-        }
-
-        if (! $idAgenceDestination) {
-            return false;
-        }
-        $agenceDestination = Agence::where('idAgence', $idAgenceDestination)->where('id_compagnie', $idCompagnie)->first();
-        if (! $agenceDestination || $agenceDestination->localite !== $idDestination) {
-            return false;
-        }
-
-        $trajetValide = Programme::where('idDepart', $idAgence)->where('idDestination', $idAgenceDestination)
-            ->where('heureDepart', $idHoraire)->where('id_compagnie', $idCompagnie)->exists();
-        if (! $trajetValide) {
-            return false;
-        }
-
-        // Verrouillé (FOR UPDATE) le temps de la transaction : sans ça, deux programmations du
-        // même car soumises à quelques millisecondes d'intervalle pourraient toutes deux lire
-        // "disponible" avant qu'aucune n'écrive, affectant un seul car à deux trajets à la fois.
-        return DB::transaction(function () use ($idCare, $idCompagnie, $idHoraire, $dateEnregistre, $idDepart, $localiteUser, $idDestination, $idAgence, $idAgenceDestination) {
-            $car = Car::where('id_car', $idCare)->where('id_compagnie', $idCompagnie)->lockForUpdate()->first();
-            if (! $car) {
-                return false;
-            }
-            if ($car->status_car !== null && str_starts_with($car->status_car, 'En_transit_')) {
-                return false;
-            }
-            // chef_d_escale (pas d'id_depart fourni) : le car doit être physiquement dans sa
-            // gare. Admin (id_depart fourni) : peut réaffecter un car présent ailleurs.
-            if ($idDepart === null && $car->status_car !== $localiteUser) {
-                return false;
-            }
-
-            $doublon = ProgrammationVoyage::where('id_car_programmer', $idCare)->where('id_horaire', $idHoraire)
-                ->where('date_enregistre', $dateEnregistre)->where('id_compagnie', $idCompagnie)->exists();
-            if ($doublon) {
-                return false;
-            }
-
-            ProgrammationVoyage::create([
-                'id_car_programmer' => $idCare,
-                'id_horaire' => $idHoraire,
-                'id_trajet' => $idDestination,
-                'localite_user' => $localiteUser,
-                'id_agence' => $idAgence,
-                'id_agence_destination' => $idAgenceDestination,
-                'date_enregistre' => $dateEnregistre,
-                'id_compagnie' => $idCompagnie,
-            ]);
-
-            // Recalculer (jamais remettre à 0 aveuglément) le nombre de places déjà réservées
-            // sur ce créneau : une reprogrammation ne doit jamais faire "disparaître" des
-            // billets déjà vendus.
-            $placesDejaVendues = $this->countPlacesVendues($idHoraire, $idDestination, $localiteUser, $dateEnregistre, $idCompagnie, $idAgence);
-            $car->update(['nbr_place_reserve' => $placesDejaVendues]);
-
-            return true;
-        });
-    }
+    // countPlacesVendues()/insertProgrammation() : extraites vers ProgrammationVoyageService
+    // (réutilisées par BilletService::creerReservation() pour la vente d'un billet du jour
+    // sans programmation préalable). Comportement inchangé pour les appels ci-dessous.
 
     private function destinationsPourCar($idCar, $localiteDepart, $idCompagnie)
     {
@@ -662,7 +565,7 @@ class ProgrammationVoyageController extends Controller
             ->get();
     }
 
-    private function updateProgrammation($idProgrammation, $idHoraire, $idDestination, $action = null, $idCarRemplacement = null)
+    private function updateProgrammation(ProgrammationVoyageService $programmationService, $idProgrammation, $idHoraire, $idDestination, $action = null, $idCarRemplacement = null)
     {
         $prog = ProgrammationVoyage::find($idProgrammation);
         if (! $prog) {
@@ -692,7 +595,7 @@ class ProgrammationVoyageController extends Controller
         $memeCreneau = $idHoraire === $prog->id_horaire && $idDestination === $prog->id_trajet;
 
         if (! $memeCreneau) {
-            $dejaReserve = $this->countPlacesVendues($prog->id_horaire, $prog->id_trajet, $localiteUser, $prog->date_enregistre, $idCompagnie, $idAgence);
+            $dejaReserve = $programmationService->countPlacesVendues($prog->id_horaire, $prog->id_trajet, $localiteUser, $prog->date_enregistre, $idCompagnie, $idAgence);
 
             if ($dejaReserve > 0) {
                 $destinationChange = $idDestination !== $prog->id_trajet;
@@ -707,7 +610,7 @@ class ProgrammationVoyageController extends Controller
                     }
                     // $localiteUser/$idAgence sont toujours fournis ici (non-null), donc les
                     // repères "chef_d_escale" (agence de session) ne sont jamais utilisés.
-                    $ok = $this->insertProgrammation(
+                    $ok = $programmationService->insertProgrammation(
                         $idCompagnie, null, null, $idCarRemplacement, $prog->id_horaire, $prog->id_trajet,
                         $prog->date_enregistre, $localiteUser, $idAgence, $prog->id_agence_destination
                     );
@@ -733,7 +636,7 @@ class ProgrammationVoyageController extends Controller
 
         // Le car d'origine sert maintenant le nouveau créneau : son compteur de places
         // réservées doit refléter ce nouveau créneau, pas l'ancien.
-        $placesActuelles = $this->countPlacesVendues($idHoraire, $idDestination, $localiteUser, $prog->date_enregistre, $idCompagnie, $idAgence);
+        $placesActuelles = $programmationService->countPlacesVendues($idHoraire, $idDestination, $localiteUser, $prog->date_enregistre, $idCompagnie, $idAgence);
         Car::where('id_car', $prog->id_car_programmer)->update(['nbr_place_reserve' => $placesActuelles]);
 
         return true;

@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\BagageController;
 use App\Http\Controllers\Admin\BanqueController;
+use App\Http\Controllers\Admin\BordereauEscaleController;
 use App\Http\Controllers\Admin\BilletController;
 use App\Http\Controllers\Admin\CaisseController;
 use App\Http\Controllers\Admin\ActualiteController;
@@ -315,6 +317,14 @@ Route::middleware(['auth:staff', 'permission:Caisse_apercue'])->prefix('admin')-
     });
 });
 
+Route::middleware(['auth:staff', 'permission:Caisse_modifier'])->prefix('admin')->group(function () {
+    Route::get('/Bordereau_escales', [BordereauEscaleController::class, 'index'])->name('admin.bordereau-escale.index');
+    Route::get('/Bordereau_escales/ajouter', [BordereauEscaleController::class, 'ajouter'])->name('admin.bordereau-escale.ajouter');
+    Route::post('/Bordereau_escales/ajouter', [BordereauEscaleController::class, 'enregistrer'])->name('admin.bordereau-escale.enregistrer');
+    Route::get('/Bordereau_escales/detail/{id}', [BordereauEscaleController::class, 'detail'])->name('admin.bordereau-escale.detail');
+    Route::get('/Bordereau_escales/telecharger_modele', [BordereauEscaleController::class, 'telechargerModele'])->name('admin.bordereau-escale.telecharger-modele');
+});
+
 Route::middleware(['auth:staff', 'permission:Depenses_gestion'])->prefix('admin')->group(function () {
     Route::get('/Depenses', [DepenseController::class, 'index'])->name('admin.depense.index');
     Route::post('/Depenses', [DepenseController::class, 'store'])->name('admin.depense.store');
@@ -362,11 +372,17 @@ Route::middleware('auth:staff')->prefix('admin')->group(function () {
 Route::middleware(['auth:staff', 'permission:Billets_creation'])->prefix('admin')->group(function () {
     Route::get('/Add_billets', [BilletController::class, 'create'])->name('admin.billet.create');
     Route::post('/Add_billets', [BilletController::class, 'store'])->name('admin.billet.store');
+    Route::post('/Add_billets/ajaxEtatCreneau', [BilletController::class, 'ajaxEtatCreneau'])->name('admin.billet.ajax-etat-creneau');
 });
 
 Route::middleware(['auth:staff', 'permission:Billets_apercue'])->prefix('admin')->group(function () {
     Route::get('/Liste_du_jours', [BilletController::class, 'index'])->name('admin.billet.index');
     Route::get('/Liste_du_jours/historique', [BilletController::class, 'historique'])->name('admin.billet.historique');
+});
+
+Route::middleware(['auth:staff', 'permission:Billets_bagages'])->prefix('admin')->group(function () {
+    Route::get('/Bagages/ajouter/{idBillets}', [BagageController::class, 'ajouter'])->name('admin.bagage.ajouter');
+    Route::post('/Bagages/ajouter/{idBillets}', [BagageController::class, 'enregistrer'])->name('admin.bagage.enregistrer');
 });
 
 Route::middleware(['auth:staff', 'permission:Billets_impression'])->prefix('admin')->group(function () {

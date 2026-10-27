@@ -186,6 +186,25 @@ class CaisseUtilisateurService
         return $caisse->id_caisse_user;
     }
 
+    // Une seule ligne de caisse/journal pour le total des bagages d'un billet (pas une par
+    // bagage) — $montant est déjà la somme des prix. Ne touche jamais nb_billets : ce
+    // compteur reste le nombre de BILLETS vendus, pas le nombre d'opérations de caisse.
+    public function crediterBagage(int $idUtilisateur, float $montant, string $reference, int $idBillet): int|false
+    {
+        $caisse = $this->getCaisseOuverte($idUtilisateur);
+        if (! $caisse) {
+            return false;
+        }
+
+        CaisseUtilisateur::where('id_caisse_user', $caisse->id_caisse_user)->update([
+            'total_billets' => DB::raw('total_billets + '.$montant),
+        ]);
+
+        $this->insererJournal($caisse->id_caisse_user, $idUtilisateur, 'bagage', $reference, $montant, "Bagages billet $reference");
+
+        return $caisse->id_caisse_user;
+    }
+
     // $idCaisseUser optionnel : cible une caisse OUBLIEE (jour precedent, jamais fermee,
     // cf. "Ma Caisse" > Caisses anciennes) plutot que celle du jour. Sans lui, comportement
     // inchange (caisse ouverte d'aujourd'hui).

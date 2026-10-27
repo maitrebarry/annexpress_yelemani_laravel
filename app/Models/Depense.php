@@ -25,6 +25,7 @@ class Depense extends Model
         'Assurance',
         'Remboursement annulation',
         'Remboursement colis',
+        "Commission agent d'escale",
         'Autre',
     ];
 

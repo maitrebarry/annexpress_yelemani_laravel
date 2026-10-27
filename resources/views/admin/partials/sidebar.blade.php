@@ -241,6 +241,7 @@
                 $caissePaths = [
                     'admin/Caisse/ma_caisse', 'admin/Caisse/caisses_escale',
                     'admin/Caisse/rapport_proprietaire', 'admin/Caisse/bilant_caisse_billets',
+                    'admin/Bordereau_escales',
                 ];
                 $caisseOuvert = $groupActive($caissePaths);
             @endphp
@@ -259,6 +260,11 @@
                         @if (in_array($droit, ['chef_d_escale', 'Admin', 'PDG', 'secretaire'], true))
                             <a class="nav-link {{ $isActive('admin/Caisse/caisses_escale') }}" href="{{ url('/admin/Caisse/caisses_escale') }}">
                                 <i class="fas fa-building-columns"></i> <span class="nav-text">Supervision escale</span>
+                            </a>
+                        @endif
+                        @if ($authUser->userHasPermission('Caisse_modifier'))
+                            <a class="nav-link {{ $isActive('admin/Bordereau_escales') }}" href="{{ route('admin.bordereau-escale.index') }}">
+                                <i class="fas fa-file-lines"></i> <span class="nav-text">Bordereaux d'escale</span>
                             </a>
                         @endif
                         @if (in_array($droit, ['Admin', 'PDG', 'secretaire'], true))

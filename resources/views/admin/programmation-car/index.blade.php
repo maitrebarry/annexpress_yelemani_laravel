@@ -40,7 +40,9 @@
                                 <td data-label="Numéro de car">Car : {{ $c->numero_car }}</td>
                                 <td data-label="Nombre de places">{{ $c->nbr_place }}</td>
                                 <td data-label="Action">
-                                    <div class="dropup text-center">
+                                    <!-- dropdown (pas dropup) : sur les premieres lignes d'une longue liste, pas assez
+                                         de place au-dessus pour un menu qui s'ouvre vers le haut, ce qui coupait les actions. -->
+                                    <div class="dropdown text-center">
                                         <a href="#" class="text-dark text-decoration-none fs-4" data-bs-toggle="dropdown" aria-expanded="false">&#8943;</a>
                                         <div class="dropdown-menu dropdown-menu-end">
                                             @unless ($authUser->estLectureSeule())
